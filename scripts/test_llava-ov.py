@@ -100,7 +100,7 @@ def main():
 			model_id, 
 			torch_dtype=torch.float16, 
 			device_map="auto"
-		).to(device)
+		)
 	else:
 		model = LlavaOnevisionForConditionalGeneration.from_pretrained(
 			model_id, 
@@ -165,7 +165,7 @@ def main():
 	# We can simply feed images in the order they have to be used in the text prompt
 	print("INFO: Process images ...")
 	#inputs = processor(images=[image_stop, image_cats, image_snowman], text=prompts, padding=True, return_tensors="pt").to(model.device, torch.float16)
-	inputs = processor(images=[image_stop, image_cats], text=prompts, padding=True, return_tensors="pt").to(model.device, torch.float16).to(device)
+	inputs = processor(images=[image_stop, image_cats], text=prompts, padding=True, return_tensors="pt").to(model.device, torch.float16)
 
 	# Generate
 	print("INFO: Generate model response ...")
