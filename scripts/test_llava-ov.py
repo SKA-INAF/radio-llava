@@ -170,6 +170,8 @@ def main():
 	# Generate
 	print("INFO: Generate model response ...")
 	generate_ids = model.generate(**inputs, max_new_tokens=30)
+	
+	print("INFO: batch_decode ...")
 	output= processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
 	#['user\n\nWhat is shown in this image?\nassistant\nThere is a red stop sign in the image.\nuser\n\nWhat about this image? How many cats do you see?\nassistant\ntwo', 'user\n\nWhat is shown in this image?\nassistant\n']
 	
