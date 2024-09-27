@@ -320,17 +320,17 @@ def read_img(filename, nchans=1, norm_range=(0.,1.), resize=False, resize_size=2
   if filename=="":
     return None
 
-	file_ext= os.path.splitext(filename)[1]
+  file_ext= os.path.splitext(filename)[1]
 		
-	# - Read fits image
-	if file_ext=='.fits':
-		data= fits.open(filename)[0].data
-	else:
-		image= Image.open(filename)
-		data= np.asarray(image)
+  # - Read fits image
+  if file_ext=='.fits':
+    data= fits.open(filename)[0].data
+  else:
+    image= Image.open(filename)
+    data= np.asarray(image)
 	
-	if data is None:
-		return None
+  if data is None:
+    return None
 
 	# - Apply transform
   data_transf= transform_img(
