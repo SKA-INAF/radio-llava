@@ -95,18 +95,12 @@ def main():
 	#==   LOAD MODEL
 	#===========================
 	# - Load the model in half-precision
-	if "cuda" in device:
-		model = LlavaOnevisionForConditionalGeneration.from_pretrained(
-			model_id, 
-			torch_dtype=torch.float16, 
-			device_map="auto"
-		)
-	else:
-		model = LlavaOnevisionForConditionalGeneration.from_pretrained(
-			model_id, 
-			torch_dtype=torch.float16
-		)
-
+	model = LlavaOnevisionForConditionalGeneration.from_pretrained(
+		model_id, 
+		torch_dtype=torch.float16, 
+		device_map="auto"
+	)
+	
 	# - Load processor
 	print("INFO: Load processor ...")
 	processor = AutoProcessor.from_pretrained(model_id)
