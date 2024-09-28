@@ -137,7 +137,7 @@ def main():
 			logger.warn("cuda not available, using cpu...")
 			device= "cpu"
 	
-	logger.info("device: " % (device))
+	logger.info("device: %s" % (device))
 	
 	#===========================
 	#==   READ DATALIST
