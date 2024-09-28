@@ -174,7 +174,7 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 		classid_pred= label2id[label_pred]
 		classids.append(classid)
 		classids_pred.append(classid_pred)	
-		logger.info("--> GT(id=%d, label=%s), PRED(id=%d, label=%s)" % (classid, label, classid_pred, label_pred))
+		logger.info("--> image %s: GT(id=%d, label=%s), PRED(id=%d, label=%s)" % (filename, classid, label, classid_pred, label_pred))
 
 	logger.info("#%d failed inferences" % (nfailed_inferences))
 
