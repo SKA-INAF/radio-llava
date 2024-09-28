@@ -74,6 +74,9 @@ def get_args():
 	parser.add_argument('-benchmark','--benchmark', dest='benchmark', required=False, default="smorph-rgz", type=str, help='Type of benchmark to run') 
 
 	# - Data options
+	parser.add_argument('--shuffle', dest='shuffle', action='store_true',help='Shuffle image data list (default=false)')	
+	parser.set_defaults(shuffle=False)
+	
 	parser.add_argument('-nmax','--nmax', dest='nmax', required=False, type=int, default=-1, help='Max number of entries processed in filelist (-1=all)') 
 	parser.add_argument('--resize', dest='resize', action='store_true',help='Resize input image (default=false)')	
 	parser.set_defaults(resize=False)
@@ -157,6 +160,9 @@ def main():
 	# - Read inference data filelist
 	logger.info("Read image dataset filelist %s ..." % (inputfile))
 	datalist= read_datalist(inputfile)
+	if args.shuffle:
+		random.shuffle(datalist)
+		
 	nfiles= len(datalist)
 	logger.info("#%d images present in file %s " % (nfiles, inputfile))
 	
