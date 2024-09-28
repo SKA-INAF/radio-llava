@@ -167,6 +167,7 @@ def main():
 		device_map="auto"
 	)
 	
+	model.generation_config.pad_token_id = model.generation_config.eos_token_id
 	model.eval()
 
 	# - Load processor
