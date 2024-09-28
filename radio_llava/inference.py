@@ -78,6 +78,7 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 	#nclasses= len(labels)
 	nclasses= len(label2id)
 	class_names= list(label2id.keys())
+	labels= [0,1,2,3,4,5]
 	
 	#===========================
 	#==   RUN INFERENCE
@@ -95,7 +96,7 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 	
 		# - Get image info
 		filename= item["filepaths"][0]
-		class_id= item["id"]
+		#class_id= item["id"]
 		label= item["label"]
 		
 		# - Read image into PIL
@@ -183,13 +184,10 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 	# - Compute and print metrics
 	y_pred= np.array(classids_pred)
 	y_true= np.array(classids)	
-	metrics= multiclass_singlelabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names, labels=class_names)
+	#metrics= multiclass_singlelabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names, labels=class_names)
+	metrics= multiclass_singlelabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names, labels=labels)
 	print_metrics(metrics)
 		
 	return 0
 	
-
-
-
-
 
