@@ -36,6 +36,8 @@ from astropy.visualization import ZScaleInterval
 import skimage
 from PIL import Image
 
+import torch
+
 import matplotlib.pyplot as plt
 
 ##########################
