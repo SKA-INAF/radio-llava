@@ -106,6 +106,8 @@ def run_rgz_data_inference(datalist, model, processor, device, resize_size, appl
 		if verbose:
 			print("inputs")
 			print(inputs)
+			print("inputs.pixel_values")
+			print(inputs['pixel_values'].shape)
 
 		# - Autoregressively complete prompt
 		output = model.generate(
