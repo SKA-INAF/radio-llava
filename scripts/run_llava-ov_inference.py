@@ -45,6 +45,10 @@ import matplotlib.pyplot as plt
 
 ## MODULE
 from radio_llava.utils import *
+from radio_llava.inference import *
+
+## LOGGER
+logger = logging.getLogger(__name__)
 
 #### GET SCRIPT ARGS ####
 def str2bool(v):
@@ -114,12 +118,12 @@ def main():
 	try:
 		args= get_args()
 	except Exception as ex:
-		print("ERROR: Failed to get and parse options (err=%s)",str(ex))
+		logger.error("Failed to get and parse options (err=%s)", str(ex))
 		return 1
 		
 	# - Input filelist
 	if args.inputfile=="":
-		print("ERROR: Empty datalist input file!")
+		logger.error("Empty datalist input file!")
 		return 1	
 	
 	inputfile= args.inputfile
@@ -130,33 +134,33 @@ def main():
 	device= args.device
 	if "cuda" in device:
 		if not torch.cuda.is_available():
-			print("WARN: cuda not available, using cpu...")
+			logger.warn("cuda not available, using cpu...")
 			device= "cpu"
 	
-	print('device:',device)
+	logger.info("device: " % (device))
 	
 	#===========================
 	#==   READ DATALIST
 	#===========================
 	# - Read inference data filelist
-	print("INFO: Read image dataset filelist %s ..." % (inputfile))
+	logger.info("Read image dataset filelist %s ..." % (inputfile))
 	datalist= read_datalist(inputfile)
 	nfiles= len(datalist)
-	print("INFO: #%d images present in file %s " % (nfiles, inputfile))
+	logger.info("#%d images present in file %s " % (nfiles, inputfile))
 	
 	# - Read context data filelist?
 	datalist_context= None 
 	if inputfile_context!="":
-		print("INFO: Read image context dataset filelist %s ..." % (inputfile_context))
+		logger.info("Read image context dataset filelist %s ..." % (inputfile_context))
 		datalist_context= read_datalist(inputfile_context)
 		nfiles_context= len(datalist_context)
-		print("INFO: #%d images present in context file %s " % (nfiles_context, inputfile_context))
+		logger.info("#%d images present in context file %s " % (nfiles_context, inputfile_context))
 		
 	#===========================
 	#==   LOAD MODEL
 	#===========================
 	# - Load the model in half-precision
-	print("INFO: Load model %s ..." % (model_id))
+	logger.info("Loading model %s ..." % (model_id))
 	model = LlavaOnevisionForConditionalGeneration.from_pretrained(
 		model_id, 
 		torch_dtype=torch.float16, 
@@ -164,14 +168,14 @@ def main():
 	)
 
 	# - Load processor
-	print("INFO: Load processor for model %s ..." % (model_id))
+	logger.info("Loading processor for model %s ..." % (model_id))
 	processor = AutoProcessor.from_pretrained(model_id)
 
 	#===========================
 	#==   RUN MODEL INFERENCE
 	#===========================
 	if args.benchmark=="smorph-rgz":
-		print("INFO: Running smorph-rgz benchmark inference ...")
+		logger.info("Running smorph-rgz benchmark inference ...")
 		run_rgz_data_inference(
 			datalist= datalist, 
 			model=model, 
@@ -182,7 +186,8 @@ def main():
 			shuffle_label_options=args.shuffle_label_options
 		)
 	else:
-		print("ERROR: Unknown/invalid benchmark (%s) given!" % (args.benchmark))
+		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))
+		return 1
 
 	return 0
 	

@@ -36,9 +36,14 @@ from astropy.visualization import ZScaleInterval
 import skimage
 from PIL import Image
 
+## TORCH MODULES
 import torch
 
+## DRAW MODULES
 import matplotlib.pyplot as plt
+
+## LOGGER
+logger = logging.getLogger(__name__)
 
 ##########################
 ##    DATA UTILS
@@ -54,7 +59,7 @@ def write_ascii(data, filename, header=''):
 
 	# - Skip if data is empty
 	if data.size<=0:
-		print("WARN: Empty data given, no file will be written!")
+		logger.warn("Empty data given, no file will be written!")
 		return
 
 	# - Open file and write header
@@ -101,7 +106,7 @@ def resize_img(
   elif image_ndims==2:
     padding = [(0, 0)] # with 2D images
   else:
-    print("ERROR: Unsupported image ndims (%d), returning None!" % (image_ndims))
+    logger.error("Unsupported image ndims (%d), returning None!" % (image_ndims))
     return None
 
   crop = None
@@ -149,7 +154,7 @@ def resize_img(
     elif image_ndims==2:
       padding = [(top_pad, bottom_pad), (left_pad, right_pad)] # 2D images
     else:
-      print("ERROR: Unsupported image ndims (%d), returning None!" % (image_ndims))
+      logger.error("Unsupported image ndims (%d), returning None!" % (image_ndims))
       return None
 
     image = np.pad(image, padding, mode='constant', constant_values=0)
@@ -159,7 +164,7 @@ def resize_img(
     h, w = image.shape[:2]
     # - Both sides must be divisible by 64
     if min_dim % 64 != 0:
-      print("ERROR: Minimum dimension must be a multiple of 64, returning None!")
+      logger.error("Minimum dimension must be a multiple of 64, returning None!")
       return None
 
     # Height
@@ -183,7 +188,7 @@ def resize_img(
     elif image_ndims==2:
       padding = [(top_pad, bottom_pad), (left_pad, right_pad)]
     else:
-      print("ERROR: Unsupported image ndims (%d), returning None!" % (image_ndims))
+      logger.error("Unsupported image ndims (%d), returning None!" % (image_ndims))
       return None
 
     image = np.pad(image, padding, mode='constant', constant_values=0)
@@ -199,7 +204,7 @@ def resize_img(
     window = (0, 0, min_dim, min_dim)
 
   else:
-    print("ERROR: Mode %s not supported!" % (mode))
+    logger.error("Mode %s not supported!" % (mode))
     return None
 
   return image.astype(image_dtype)
@@ -248,7 +253,7 @@ def transform_img(data, nchans=1, norm_range=(0.,1.), resize=False, resize_size=
   cond_nonan_noblank= np.logical_and(data!=0, np.isfinite(data))
   data_1d= data[cond_nonan_noblank]
   if data_1d.size==0:
-    print("WARN: Input data are all zeros/nan, return None!")
+    logger.warn("Input data are all zeros/nan, return None!")
     return None
 
   if set_nans_to_min:
@@ -365,7 +370,7 @@ def load_img_as_npy_float(filename, add_chan_axis=True, add_batch_axis=True, res
     verbose=verbose
   )
   if data is None:
-    print("WARN: Read image is None!")
+    logger.warn("Read image is None!")
     return None
 
   # - Add channel axis if missing?
@@ -399,7 +404,7 @@ def load_img_as_npy_rgb(filename, add_batch_axis=True, resize=False, resize_size
   )
 
   if data is None:
-    print("WARN: Read image is None!")
+    logger.warn("Read image is None!")
     return None
 
   # - Add batch axis if requested
@@ -426,7 +431,7 @@ def load_img_as_pil_float(filename, resize=False, resize_size=224, apply_zscale=
     verbose=verbose
   )
   if data is None:
-    print("WARN: Read image is None!")
+    logger.warn("Read image is None!")
     return None
 
   # - Convert to PIL image
@@ -447,91 +452,10 @@ def load_img_as_pil_rgb(filename, resize=False, resize_size=224, apply_zscale=Tr
     verbose=verbose
   )
   if data is None:
-    print("WARN: Read image is None!")
+    logger.warn("Read image is None!")
     return None
 
   # - Convert to PIL RGB image
   return Image.fromarray(data).convert("RGB")
   
-#############################
-##   INFERENCE UTILS
-#############################
-def run_rgz_data_inference(datalist, model, processor, device, resize_size, apply_zscale, shuffle_label_options=False):
-	""" Convert RGZ datalist to conversational data """
-
-	# - Define message
-	context= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component (1C) radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
-	
-	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
-	question_subfix= "Please report only one identified class label. Report just NONE if you cannot recognize any of the above classes in the image."
-	
-	labels= ["1C-1P","1C-2P","1C-3P","2C-2P","2C-3P","3C-3P"]
-	nclasses= len(labels)
-	
-	# - Loop over images in dataset
-	for item in datalist:
-		# - Get image info
-		filename= item["filepaths"][0]
-		class_id= item["id"]
-		label= item["label"]
-		
-		# - Read image into PIL
-		image= load_img_as_pil_rgb(
-			filename,
-			resize=True, resize_size=resize_size, 
-			apply_zscale=apply_zscale, contrast=0.25,
-			verbose=False
-		)
-		
-		# - Create question
-		option_choices= labels.copy()
-		if shuffle_label_options:
-			random.shuffle(option_choices)
-		
-		question_labels= ' \n '.join(option_choices)
-		question= context + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
-		
-		# - Create conversation
-		conversation = [
-			{
-				"role": "user",
-				"content": [
-					{"type": "image"},
-					{"type": "text", "text": question},
-				],
-    	},
-		]
-		
-		# - Create prompt & model inputs
-		prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
-		inputs = processor(image, prompt, return_tensors="pt").to(model.device, torch.float16)
-
-		# - Autoregressively complete prompt
-		output = model.generate(**inputs, max_new_tokens=100)
-		print("output")
-		print(output)
-
-		# - Decode response
-		output_parsed= processor.decode(output[0], skip_special_tokens=True)
-		output_parsed_list= output_parsed.split("assistant")
-
-		print("output_parsed")
-		print(output_parsed)
-		
-		print("output_parsed (split assistant)")
-		print(output_parsed_list)
-		
-		# - Extract predicted label
-		label_pred= output_parsed_list[1].strip("\n").strip()
-
-		print("--> label=%s, label_pred=%s" % (label, label_pred))
-
-		# - Compute metrics 
-		# ...
-		# ...
-
-		
-	return 0
-	
-
 
