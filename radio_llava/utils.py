@@ -457,9 +457,6 @@ def load_img_as_pil_rgb(filename, resize=False, resize_size=224, apply_zscale=Tr
 def run_rgz_data_inference(datalist, model, processor, device, resize_size, apply_zscale, shuffle_label_options=False):
 	""" Convert RGZ datalist to conversational data """
 
-	# - Move model to device
-	model.to(device)
-
 	# - Define message
 	context= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component (1C) radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
 	
@@ -505,7 +502,7 @@ def run_rgz_data_inference(datalist, model, processor, device, resize_size, appl
 		
 		# - Create prompt & model inputs
 		prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
-		inputs = processor(image, prompt, return_tensors="pt").to(device)
+		inputs = processor(image, prompt, return_tensors="pt").to(model.device, torch.float16)
 
 		# - Autoregressively complete prompt
 		output = model.generate(**inputs, max_new_tokens=100)
