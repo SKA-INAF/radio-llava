@@ -96,6 +96,8 @@ def get_args():
 	
 	# - Run options
 	parser.add_argument('-device','--device', dest='device', required=False, type=str, default="cuda", help='Device where to run inference. Default is cuda, if not found use cpu.') 
+	parser.add_argument('--verbose', dest='verbose', action='store_true',help='Enable verbose printout (default=false)')	
+	parser.set_defaults(verbose=False)
 	
 	# - Outfile option
 	parser.add_argument('-outfile','--outfile', dest='outfile', required=False, type=str, default='featdata.dat', help='Output filename (.dat) of feature data') 
@@ -186,7 +188,8 @@ def main():
 			device=device, 
 			resize_size=args.imgsize, 
 			apply_zscale=args.zscale, 
-			shuffle_label_options=args.shuffle_label_options
+			shuffle_label_options=args.shuffle_label_options,
+			verbose=args.verbose
 		)
 	else:
 		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))

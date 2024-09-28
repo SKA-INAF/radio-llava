@@ -102,9 +102,17 @@ def run_rgz_data_inference(datalist, model, processor, device, resize_size, appl
 		# - Create prompt & model inputs
 		prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
 		inputs = processor(image, prompt, return_tensors="pt").to(model.device, torch.float16)
+		
+		if verbose:
+			print("inputs")
+			print(inputs)
 
 		# - Autoregressively complete prompt
-		output = model.generate(**inputs, max_new_tokens=100)
+		output = model.generate(
+			**inputs, 
+			max_new_tokens=100,
+			do_sample=False
+		)
 		
 		# - Decode response
 		output_parsed= processor.decode(output[0], skip_special_tokens=True)
