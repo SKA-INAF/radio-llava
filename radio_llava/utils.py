@@ -450,30 +450,19 @@ def load_img_as_pil_rgb(filename, resize=False, resize_size=224, apply_zscale=Tr
   return Image.fromarray(data).convert("RGB")
   
 #############################
-##   DATA CONVERSION UTILS
+##   INFERENCE UTILS
 #############################
-def convert_rgz_data_to_conversations(datalist, args):
+def run_rgz_data_inference(datalist, model, processor, device, resize_size, apply_zscale, shuffle_label_options=False):
 	""" Convert RGZ datalist to conversational data """
 
-	description_header= "Consider these morphological classes of radio sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component (1C) radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	context= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component (1C) radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
 	
 	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
 	question_subfix= "Please report only one identified class label. Report just NONE if you cannot recognize any of the above classes in the image."
 	
 	labels= ["1C-1P","1C-2P","1C-3P","2C-2P","2C-3P","3C-3P"]
 	nclasses= len(labels)
-	if args.shuffle_label_options:
-		random.shuffle(labels)
-		
-	question_labels= ' \n '.join(labels)
-	question= question_prefix + ' \n ' + question_labels + question_subfix
-		
-	return convert_data_to_conversations(datalist, args, description_header, question)
 	
-
-def convert_data_to_conversations(datalist, args, description_header, question):
-	""" Convert datalist to conversational data """
-
 	# - Loop over images in dataset
 	for item in datalist:
 		# - Get image info
@@ -482,11 +471,52 @@ def convert_data_to_conversations(datalist, args, description_header, question):
 		label= item["label"]
 		
 		# - Read image into PIL
-		image= read_img(filename, args)
+		image= load_img_as_pil_rgb(
+			filename,
+			resize=True, resize_size=resize_size, 
+			apply_zscale=apply_zscale, contrast=0.25,
+			verbose=False
+		)
 		
-		# - Fill message conversations
-		conversations = []
+		# - Create question
+		option_choices= labels.copy()
+		if shuffle_label_options:
+			random.shuffle(option_choices)
 		
-		q1= {"from": "human", "value": "<image>\n" + random.choice(description_list)}
-		a1= {"from": "gpt", "value": description_final}
+		question_labels= ' \n '.join(option_choices)
+		question= context + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+		
+		# - Create conversation
+		conversation = [
+			{
+				"role": "user",
+				"content": [
+					{"type": "image"},
+					{"type": "text", "text": question},
+				],
+    	},
+		]
+		
+		# - Create prompt & model inputs
+		prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+		inputs = processor(image, prompt, return_tensors="pt").to(device)
+
+		# - Autoregressively complete prompt
+		output = model.generate(**inputs, max_new_tokens=100)
+		print("output")
+		print(output)
+
+		# - Decode response
+		output_parsed= processor.decode(output[0], skip_special_tokens=True)
+		print("output_parsed")
+		print(output_parsed.split("assistant"))
+
+		# - Compute metrics 
+		# ...
+		# ...
+
+		
+	return 0
+	
+
 

@@ -66,6 +66,9 @@ def get_args():
 	parser.add_argument('-inputfile','--inputfile', dest='inputfile', required=True, type=str, help='Path to file with image datalist (.json)') 
 	parser.add_argument('-inputfile_context','--inputfile_context', dest='inputfile_context', required=False, default="", type=str, help='Path to file with image datalist for context (.json)') 
 
+	# - Benchmark type
+	parser.add_argument('-benchmark','--benchmark', dest='benchmark', required=False, default="smorph-rgz", type=str, help='Type of benchmark to run') 
+
 	# - Data options
 	parser.add_argument('--imgsize', default=224, type=int, help='Image resize size in pixels')
 	parser.add_argument('--clip_data', dest='clip_data', action='store_true',help='Apply sigma clipping transform (default=false)')	
@@ -136,29 +139,24 @@ def main():
 	#==   READ DATALIST
 	#===========================
 	# - Read inference data filelist
-	#print("INFO: Read image dataset filelist %s ..." % (inputfile))
-	#fp= open(inputfile, "r")
-	#datalist= json.load(fp)["data"]
-	#nfiles= len(datalist)
-	#print("INFO: #%d images present in file %s " % (nfiles, inputfile))
+	print("INFO: Read image dataset filelist %s ..." % (inputfile))
+	datalist= read_datalist(inputfile)
+	nfiles= len(datalist)
+	print("INFO: #%d images present in file %s " % (nfiles, inputfile))
 	
 	# - Read context data filelist?
-	#datalist_context= None 
-	#if inputfile_context!="":
-	#	print("INFO: Read image context dataset filelist %s ..." % (inputfile_context))
-	#	fp= open(inputfile_context, "r")
-	#	datalist_context= json.load(fp)["data"]
-	#	nfiles_context= len(datalist_context)
-	#	print("INFO: #%d images present in context file %s " % (nfiles_context, inputfile_context))
-	
-	# - Convert data filelist in conversation data
-	#convert_data_to_conversations()
-	
+	datalist_context= None 
+	if inputfile_context!="":
+		print("INFO: Read image context dataset filelist %s ..." % (inputfile_context))
+		datalist_context= read_datalist(inputfile_context)
+		nfiles_context= len(datalist_context)
+		print("INFO: #%d images present in context file %s " % (nfiles_context, inputfile_context))
+		
 	#===========================
 	#==   LOAD MODEL
 	#===========================
 	# - Load the model in half-precision
-	model_id= "llava-hf/llava-onevision-qwen2-7b-ov-hf"
+	print("INFO: Load model %s ..." % (model_id))
 	model = LlavaOnevisionForConditionalGeneration.from_pretrained(
 		model_id, 
 		torch_dtype=torch.float16, 
@@ -166,77 +164,25 @@ def main():
 	)
 
 	# - Load processor
-	print("INFO: Load processor ...")
+	print("INFO: Load processor for model %s ..." % (model_id))
 	processor = AutoProcessor.from_pretrained(model_id)
-
-	# Get three different images
-	print("INFO: Download images ...")
-	url = "https://www.ilankelman.org/stopsigns/australia.jpg"
-	image_stop = Image.open(requests.get(url, stream=True).raw)
-
-	url = "http://images.cocodataset.org/val2017/000000039769.jpg"
-	image_cats = Image.open(requests.get(url, stream=True).raw)
-
-	url = "https://huggingface.co/microsoft/kosmos-2-patch14-224/resolve/main/snowman.jpg"
-	image_snowman = Image.open(requests.get(url, stream=True).raw)
-
-	# Prepare a batch of two prompts, where the first one is a multi-turn conversation and the second is not
-	conversation_1 = [
-    {
-        "role": "user",
-        "content": [
-            {"type": "image"},
-            {"type": "text", "text": "What is shown in this image?"},
-            ],
-    },
-    {
-        "role": "assistant",
-        "content": [
-            {"type": "text", "text": "There is a red stop sign in the image."},
-            ],
-    },
-    {
-        "role": "user",
-        "content": [
-            {"type": "image"},
-            {"type": "text", "text": "What about this image? How many cats do you see?"},
-            ],
-    },
-	]
-
-	conversation_2 = [
-    {
-        "role": "user",
-        "content": [
-            {"type": "image"},
-            {"type": "text", "text": "What is shown in this image?"},
-            ],
-    },
-	]
-
-	prompt_1 = processor.apply_chat_template(conversation_1, add_generation_prompt=True)
-	prompt_2 = processor.apply_chat_template(conversation_2, add_generation_prompt=True)
-	
-	prompts= [prompt_1]
-	#prompts = [prompt_1, prompt_2]
-
-	# We can simply feed images in the order they have to be used in the text prompt
-	print("INFO: Process images ...")
-	#inputs = processor(images=[image_stop, image_cats, image_snowman], text=prompts, padding=True, return_tensors="pt").to(model.device, torch.float16)
-	inputs = processor(images=[image_stop, image_cats], text=prompts, padding=True, return_tensors="pt").to(model.device, torch.float16)
-
-	# Generate
-	print("INFO: Generate model response ...")
-	generate_ids = model.generate(**inputs, max_new_tokens=30)
-	output= processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
-	#['user\n\nWhat is shown in this image?\nassistant\nThere is a red stop sign in the image.\nuser\n\nWhat about this image? How many cats do you see?\nassistant\ntwo', 'user\n\nWhat is shown in this image?\nassistant\n']
-	
-	print("output")
-	print(output)
 
 	#===========================
 	#==   RUN MODEL INFERENCE
 	#===========================
+	if args.benchmark=="smorph-rgz":
+		print("INFO: Running smorph-rgz benchmark inference ...")
+		run_rgz_data_inference(
+			datalist= datalist, 
+			model=model, 
+			processor=processor, 
+			device=device, 
+			resize_size=args.imgsize, 
+			apply_zscale=args.zscale, 
+			shuffle_label_options=args.shuffle_label_options
+		)
+	else:
+		print("ERROR: Unknown/invalid benchmark (%s) given!" % (args.benchmark))
 
 	return 0
 	
