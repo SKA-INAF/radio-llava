@@ -183,7 +183,7 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 	# - Compute and print metrics
 	y_pred= np.array(classids_pred)
 	y_true= np.array(classids)	
-	metrics= multiclass_singlelabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names)
+	metrics= multiclass_singlelabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names, labels=class_names)
 	print_metrics(metrics)
 		
 	return 0
