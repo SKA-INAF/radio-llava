@@ -33,6 +33,7 @@ from astropy.io import fits
 from astropy.stats import sigma_clipped_stats
 from astropy.stats import sigma_clip
 from astropy.visualization import ZScaleInterval
+import skimage
 
 import matplotlib.pyplot as plt
 
