@@ -513,8 +513,18 @@ def run_rgz_data_inference(datalist, model, processor, device, resize_size, appl
 
 		# - Decode response
 		output_parsed= processor.decode(output[0], skip_special_tokens=True)
+		output_parsed_list= output_parsed.split("assistant")
+
 		print("output_parsed")
-		print(output_parsed.split("assistant"))
+		print(output_parsed)
+		
+		print("output_parsed (split assistant)")
+		print(output_parsed_list)
+		
+		# - Extract predicted label
+		label_pred= output_parsed_list[1].strip("\n").strip()
+
+		print("--> label=%s, label_pred=%s" % (label, label_pred))
 
 		# - Compute metrics 
 		# ...
