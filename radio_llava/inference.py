@@ -53,19 +53,40 @@ logger = logging.getLogger(__name__)
 #############################
 ##   INFERENCE UTILS
 #############################
-def run_rgz_data_inference(datalist, model, processor, device, resize_size, apply_zscale, shuffle_label_options=False, verbose=False):
+def run_rgz_data_inference(datalist, model, processor, device, resize, resize_size, zscale, contrast, shuffle_label_options=False, verbose=False):
 	""" Convert RGZ datalist to conversational data """
 
+	#===========================
+	#==   INIT TASK
+	#===========================
 	# - Define message
 	context= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component (1C) radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
 	
 	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
 	question_subfix= "Please report only one identified class label. Report just NONE if you cannot recognize any of the above classes in the image."
 	
-	labels= ["1C-1P","1C-2P","1C-3P","2C-2P","2C-3P","3C-3P"]
-	nclasses= len(labels)
+	#labels= ["1C-1P","1C-2P","1C-3P","2C-2P","2C-3P","3C-3P"]
+	label2id= {
+		"1C-1P": 0,
+		"1C-2P": 1,
+		"1C-3P": 2,
+		"2C-2P": 3,
+		"2C-3P": 4,
+		"3C-3P": 5,
+	}
 	
+	#nclasses= len(labels)
+	nclasses= len(label2id)
+	class_names= list(label2id.keys())
+	
+	#===========================
+	#==   RUN INFERENCE
+	#===========================
 	# - Loop over images in dataset
+	nfailed_inferences= 0
+	classids= []
+	classids_pred= []
+	
 	for item in datalist:
 		# - Get image info
 		filename= item["filepaths"][0]
@@ -75,13 +96,16 @@ def run_rgz_data_inference(datalist, model, processor, device, resize_size, appl
 		# - Read image into PIL
 		image= load_img_as_pil_rgb(
 			filename,
-			resize=True, resize_size=resize_size, 
-			apply_zscale=apply_zscale, contrast=0.25,
-			verbose=False
+			resize=resize, resize_size=resize_size, 
+			apply_zscale=zscale, contrast=contrast,
+			verbose=verbose
 		)
+		if image is None:
+			logger.warn("Read image %s is None, skipping inference for this ...")
+			continue
 		
 		# - Create question
-		option_choices= labels.copy()
+		option_choices= class_names.copy()
 		if shuffle_label_options:
 			random.shuffle(option_choices)
 		
@@ -133,12 +157,27 @@ def run_rgz_data_inference(datalist, model, processor, device, resize_size, appl
 		# - Extract predicted label
 		label_pred= output_parsed_list[1].strip("\n").strip()
 
-		logger.info("--> label=%s, label_pred=%s" % (label, label_pred))
+		# - Check if label is correct
+		if label_pred not in label2id:
+			logger.warn("Unexpected label (%s) returned, skip this image ..." % (label_pred))
+			nfailed_inferences+= 1
+			return continue
+	
+		# - Extract class ids
+		classid= label2id[label]
+		classid_pred= label2id[label_pred]
+		classids.append(classid)
+		classids_pred.append(classid_pred)	
+		logger.info("--> GT(id=%d, label=%s), PRED(id=%d,label=%d)" % (classid, label, classid_pred, label_pred))
 
-		# - Compute metrics 
-		# ...
-		# ...
-
+	#===========================
+	#==   COMPUTE METRICS
+	#===========================
+	# - Compute and print metrics
+	y_pred= np.array(classids_pred)
+	y_true= np.array(classids)	
+	metrics= multiclass_singlelabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names)
+	print_metrics(metrics)
 		
 	return 0
 	

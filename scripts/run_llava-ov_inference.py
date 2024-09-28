@@ -74,11 +74,14 @@ def get_args():
 	parser.add_argument('-benchmark','--benchmark', dest='benchmark', required=False, default="smorph-rgz", type=str, help='Type of benchmark to run') 
 
 	# - Data options
+	parser.add_argument('--resize', dest='resize', action='store_true',help='Resize input image (default=false)')	
+	parser.set_defaults(resize=False)
 	parser.add_argument('--imgsize', default=224, type=int, help='Image resize size in pixels')
 	parser.add_argument('--clip_data', dest='clip_data', action='store_true',help='Apply sigma clipping transform (default=false)')	
 	parser.set_defaults(clip_data=False)
 	parser.add_argument('--zscale', dest='zscale', action='store_true',help='Apply zscale transform (default=false)')	
 	parser.set_defaults(zscale=False)
+	parser.add_argument('--contrast', default=0.25, type=float, help='zscale contrast (default=0.25)')
 	parser.add_argument('--norm_min', default=0., type=float, help='Norm min (default=0)')
 	parser.add_argument('--norm_max', default=1., type=float, help='Norm max (default=1)')
 	parser.add_argument('--to_uint8', dest='to_uint8', action='store_true',help='Convert to uint8 (default=false)')	
@@ -89,6 +92,12 @@ def get_args():
 	
 	# - Model option
 	parser.add_argument('-model','--model', dest='model', required=False, type=str, default="llava-hf/llava-onevision-qwen2-7b-ov-hf", help='LLaVA pretrained model') 
+	
+	# - Inference options
+	parser.add_argument('--do_sample', dest='do_sample', action='store_true',help='Sample model response using temperature option (default=false)')	
+	parser.set_defaults(do_sample=False)
+	parser.add_argument('-temperature','--temperature', dest='temperature', required=False, default=0.2, type=float, help='Temperature parameter') 
+	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=None, type=float, help='top_p parameter') 
 	
 	# - Data conversation options
 	parser.add_argument('--shuffle_label_options', dest='shuffle_label_options', action='store_true',help='Shuffle label options (default=false)')	
@@ -182,12 +191,12 @@ def main():
 	if args.benchmark=="smorph-rgz":
 		logger.info("Running smorph-rgz benchmark inference ...")
 		run_rgz_data_inference(
-			datalist= datalist, 
-			model=model, 
-			processor=processor, 
-			device=device, 
-			resize_size=args.imgsize, 
-			apply_zscale=args.zscale, 
+			datalist= datalist,
+			model=model,
+			processor=processor,
+			device=device,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
 			shuffle_label_options=args.shuffle_label_options,
 			verbose=args.verbose
 		)
