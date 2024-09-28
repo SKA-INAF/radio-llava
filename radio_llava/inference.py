@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 #############################
 ##   INFERENCE UTILS
 #############################
-def run_rgz_data_inference(datalist, model, processor, device, resize, resize_size, zscale, contrast, shuffle_label_options=False, verbose=False):
+def run_rgz_data_inference(datalist, model, processor, device, resize, resize_size, zscale, contrast, shuffle_label_options=False, nmax=-1, verbose=False):
 	""" Convert RGZ datalist to conversational data """
 
 	#===========================
@@ -87,7 +87,12 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 	classids= []
 	classids_pred= []
 	
-	for item in datalist:
+	for idx, item in enumerate(datalist):
+		# - Check stop condition
+		if nmax!=-1 and idx>=nmax:
+			logger.info("Stop loop condition reached (%d), as #%d entries were processed..." % (nmax, idx))
+			break
+	
 		# - Get image info
 		filename= item["filepaths"][0]
 		class_id= item["id"]

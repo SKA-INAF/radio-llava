@@ -74,6 +74,7 @@ def get_args():
 	parser.add_argument('-benchmark','--benchmark', dest='benchmark', required=False, default="smorph-rgz", type=str, help='Type of benchmark to run') 
 
 	# - Data options
+	parser.add_argument('-nmax','--nmax', dest='nmax', required=False, type=int, default=-1, help='Max number of entries processed in filelist (-1=all)') 
 	parser.add_argument('--resize', dest='resize', action='store_true',help='Resize input image (default=false)')	
 	parser.set_defaults(resize=False)
 	parser.add_argument('--imgsize', default=224, type=int, help='Image resize size in pixels')
@@ -191,13 +192,14 @@ def main():
 	if args.benchmark=="smorph-rgz":
 		logger.info("Running smorph-rgz benchmark inference ...")
 		run_rgz_data_inference(
-			datalist= datalist,
+			datalist=datalist,
 			model=model,
 			processor=processor,
 			device=device,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
 			shuffle_label_options=args.shuffle_label_options,
+			nmax=args.nmax,
 			verbose=args.verbose
 		)
 	else:
