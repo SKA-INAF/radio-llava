@@ -78,7 +78,7 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 	#nclasses= len(labels)
 	nclasses= len(label2id)
 	class_names= list(label2id.keys())
-	labels= [0,1,2,3,4,5]
+	labels= list(label2id.values())
 	
 	#===========================
 	#==   RUN INFERENCE
