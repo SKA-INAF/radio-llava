@@ -166,6 +166,8 @@ def main():
 		torch_dtype=torch.float16, 
 		device_map="auto"
 	)
+	
+	model.eval()
 
 	# - Load processor
 	logger.info("Loading processor for model %s ..." % (model_id))
