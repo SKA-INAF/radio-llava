@@ -161,7 +161,7 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 		if label_pred not in label2id:
 			logger.warn("Unexpected label (%s) returned, skip this image ..." % (label_pred))
 			nfailed_inferences+= 1
-			return continue
+			continue
 	
 		# - Extract class ids
 		classid= label2id[label]
@@ -169,6 +169,8 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 		classids.append(classid)
 		classids_pred.append(classid_pred)	
 		logger.info("--> GT(id=%d, label=%s), PRED(id=%d,label=%d)" % (classid, label, classid_pred, label_pred))
+
+	logger.info("#%d failed inferences" % (nfailed_inferences))
 
 	#===========================
 	#==   COMPUTE METRICS
