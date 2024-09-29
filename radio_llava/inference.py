@@ -103,7 +103,7 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 				verbose=verbose
 			)
 			if image is None:
-				logger.warn("Read context image %s is None, skipping inference for this ...")
+				logger.warn("Read context image %s is None, skipping inference for this ..." % (filename))
 				continue
 			
 			images_context.append(image)
@@ -169,7 +169,7 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 			verbose=verbose
 		)
 		if image is None:
-			logger.warn("Read image %s is None, skipping inference for this ...")
+			logger.warn("Read image %s is None, skipping inference for this ..." % (filename))
 			continue
 		
 		# - Create question
