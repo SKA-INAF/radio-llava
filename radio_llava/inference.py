@@ -134,17 +134,10 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 			]
 			conversations_context.extend(conversation)
 			
-			# - Create prompt
-			#prompt= processor.apply_chat_template(conversation, add_generation_prompt=True)
-			#prompts_context.append(prompt)
-			
 		if verbose:
 			print("conversations_context")
 			print(json.dumps(conversations_context, indent=2))
 			
-			print("prompts_context")
-			print(prompts_context)
-
 	#===========================
 	#==   RUN INFERENCE
 	#===========================
