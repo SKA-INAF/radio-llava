@@ -85,7 +85,7 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 	#==============================
 	# - Create context conversation (if datalist_context if given)
 	conversations_context= []
-	prompts_context= []
+	#prompts_context= []
 	images_context= []
 	
 	if datalist_context is not None:
@@ -132,15 +132,15 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 					],
 				},
 			]
-			conversations_context.append(conversation)
+			conversations_context.extend(conversation)
 			
 			# - Create prompt
-			prompt= processor.apply_chat_template(conversation, add_generation_prompt=True)
-			prompts_context.append(prompt)
+			#prompt= processor.apply_chat_template(conversation, add_generation_prompt=True)
+			#prompts_context.append(prompt)
 			
 		if verbose:
 			print("conversations_context")
-			print(conversations_context)
+			print(json.dumps(conversations_context, indent=2))
 			
 			print("prompts_context")
 			print(prompts_context)
@@ -184,7 +184,7 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 		question_labels= ' \n '.join(option_choices)
 		question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
 		
-		# - Create conversation
+		# - Create conversation (eventually adding also context conversations)
 		conversation= [
 			{
 				"role": "user",
@@ -194,15 +194,16 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 				],
     	},
 		]
+		conversations= conversations_context.copy()
+		conversations.extend(conversation)
 		
 		# - Create prompt 
-		prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+		#prompt= processor.apply_chat_template(conversation, add_generation_prompt=True)
+		prompts= processor.apply_chat_template(conversations, add_generation_prompt=True)
 		
 		# - Create model inputs (eventually combining context and inference prompts)
 		images= images_context.copy()
 		images.append(image)
-		prompts= prompts_context.copy()
-		prompts.append(prompt)
 		
 		#inputs = processor(image, prompt, return_tensors="pt").to(model.device, torch.float16)
 		inputs = processor(images, prompts, padding=True, return_tensors="pt").to(model.device, torch.float16)
