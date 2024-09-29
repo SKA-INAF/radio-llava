@@ -237,7 +237,7 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 			print(output_parsed_list)
 		
 		# - Extract predicted label
-		label_pred= output_parsed_list[1].strip("\n").strip()
+		label_pred= output_parsed_list[-1].strip("\n").strip()
 
 		# - Check if label is correct
 		if label_pred not in label2id:
