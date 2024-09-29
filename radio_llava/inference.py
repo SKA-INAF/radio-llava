@@ -137,9 +137,9 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 			]
 			conversations_context.extend(conversation)
 			
-		if verbose:
-			print("conversations_context")
-			print(json.dumps(conversations_context, indent=2))
+		#if verbose:
+		#	print("conversations_context")
+		#	print(json.dumps(conversations_context, indent=2))
 			
 	#===========================
 	#==   RUN INFERENCE
@@ -178,7 +178,10 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 			random.shuffle(option_choices)
 		
 		question_labels= ' \n '.join(option_choices)
-		question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+		if conversations_context:
+			question= question_prefix + ' \n ' + question_labels + question_subfix
+		else:
+			question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
 		
 		# - Create conversation (eventually adding also context conversations)
 		conversation= [
