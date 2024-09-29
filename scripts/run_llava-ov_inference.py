@@ -201,6 +201,7 @@ def main():
 			datalist=datalist,
 			model=model,
 			processor=processor,
+			datalist_context=datalist_context,
 			device=device,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,

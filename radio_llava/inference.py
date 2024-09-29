@@ -53,14 +53,14 @@ logger = logging.getLogger(__name__)
 #############################
 ##   INFERENCE UTILS
 #############################
-def run_rgz_data_inference(datalist, model, processor, device, resize, resize_size, zscale, contrast, shuffle_label_options=False, nmax=-1, verbose=False):
+def run_rgz_data_inference(datalist, model, processor, datalist_context=None, device="cuda:0", resize=False, resize_size=384, zscale=False, contrast=0.25, shuffle_label_options=False, nmax=-1, verbose=False):
 	""" Convert RGZ datalist to conversational data """
 
 	#===========================
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	context= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component (1C) radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component (1C) radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
 	
 	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
 	question_subfix= "Please report only one identified class label. Report just NONE if you cannot recognize any of the above classes in the image."
@@ -80,6 +80,71 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 	class_names= list(label2id.keys())
 	labels= list(label2id.values())
 	
+	#==============================
+	#==   CREATE CONTEXT MESSAGE
+	#==============================
+	# - Create context conversation (if datalist_context if given)
+	conversations_context= []
+	prompts_context= []
+	images_context= []
+	
+	if datalist_context is not None:
+		for idx, item in enumerate(datalist_context):
+			# - Get image info
+			sname= item["sname"]
+			filename= item["filepaths"][0]
+			label= item["label"]
+			
+			# - Read image into PIL
+			image= load_img_as_pil_rgb(
+				filename,
+				resize=resize, resize_size=resize_size, 
+				apply_zscale=zscale, contrast=contrast,
+				verbose=verbose
+			)
+			if image is None:
+				logger.warn("Read context image %s is None, skipping inference for this ...")
+				continue
+			
+			images_context.append(image)
+			
+			# - Create question
+			option_choices= class_names.copy()
+			question_labels= ' \n '.join(option_choices)
+			question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+		
+			# - Set assistant response to true label
+			response= label
+			
+			# - Create conversation
+			conversation = [
+				{
+					"role": "user",
+					"content": [
+						{"type": "image"},
+						{"type": "text", "text": question},
+					],
+    		},
+    		{
+					"role": "assistant",
+					"content": [
+						{"type": "text", "text": response},
+					],
+				},
+			]
+			conversations_context.append(conversation)
+			
+			# - Create prompt
+			prompt= processor.apply_chat_template(conversation, add_generation_prompt=True)
+			prompts_context.append(prompt)
+			
+		if verbose:
+			print("conversations_context")
+			print(conversations_context)
+			
+			print("prompts_context")
+			print(prompts_context)
+
 	#===========================
 	#==   RUN INFERENCE
 	#===========================
@@ -117,10 +182,10 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 			random.shuffle(option_choices)
 		
 		question_labels= ' \n '.join(option_choices)
-		question= context + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+		question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
 		
 		# - Create conversation
-		conversation = [
+		conversation= [
 			{
 				"role": "user",
 				"content": [
@@ -130,9 +195,17 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
     	},
 		]
 		
-		# - Create prompt & model inputs
+		# - Create prompt 
 		prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
-		inputs = processor(image, prompt, return_tensors="pt").to(model.device, torch.float16)
+		
+		# - Create model inputs (eventually combining context and inference prompts)
+		images= images_context.copy()
+		images.append(image)
+		prompts= prompts_context.copy()
+		prompts.append(prompt)
+		
+		#inputs = processor(image, prompt, return_tensors="pt").to(model.device, torch.float16)
+		inputs = processor(images, prompts, padding=True, return_tensors="pt").to(model.device, torch.float16)
 		
 		if verbose:
 			print("inputs")
@@ -148,7 +221,7 @@ def run_rgz_data_inference(datalist, model, processor, device, resize, resize_si
 		)
 		
 		# - Decode response
-		output_parsed= processor.decode(output[0], skip_special_tokens=True)
+		output_parsed= processor.decode(output[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
 		output_parsed_list= output_parsed.split("assistant")
 
 		if verbose:
