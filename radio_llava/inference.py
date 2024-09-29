@@ -111,7 +111,10 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 			# - Create question
 			option_choices= class_names.copy()
 			question_labels= ' \n '.join(option_choices)
-			question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+			if idx==0:
+				question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+			else:
+				question= question_prefix + ' \n ' + question_labels + question_subfix
 		
 			# - Set assistant response to true label
 			response= label
