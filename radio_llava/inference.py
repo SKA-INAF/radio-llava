@@ -209,6 +209,8 @@ def run_rgz_data_inference(datalist, model, processor, datalist_context=None, de
 		inputs = processor(images, prompts, padding=True, return_tensors="pt").to(model.device, torch.float16)
 		
 		if verbose:
+			print("conversations")
+			print(json.dumps(conversations, indent=2))
 			print("inputs")
 			print(inputs)
 			print("inputs.pixel_values")
