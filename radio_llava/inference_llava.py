@@ -117,6 +117,7 @@ def run_llavaov_model_query(
 		print(inputs['pixel_values'].shape)
 
 	# - Generate model response
+	logger.debug("Generate model response ...")
 	num_beams= 1
 	top_p= None
 	max_new_tokens= 512
@@ -201,7 +202,12 @@ def run_llavaov_model_context_query(
 		print("inputs.pixel_values")
 		print(inputs['pixel_values'].shape)
 
-	# - Autoregressively complete prompt
+	# - Generate model response
+	logger.debug("Generate model response ...")
+	num_beams= 1
+	top_p= None
+	max_new_tokens= 512
+	
 	output = model.generate(
 		**inputs, 
 		do_sample=do_sample,
