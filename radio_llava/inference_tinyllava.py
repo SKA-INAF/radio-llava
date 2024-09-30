@@ -384,20 +384,20 @@ def run_tinyllava_model_rgz_inference(
 		)
 		
 		# - Extract predicted label
-		#label_pred= output_parsed_list[-1].strip("\n").strip()
+		label_pred= output.strip("\n").strip().upper()
 
 		# - Check if label is correct
-		#if label_pred not in label2id:
-		#	logger.warn("Unexpected label (%s) returned, skip this image ..." % (label_pred))
-		#	nfailed_inferences+= 1
-		#	continue
+		if label_pred not in label2id:
+			logger.warn("Unexpected label (%s) returned, skip this image ..." % (label_pred))
+			nfailed_inferences+= 1
+			continue
 	
 		# - Extract class ids
-		#classid= label2id[label]
-		#classid_pred= label2id[label_pred]
-		#classids.append(classid)
-		#classids_pred.append(classid_pred)	
-		#logger.info("image %s: GT(id=%d, label=%s), PRED(id=%d, label=%s)" % (sname, classid, label, classid_pred, label_pred))
+		classid= label2id[label]
+		classid_pred= label2id[label_pred]
+		classids.append(classid)
+		classids_pred.append(classid_pred)	
+		logger.info("image %s: GT(id=%d, label=%s), PRED(id=%d, label=%s)" % (sname, classid, label, classid_pred, label_pred))
 
 	logger.info("#%d failed inferences" % (nfailed_inferences))
 
@@ -405,10 +405,10 @@ def run_tinyllava_model_rgz_inference(
 	#==   COMPUTE METRICS
 	#===========================
 	# - Compute and print metrics
-	#y_pred= np.array(classids_pred)
-	#y_true= np.array(classids)	
-	#metrics= multiclass_singlelabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names, labels=labels)
-	#print_metrics(metrics)
+	y_pred= np.array(classids_pred)
+	y_true= np.array(classids)	
+	metrics= multiclass_singlelabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names, labels=labels)
+	print_metrics(metrics)
 		
 	return 0
 	
