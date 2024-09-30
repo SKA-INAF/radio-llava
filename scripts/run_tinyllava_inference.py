@@ -54,7 +54,7 @@ import matplotlib.pyplot as plt
 
 ## MODULE
 from radio_llava.utils import *
-from radio_llava.inference import *
+from radio_llava.inference_tinyllava import *
 
 ## LOGGER
 logger = logging.getLogger(__name__)
@@ -115,6 +115,7 @@ def get_args():
 	parser.set_defaults(do_sample=False)
 	parser.add_argument('-temperature','--temperature', dest='temperature', required=False, default=0.2, type=float, help='Temperature parameter') 
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=None, type=float, help='top_p parameter') 
+	parser.add_argument('-conv_mode','--conv_mode', dest='conv_mode', required=False, default="phi", type=str, help='conv_mode inference par') 
 	
 	# - Data conversation options
 	parser.add_argument('--shuffle_label_options', dest='shuffle_label_options', action='store_true',help='Shuffle label options (default=false)')	
@@ -134,127 +135,6 @@ def get_args():
 
 
 
-##############
-## MODEL
-##############
-def load_model_lora(model_name_or_path):
-	""" Create LORA model from config and load weights """
-
-	# - Check if adapter file exists
-	adapter_file= os.path.join(model_name_or_path, 'adapter_config.json') 
-	if not os.path.exists(adapter_file):
-		logger.error("Cannot find adapted config file %s in model path!" % (adapter_file))
-		return None
-
-	# - Build model
-	model_config = TinyLlavaConfig.from_pretrained(model_name_or_path)
-	model = TinyLlavaForConditionalGeneration(model_config)
-	
-	# - Build LLM model and load weights
-	language_model_ckp_path = os.path.join(model_name_or_path, 'language_model/pytorch_model.bin')
-	language_model_ckp = load_base_ckp_for_lora(language_model_ckp_path)		
-	model.language_model.load_state_dict(language_model_ckp)
-	
-	# - Build vision model and load weights
-	vision_tower_ckp_path = os.path.join(model_name_or_path, 'vision_tower/pytorch_model.bin')
-	vision_tower_ckp = load_base_ckp_for_lora(vision_tower_ckp_path)
-	model.vision_tower._vision_tower.load_state_dict(vision_tower_ckp)
-		
-	# - Build connector model and load weights
-	connector_ckp_path = os.path.join(model_name_or_path, 'connector/pytorch_model.bin')
-	connector_ckp = load_base_ckp_for_lora(connector_ckp_path)
-	model.connector.load_state_dict(connector_ckp)
-	
-	# - Set model float16	
-	model.to(torch.float16)
-	
-	# - Merge LORA weights into model
-	logger.debug("Loading LoRA weights...")
-	model = PeftModel.from_pretrained(model, model_name_or_path)
-	logger.debug("Merging LoRA weights...")
-	model = model.merge_and_unload()
-	logger.debug("Model is loaded...")
-	
-	return model
-		
-
-def load_model(model_name_or_path):
-	""" Create model from config and load weights """
-	
-	# - Load config & model
-	logger.debug("Read tinyllava config ...")
-	model_config = TinyLlavaConfig.from_pretrained(model_name_or_path)
-            
-	logger.debug("Initialize tinyllava model from config ...")
-	model = TinyLlavaForConditionalGeneration(model_config)
-            
-	logger.debug("Set model component weights paths ...")
-	language_model_ckp_path = os.path.join(model_name_or_path, 'language_model/pytorch_model.bin')
-	vision_tower_ckp_path = os.path.join(model_name_or_path, 'vision_tower/pytorch_model.bin')
-	connector_ckp_path = os.path.join(model_name_or_path, 'connector/pytorch_model.bin')
-            
-	language_model_path = os.path.join(model_name_or_path, 'language_model')
-	vision_tower_path = os.path.join(model_name_or_path, 'vision_tower')
-	connector_path = os.path.join(model_name_or_path, 'connector')
-            
-	# - Load connector weights
-	logger.debug("Loading connector weights from file %s ..." % (connector_ckp_path))
-	model.load_connector(model_name_or_path=connector_path)
-            
-	# - Load LLM weights
-	logger.debug("Loading LLM weights ...")
-	model.load_llm(model_name_or_path=language_model_path)
-            
-	# - Load vision weights
-	model.load_vision_tower(model_name_or_path=vision_tower_path)
-       
-	# - Set model float16	     
-	model.to(torch.float16)
-
-	return model
-
-
-def load_pretrained_model(
-	model_name_or_path,
-	load_lora_model=False
-):
-	""" Load TinyLLaVA model """
-    
-	# - Check model name
-	if model_name_or_path is None or model_name_or_path=="":
-		logger.error("Empty or invalid model path given!")
-		return None
-		
-	has_lora_in_name= ('lora' in model_name_or_path)
-	if has_lora_in_name and not load_lora_model:    
-		logger.warn("lora was found in model name but load_lora_model is False, will load as standard model but check if this is really the desired behavior!")
-    
-	# - Load model from path
-	if load_lora_model:
-		model= load_model_lora(model_name_or_path)
-	else:
-		try:
-			model = TinyLlavaForConditionalGeneration.from_pretrained(
-				model_name_or_path,
-				low_cpu_mem_usage=True,
-				torch_dtype=torch.float16,
-				device_map="auto"
-		)
-		except Exception as e:
-			logger.warn("Failed to load pre-trained model (err=%s), trying with another method ..." % (str(e)))
-			model= load_model(model_name_or_path)
- 	
-	# - Check model
-	if model is None:
-		logger.error("Failed to load model %s!" % (model_name_or_path))
-		return None
- 	
-	# - Set model options
-	image_processor = model.vision_tower._image_processor
-	context_len = getattr(model.config, 'max_sequence_length', 2048)
-	tokenizer = model.tokenizer
-	
-	return model, tokenizer, image_processor, context_len
 
 ##############
 ##   MAIN   ##
@@ -305,21 +185,30 @@ def main():
 	#==   LOAD MODEL
 	#===========================
 	logger.info("Loading model %s ..." % (model_id))
-	res= load_pretrained_model(model_id, args.load_lora_model)
-	if res is None:
+	model= load_tinyllava_model(model_id, args.load_lora_model)
+	if model is None:
 		logger.error("Failed to load model %s ..." % ())
 		return 1
-	model, tokenizer, image_processor, context_len= res
-		
-	if args.reset_imgnorm:
-		model.vision_tower._image_processor.image_mean= [0.,0.,0.]
-		model.vision_tower._image_processor.image_std= [1.,1.,1.]
 	
 	#===========================
 	#==   RUN MODEL INFERENCE
 	#===========================
-	# ...	
-		
+	if args.benchmark=="smorph-rgz":
+		logger.info("Running smorph-rgz benchmark inference ...")
+		run_tinyllava_model_rgz_inference(
+			datalist=datalist,
+			model=model,
+			device=device,
+			reset_imgnorm=args.reset_imgnorm,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			conv_mode=args.conv_mode,
+			shuffle_label_options=args.shuffle_label_options, nmax=args.nmax,
+			verbose=args.verbose
+		)
+	else:
+		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))
+		return 1
 		
 	return 0
 	
