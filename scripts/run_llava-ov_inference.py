@@ -181,19 +181,6 @@ def main():
 	logger.info("Loading model %s ..." % (model_id))
 	model, processor= load_llavaov_model(model_id, device)
 	
-	#model = LlavaOnevisionForConditionalGeneration.from_pretrained(
-	#	model_id, 
-	#	torch_dtype=torch.float16, 
-	#	device_map="auto"
-	#)
-	
-	#model.generation_config.pad_token_id = model.generation_config.eos_token_id
-	#model.eval()
-
-	# - Load processor
-	#logger.info("Loading processor for model %s ..." % (model_id))
-	#processor = AutoProcessor.from_pretrained(model_id)
-
 	#===========================
 	#==   RUN MODEL INFERENCE
 	#===========================
@@ -212,18 +199,21 @@ def main():
 			verbose=args.verbose
 		)
 		
-		#run_rgz_data_inference(
-		#	datalist=datalist,
-		#	model=model,
-		#	processor=processor,
-		#	datalist_context=datalist_context,
-		#	device=device,
-		#	resize=args.resize, resize_size=args.imgsize, 
-		#	zscale=args.zscale, contrast=args.contrast,
-		#	shuffle_label_options=args.shuffle_label_options,
-		#	nmax=args.nmax,
-		#	verbose=args.verbose
-		#)
+	elif args.benchmark=="smorph-radioimg":
+		logger.info("Running smorph-radioimg benchmark inference")
+		run_llavaov_model_smorph_inference(
+			datalist=datalist,
+			model=model,
+			processor=processor,
+			datalist_context=datalist_context,
+			device=device,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			shuffle_label_options=args.shuffle_label_options,
+			nmax=args.nmax,
+			verbose=args.verbose
+		)	
+		
 	else:
 		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))
 		return 1
