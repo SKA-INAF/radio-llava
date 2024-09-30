@@ -267,6 +267,10 @@ def run_tinyllava_model_query(
 	logger.debug("Preprocessing input image ...")
 	image_tensor= image_processor(image)    
 	image_tensor= image_tensor.unsqueeze(0).half().cuda()
+	
+	if verbose:
+		print("image_tensor.shape")
+		print(image_tensor.shape)
 
 	# - Generate model response
 	logger.debug("Generate model response ...")
