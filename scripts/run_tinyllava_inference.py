@@ -142,9 +142,9 @@ def load_model_lora(model_name_or_path):
 
 	# - Check if adapter file exists
 	adapter_file= os.path.join(model_name_or_path, 'adapter_config.json') 
- 	if not os.path.exists(adapter_file):
- 		logger.error("Cannot find adapted config file %s in model path!" % (adapter_file))
- 		return None
+	if not os.path.exists(adapter_file):
+		logger.error("Cannot find adapted config file %s in model path!" % (adapter_file))
+		return None
 
 	# - Build model
 	model_config = TinyLlavaConfig.from_pretrained(model_name_or_path)
