@@ -361,7 +361,7 @@ def run_llavaov_model_rgz_inference(datalist, model, processor, datalist_context
 		if conversations_context:
 			output= run_llavaov_model_context_query(
 				model, processor, 
-				filename, 
+				image, 
 				question,
 				images_context,
 				conversations_context,
@@ -374,7 +374,7 @@ def run_llavaov_model_rgz_inference(datalist, model, processor, datalist_context
 		else:
 			output= run_llavaov_model_query(
 				model, processor, 
-				filename, 
+				image, 
 				question,
 				resize=resize, resize_size=resize_size, 
 				zscale=zscale, contrast=contrast, 
