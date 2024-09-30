@@ -251,7 +251,7 @@ def run_tinyllava_model_query(
 		verbose=verbose
 	)
 	if image is None:
-		logger.warn("Read context image %s is None, skipping inference for this ..." % (filename))
+		logger.warn("Failed to read image %s, returning None ..." % (image_path))
 		return None
 	
 	if verbose:
@@ -352,7 +352,8 @@ def run_tinyllava_model_rgz_inference(
 	#==   RUN INFERENCE
 	#===========================
 	# - Loop over images in dataset
-	nfailed_inferences= 0
+	ninferences_unexpected= 0
+	ninferences_failed= 0
 	classids= []
 	classids_pred= []
 	
@@ -387,6 +388,10 @@ def run_tinyllava_model_rgz_inference(
 			do_sample=False,
 			verbose=verbose
 		)
+		if output is None:
+			logger.warn("Failed inference for image %s, skipping ..." % (filename))
+			ninferences_failed+= 1
+			continue
 		
 		# - Extract predicted label
 		label_pred= output.strip("\n").strip().upper()
@@ -394,7 +399,7 @@ def run_tinyllava_model_rgz_inference(
 		# - Check if label is correct
 		if label_pred not in label2id:
 			logger.warn("Unexpected label (%s) returned, skip this image ..." % (label_pred))
-			nfailed_inferences+= 1
+			ninferences_unexpected+= 1
 			continue
 	
 		# - Extract class ids
@@ -404,7 +409,8 @@ def run_tinyllava_model_rgz_inference(
 		classids_pred.append(classid_pred)	
 		logger.info("image %s: GT(id=%d, label=%s), PRED(id=%d, label=%s)" % (sname, classid, label, classid_pred, label_pred))
 
-	logger.info("#%d failed inferences" % (nfailed_inferences))
+	logger.info("#%d failed inferences" % (ninferences_failed))
+	logger.info("#%d unexpected inferences" % (ninferences_unexpected))
 
 	#===========================
 	#==   COMPUTE METRICS
