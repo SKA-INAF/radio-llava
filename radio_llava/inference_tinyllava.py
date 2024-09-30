@@ -54,6 +54,7 @@ import matplotlib.pyplot as plt
 
 ## MODULE
 from radio_llava.utils import *
+from radio_llava.metrics import *
 
 ## LOGGER
 logger = logging.getLogger(__name__)
