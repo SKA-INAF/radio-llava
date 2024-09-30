@@ -278,7 +278,7 @@ def run_tinyllava_model_query(
 		input_ids,
 		images=image_tensor,
 		do_sample=do_sample,
-		temperature=temperature,
+		temperature=None if do_sample else temperature,
 		top_p=top_p,
 		num_beams=num_beams,
 		pad_token_id=tokenizer.pad_token_id,
