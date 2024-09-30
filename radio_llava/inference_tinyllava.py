@@ -333,7 +333,7 @@ def run_tinyllava_model_rgz_inference(
 	description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
 	
 	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
-	question_subfix= "Please report only one identified class label. Report just NONE if you cannot recognize any of the above classes in the image."
+	question_subfix= "Please report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
 	
 	label2id= {
 		"1C-1P": 0,
