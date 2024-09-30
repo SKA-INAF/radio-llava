@@ -208,7 +208,7 @@ def run_tinyllava_model_query(
 	temperature=0.2, 
 	verbose=False
 ):
-  """ Run tinyllava model inference """  
+	""" Run tinyllava model inference """  
 	
 	# - Extract image processor from model
 	logger.debug("Extracting image processor from model ...")	
