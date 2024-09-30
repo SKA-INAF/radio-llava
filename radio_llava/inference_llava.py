@@ -512,7 +512,7 @@ def run_llavaov_model_smorph_inference(datalist, model, processor, datalist_cont
 		"description": description,
 		"question_prefix": question_prefix,
 		"question_subfix": question_subfix,
-		"classification_mode": "multiclass_singlelabel",
+		"classification_mode": "multiclass_multilabel",
 		"label_modifier_fcn": None,
 		"label2id": label2id,
 		"class_options": class_options,
