@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 ######################
 ##   LOAD MODEL
 ######################
-def load_tinyllava_model_lora(model_name_or_path):
+def load_tinyllava_model_lora(model_name_or_path, device="cuda"):
 	""" Create LORA model from config and load weights """
 
 	# - Check if adapter file exists
@@ -92,7 +92,7 @@ def load_tinyllava_model_lora(model_name_or_path):
 	model.connector.load_state_dict(connector_ckp)
 	
 	# - Set model float16	
-	model.to(torch.float16)
+	model.to(device, torch.float16)
 	
 	# - Merge LORA weights into model
 	logger.debug("Loading LoRA weights...")
@@ -104,7 +104,7 @@ def load_tinyllava_model_lora(model_name_or_path):
 	return model
 		
 
-def load_tinyllava_model_standard(model_name_or_path):
+def load_tinyllava_model_standard(model_name_or_path, device="cuda"):
 	""" Create model from config and load weights """
 	
 	# - Load config & model
@@ -135,7 +135,7 @@ def load_tinyllava_model_standard(model_name_or_path):
 	model.load_vision_tower(model_name_or_path=vision_tower_path)
        
 	# - Set model float16	     
-	model.to(torch.float16)
+	model.to(device, torch.float16)
 
 	return model
 
@@ -236,7 +236,8 @@ def run_tinyllava_model_query(
 	result= text_processor(msg.messages, mode='eval')
 	input_ids= result['input_ids']
 	prompt= result['prompt']
-	input_ids= input_ids.unsqueeze(0).cuda()
+	#input_ids= input_ids.unsqueeze(0).cuda()
+	input_ids= input_ids.unsqueeze(0).to(model.device)
 
 	stop_str = text_processor.template.separator.apply()[1]
 	keywords = [stop_str]
@@ -266,7 +267,8 @@ def run_tinyllava_model_query(
 	# - Pre-process image
 	logger.debug("Preprocessing input image ...")
 	image_tensor= image_processor(image)    
-	image_tensor= image_tensor.unsqueeze(0).half().cuda()
+	#image_tensor= image_tensor.unsqueeze(0).half().cuda()
+	image_tensor= image_tensor.unsqueeze(0).to(model.device, torch.float16)
 	
 	if verbose:
 		print("image_tensor.shape")
