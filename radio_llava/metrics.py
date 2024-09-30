@@ -86,11 +86,11 @@ def multiclass_singlelabel_metrics(y_true, y_pred, target_names, labels=None):
 	return metrics
 	
 
-def multiclass_multilabel_metrics(y_true, y_pred, target_names):
+def multiclass_multilabel_metrics(y_true, y_pred, target_names, labels=None):
 	""" Helper function to compute multi-class multi-label metrics """
 	
 	# - Compute class report
-	class_report= classification_report(y_true, y_pred, target_names=target_names, output_dict=True)
+	class_report= classification_report(y_true, y_pred, target_names=target_names, labels=labels, output_dict=True)
 	accuracy = accuracy_score(y_true, y_pred, normalize=True) # NB: This computes subset accuracy (the set of labels predicted for a sample must exactly match the corresponding set of labels in y_true)
 	precision= precision_score(y_true=y_true, y_pred=y_pred, average='weighted')
 	recall= recall_score(y_true=y_true, y_pred=y_pred, average='weighted')
