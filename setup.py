@@ -51,7 +51,7 @@ setup(
 	#download_url="https://github.com/SKA-INAF/sclassifier/archive/refs/tags/v1.0.7.tar.gz",
 	packages=['radio_llava'],
 	install_requires=reqs,
-	scripts=['scripts/run_llava-ov_inference.py','scripts/test_llava-ov.py'],
+	scripts=['scripts/run_llava-ov_inference.py','scripts/run_tinyllava-_inference.py'],
 	classifiers=[
 		'Development Status :: 5 - Production/Stable',
 		'Intended Audience :: Science/Research',
