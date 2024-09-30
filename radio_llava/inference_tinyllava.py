@@ -142,7 +142,8 @@ def load_tinyllava_model_standard(model_name_or_path, device="cuda"):
 
 def load_tinyllava_model(
 	model_name_or_path,
-	load_lora_model=False
+	load_lora_model=False,
+	device="cuda"
 ):
 	""" Load TinyLLaVA model """
     
@@ -157,7 +158,7 @@ def load_tinyllava_model(
     
 	# - Load model from path
 	if load_lora_model:
-		model= load_tinyllava_model_lora(model_name_or_path)
+		model= load_tinyllava_model_lora(model_name_or_path, device)
 	else:
 		try:
 			model = TinyLlavaForConditionalGeneration.from_pretrained(
@@ -168,7 +169,7 @@ def load_tinyllava_model(
 		)
 		except Exception as e:
 			logger.warn("Failed to load pre-trained model (err=%s), trying with another method ..." % (str(e)))
-			model= load_tinyllava_model_standard(model_name_or_path)
+			model= load_tinyllava_model_standard(model_name_or_path, device)
  	
 	# - Check model
 	if model is None:
