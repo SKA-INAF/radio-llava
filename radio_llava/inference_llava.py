@@ -88,7 +88,7 @@ def run_llavaov_model_query(
 	do_sample=False,
 	temperature=0.2, 
 	verbose=False
-)
+):
 	""" Run llava one vision model inference """  
 	
 	# - Create conversation (eventually adding also context conversations)
@@ -163,7 +163,7 @@ def run_llavaov_model_context_query(
 	do_sample=False,
 	temperature=0.2, 
 	verbose=False
-)
+):
 	""" Run llava one vision model inference """  
 
 	# - Check context info
