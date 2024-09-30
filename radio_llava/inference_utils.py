@@ -90,7 +90,7 @@ def filter_smorph_label(labels):
 	return labels_sel
 	
 
-def process_model_output_multiclass_multilabel(model_output, label, label2id, label_modifier_fcn=None):
+def process_model_output_multiclass_multilabel(model_output, labels, label2id, label_modifier_fcn=None):
 	""" Process model output for multi-class multi-label classification """
 
 	# - Set number of class and multilabel binarizer
