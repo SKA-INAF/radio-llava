@@ -55,6 +55,7 @@ import matplotlib.pyplot as plt
 ## MODULE
 from radio_llava.utils import *
 from radio_llava.metrics import *
+from radio_llava.inference_utils import *
 
 ## LOGGER
 logger = logging.getLogger(__name__)
@@ -316,6 +317,133 @@ def run_tinyllava_model_query(
 	return outputs
 
 
+def run_tinyllava_model_inference(
+	datalist, 
+	model, 
+	task_info, 
+	device="cuda:0", 
+	reset_imgnorm=False,
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25,
+	conv_mode='phi',
+	shuffle_label_options=False, nmax=-1, 
+	verbose=False
+):
+	""" Run TinyLLaVA inference on radio image dataset """
+
+	#====================================
+	#==   GET TASK INFO
+	#====================================
+	# - Get query info
+	description= task_info["description"]
+	question_prefix= task_info["question_prefix"]
+	question_subfix= task_info["question_subfix"]
+	
+	# - Get class info
+	classification_mode= task_info["classification_mode"]
+	label_modifier_fcn= task_info["label_modifier_fcn"]
+	label2id= task_info["label2id"]
+	nclasses= len(label2id)
+	class_names= list(label2id.keys())
+	labels= list(label2id.values())
+
+	class_options= class_names
+	if "class_options" in task_info:
+		class_options= task_info["class_options"]
+
+	#===========================
+	#==   RUN INFERENCE
+	#===========================
+	# - Loop over images in dataset
+	ninferences_unexpected= 0
+	ninferences_failed= 0
+	class_ids= []
+	class_ids_pred= []
+	
+	for idx, item in enumerate(datalist):
+		# - Check stop condition
+		if nmax!=-1 and idx>=nmax:
+			logger.info("Stop loop condition reached (%d), as #%d entries were processed..." % (nmax, idx))
+			break
+	
+		# - Get image info
+		sname= item["sname"]
+		filename= item["filepaths"][0]
+		label= item["label"]
+		
+		# - Create question
+		option_choices= class_options.copy()
+		if shuffle_label_options:
+			random.shuffle(option_choices)
+		
+		question_labels= ' \n '.join(option_choices)
+		question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+		
+		# - Query model
+		output= run_tinyllava_model_query(
+			model=model, 
+			image_path=filename,
+			query=question,
+			reset_imgnorm=reset_imgnorm,
+			resize=resize, resize_size=resize_size, 
+			zscale=zscale, contrast=contrast, 
+			conv_mode=conv_mode,
+			do_sample=False,
+			verbose=verbose
+		)
+		if output is None:
+			logger.warn("Failed inference for image %s, skipping ..." % (filename))
+			ninferences_failed+= 1
+			continue
+		
+		#########################
+		##   PROCESS OUTPUT
+		#########################
+		# - Extract class ids
+		res= process_model_output(output, label, label2id, classification_mode, label_modifier_fcn)
+		if res is None:
+			logger.warn("Unexpected label prediction found, skip this image ...")
+			ninferences_unexpected+= 1
+			continue
+
+		classid= res[0]
+		classid_pred= res[1]
+		label= res[2]
+		label_pred= res[3]
+		
+		class_ids.append(classid)
+		class_ids_pred.append(classid_pred)	
+		logger.info("image %s: GT(id=%s, label=%s), PRED(id=%s, label=%s)" % (sname, str(classid), str(label), str(classid_pred), str(label_pred)))
+
+		
+	logger.info("#%d failed inferences" % (ninferences_failed))
+	logger.info("#%d unexpected inferences" % (ninferences_unexpected))
+
+	#===========================
+	#==   COMPUTE METRICS
+	#===========================
+	# - Compute and print metrics
+	y_pred= np.array(class_ids_pred)
+	y_true= np.array(class_ids)
+
+	if classification_mode=="multiclass_multilabel":
+		metrics= multiclass_multilabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names, labels=labels)
+		print_metrics(metrics)
+		
+	elif classification_mode=="multiclass_singlelabel":
+		metrics= multiclass_singlelabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names, labels=labels)
+		print_metrics(metrics)
+		
+	else:
+		logger.error("Invalid/unknown classification mode (%s) given!" % (classification_mode))
+		return -1
+		
+	return 0
+	
+
+#############################################
+###       INFERENCE TASKS
+#############################################
 def run_tinyllava_model_rgz_inference(
 	datalist, 
 	model,
@@ -347,85 +475,90 @@ def run_tinyllava_model_rgz_inference(
 		"3C-3P": 5,
 	}
 	
-	nclasses= len(label2id)
-	class_names= list(label2id.keys())
-	labels= list(label2id.values())
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": None,
+		"label2id": label2id
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_tinyllava_model_inference(
+		datalist, 
+		model, 
+		task_info, 
+		device=device,
+		reset_imgnorm=reset_imgnorm, 
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast,
+		conv_mode=conv_mode, 
+		shuffle_label_options=shuffle_label_options, nmax=nmax, 
+		verbose=verbose
+	)
+	
+	
+def run_tinyllava_model_smorph_inference(
+	datalist, 
+	model,
+	device="cuda:0",
+	reset_imgnorm=False,
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25,
+	conv_mode='phi', 
+	shuffle_label_options=False, nmax=-1, 
+	verbose=False
+):
+	""" Run TinyLLaVA inference on radio image dataset """
 	
 	#===========================
-	#==   RUN INFERENCE
+	#==   INIT TASK
 	#===========================
-	# - Loop over images in dataset
-	ninferences_unexpected= 0
-	ninferences_failed= 0
-	classids= []
-	classids_pred= []
+	# - Define message
+	description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n EXTENDED: This class comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. Typical examples are extended radio galaxies formed by a single elongated island or by multiple islands, hosting the galaxy core and lobe structures; \n DIFFUSE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology; \n DIFFUSE-LARGE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
 	
-	for idx, item in enumerate(datalist):
-		# - Check stop condition
-		if nmax!=-1 and idx>=nmax:
-			logger.info("Stop loop condition reached (%d), as #%d entries were processed..." % (nmax, idx))
-			break
+	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
+	question_subfix= "Please report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
 	
-		# - Get image info
-		sname= item["sname"]
-		filename= item["filepaths"][0]
-		label= item["label"]
-		
-		# - Create question
-		option_choices= class_names.copy()
-		if shuffle_label_options:
-			random.shuffle(option_choices)
-		
-		question_labels= ' \n '.join(option_choices)
-		question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
-		
-		# - Query model
-		output= run_tinyllava_model_query(
-			model=model, 
-			image_path=filename,
-			query=question,
-			reset_imgnorm=reset_imgnorm,
-			resize=resize, resize_size=resize_size, 
-			zscale=zscale, contrast=contrast, 
-			conv_mode=conv_mode,
-			do_sample=False,
-			verbose=verbose
-		)
-		if output is None:
-			logger.warn("Failed inference for image %s, skipping ..." % (filename))
-			ninferences_failed+= 1
-			continue
-		
-		# - Extract predicted label
-		label_pred= output.strip("\n").strip().upper()
+	label2id= {
+		"NONE": 0,
+		"EXTENDED": 1,
+		"DIFFUSE": 2,
+		"DIFFUSE-LARGE": 3
+	}
+	
+	class_options= ["EXTENDED","DIFFUSE","DIFFUSE-LARGE"]
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_multilabel",
+		"label_modifier_fcn": filter_smorph_label,
+		"label2id": label2id,
+		"class_options": class_options,
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_tinyllava_model_inference(
+		datalist, 
+		model, 
+		task_info, 
+		device=device,
+		reset_imgnorm=reset_imgnorm, 
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast,
+		conv_mode=conv_mode, 
+		shuffle_label_options=shuffle_label_options, nmax=nmax, 
+		verbose=verbose
+	)	
+	
 
-		# - Check if label is correct
-		if label_pred not in label2id:
-			logger.warn("Unexpected label (%s) returned, skip this image ..." % (label_pred))
-			ninferences_unexpected+= 1
-			continue
-	
-		# - Extract class ids
-		classid= label2id[label]
-		classid_pred= label2id[label_pred]
-		classids.append(classid)
-		classids_pred.append(classid_pred)	
-		logger.info("image %s: GT(id=%d, label=%s), PRED(id=%d, label=%s)" % (sname, classid, label, classid_pred, label_pred))
-
-	logger.info("#%d failed inferences" % (ninferences_failed))
-	logger.info("#%d unexpected inferences" % (ninferences_unexpected))
-
-	#===========================
-	#==   COMPUTE METRICS
-	#===========================
-	# - Compute and print metrics
-	y_pred= np.array(classids_pred)
-	y_true= np.array(classids)	
-	metrics= multiclass_singlelabel_metrics(y_true=y_true, y_pred=y_pred, target_names=class_names, labels=labels)
-	print_metrics(metrics)
-		
-	return 0
-	
 
 
 

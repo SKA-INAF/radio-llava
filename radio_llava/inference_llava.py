@@ -485,10 +485,6 @@ def run_llavaov_model_rgz_inference(datalist, model, processor, datalist_context
 		verbose=verbose
 	)
 		
-	return 0
-
-
-
 
 def run_llavaov_model_smorph_inference(datalist, model, processor, datalist_context=None, device="cuda:0", resize=False, resize_size=384, zscale=False, contrast=0.25, shuffle_label_options=False, nmax=-1, verbose=False):
 	""" Run LLaVA One Vision inference on radio image dataset """
