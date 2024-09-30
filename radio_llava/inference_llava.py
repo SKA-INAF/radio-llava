@@ -325,8 +325,8 @@ def run_llavaov_model_inference(datalist, model, processor, task_info, datalist_
 	#===========================
 	ninferences_unexpected= 0
 	ninferences_failed= 0
-	classids= []
-	classids_pred= []
+	class_ids= []
+	class_ids_pred= []
 	
 	for idx, item in enumerate(datalist):
 		
@@ -409,8 +409,8 @@ def run_llavaov_model_inference(datalist, model, processor, task_info, datalist_
 		label= res[2]
 		label_pred= res[3]
 		
-		classids.append(classid)
-		classids_pred.append(classid_pred)	
+		class_ids.append(classid)
+		class_ids_pred.append(classid_pred)	
 		logger.info("image %s: GT(id=%s, label=%s), PRED(id=%s, label=%s)" % (sname, str(classid), str(label), str(classid_pred), str(label_pred)))
 
 	logger.info("#%d failed inferences" % (ninferences_failed))

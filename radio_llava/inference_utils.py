@@ -83,8 +83,8 @@ def filter_smorph_label(labels):
 	
 	# - Remove undesired labels
 	labels_to_be_removed= ["COMPACT","BACKGROUND","RADIO-GALAXY","DUBIOUS","WTF","FILAMENT","RING","ARC","ARTEFACT","BORDER","MOSAICING"]
-	for item in labels_sel:
-		if item in labels_to_be_removed:
+	for item in labels_to_be_removed:
+		if item in labels_sel:
 			labels_sel.remove(item)
 	
 	return labels_sel
