@@ -278,7 +278,6 @@ def main():
 		return 1	
 	
 	inputfile= args.inputfile
-	inputfile_context= args.inputfile_context
 	model_id= args.model
 	outfile= args.outfile
 	
