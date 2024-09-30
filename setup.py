@@ -5,7 +5,7 @@ Setup for radio_llava
 import os
 import sys
 from setuptools import setup
-from pip.req import parse_requirements
+#from pip.req import parse_requirements
 
 
 def read(fname):
@@ -23,7 +23,7 @@ PY_MAJOR_VERSION=sys.version_info.major
 PY_MINOR_VERSION=sys.version_info.minor
 print("PY VERSION: maj=%s, min=%s" % (PY_MAJOR_VERSION,PY_MINOR_VERSION))
 
-#reqs= []
+reqs= []
 #reqs.append('numpy')
 #reqs.append('ipython')
 #reqs.append('astropy')
@@ -35,7 +35,7 @@ print("PY VERSION: maj=%s, min=%s" % (PY_MAJOR_VERSION,PY_MINOR_VERSION))
 #reqs.append('torchvision')
 #reqs.append('accelerate')
 
-reqs= parse_requirements("requirements.txt")
+#reqs= parse_requirements("requirements.txt")
 
 
 data_dir = 'data'
