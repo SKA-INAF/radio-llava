@@ -8,3 +8,5 @@ transformers
 torch
 torchvision
 accelerate
+git+https://github.com/TinyLLaVA/TinyLLaVA_Factory.git
+flash-attn --install-option='--no-build-isolation'
