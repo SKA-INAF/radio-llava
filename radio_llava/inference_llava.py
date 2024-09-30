@@ -404,11 +404,14 @@ def run_llavaov_model_inference(datalist, model, processor, task_info, datalist_
 			ninferences_unexpected+= 1
 			continue
 
-		classid, classid_pred= res
+		classid= res[0]
+		classid_pred= res[1]
+		label= res[2]
+		label_pred= res[3]
 		
 		classids.append(classid)
 		classids_pred.append(classid_pred)	
-		logger.info("image %s: GT(id=%d, label=%s), PRED(id=%d, label=%s)" % (sname, classid, label, classid_pred, label_pred))
+		logger.info("image %s: GT(id=%d, label=%s), PRED(id=%d, label=%s)" % (sname, classid, str(label), classid_pred, str(label_pred)))
 
 	logger.info("#%d failed inferences" % (ninferences_failed))
 	logger.info("#%d unexpected inferences" % (ninferences_unexpected))

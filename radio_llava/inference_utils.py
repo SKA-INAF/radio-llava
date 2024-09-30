@@ -65,7 +65,7 @@ def process_model_output_multiclass_singlelabel(model_output, label, label2id, l
 	classid= label2id[label]
 	classid_pred= label2id[label_pred]
 	
-	return classid, classid_pred
+	return classid, classid_pred, label, label_pred
 		
 
 def filter_smorph_label(labels):
@@ -149,5 +149,5 @@ def process_model_output_multiclass_multilabel(model_output, labels, label2id, l
 	print("class_ids_hotenc (PRED)")
 	print(class_ids_pred_hotenc)
 	
-	return class_ids_hotenc, class_ids_pred_hotenc
+	return class_ids_hotenc, class_ids_pred_hotenc, labels, labels_pred
 
