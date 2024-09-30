@@ -229,28 +229,28 @@ def load_pretrained_model(
 	if has_lora_in_name and not load_lora_model:    
 		logger.warn("lora was found in model name but load_lora_model is False, will load as standard model but check if this is really the desired behavior!")
     
- 	# - Load model from path
- 	if load_lora_model:
- 		model= load_model_lora(model_name_or_path)
- 	else:
- 		try:
+	# - Load model from path
+	if load_lora_model:
+		model= load_model_lora(model_name_or_path)
+	else:
+		try:
 			model = TinyLlavaForConditionalGeneration.from_pretrained(
 				model_name_or_path,
 				low_cpu_mem_usage=True,
 				torch_dtype=torch.float16,
 				device_map="auto"
 		)
- 		except Exception as e:
+		except Exception as e:
 			logger.warn("Failed to load pre-trained model (err=%s), trying with another method ..." % (str(e)))
 			model= load_model(model_name_or_path)
  	
- 	# - Check model
- 	if model is None:
- 		logger.error("Failed to load model %s!" % (model_name_or_path))
- 		return None
+	# - Check model
+	if model is None:
+		logger.error("Failed to load model %s!" % (model_name_or_path))
+		return None
  	
- 	# - Set model options
- 	image_processor = model.vision_tower._image_processor
+	# - Set model options
+	image_processor = model.vision_tower._image_processor
 	context_len = getattr(model.config, 'max_sequence_length', 2048)
 	tokenizer = model.tokenizer
 	
