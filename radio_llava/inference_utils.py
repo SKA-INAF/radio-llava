@@ -80,16 +80,26 @@ def filter_smorph_label(labels):
 	if "RADIO-GALAXY" in labels_sel and "EXTENDED" not in labels_sel:
 		labels_sel.append("EXTENDED")
 	
+	# - Remove undesired labels
+	labels_to_be_removed= ["RADIO-GALAXY","DUBIOUS","WTF","FILAMENT","RING","ARC","ARTEFACT","BORDER","MOSAICING"]
+	for item in labels_to_be_removed:
+		if item in labels_sel:
+			labels_sel.remove(item)
+	
 	# - Set label to NONE if only COMPACT/BACKGROUND labels are given
 	nlabels= len(labels_sel)
 	if nlabels==1 and (labels_sel[0]=="COMPACT" or labels_sel[0]=="BACKGROUND"):
 		labels_sel[0]= "NONE"
 	
 	# - Remove undesired labels
-	labels_to_be_removed= ["COMPACT","BACKGROUND","RADIO-GALAXY","DUBIOUS","WTF","FILAMENT","RING","ARC","ARTEFACT","BORDER","MOSAICING"]
+	labels_to_be_removed= ["COMPACT","BACKGROUND"]
 	for item in labels_to_be_removed:
 		if item in labels_sel:
 			labels_sel.remove(item)
+			
+	# - Check if no labels left
+	if not labels_sel:
+		logger.error("No labels left from original labels (%s)" % (str(labels)))
 	
 	return labels_sel
 	

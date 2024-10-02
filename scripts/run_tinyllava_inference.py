@@ -220,6 +220,18 @@ def main():
 			shuffle_label_options=args.shuffle_label_options, nmax=args.nmax,
 			verbose=args.verbose
 		)	
+		elif args.benchmark=="smorph-radioimg_old":
+		run_tinyllava_model_smorph_inference_old(
+			datalist=datalist,
+			model=model,
+			device=device,
+			reset_imgnorm=args.reset_imgnorm,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			conv_mode=args.conv_mode,
+			shuffle_label_options=args.shuffle_label_options, nmax=args.nmax,
+			verbose=args.verbose
+		)
 		
 	else:
 		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))

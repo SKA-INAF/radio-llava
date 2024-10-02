@@ -561,4 +561,61 @@ def run_tinyllava_model_smorph_inference(
 
 
 
+def run_tinyllava_model_smorph_inference_old(
+	datalist, 
+	model,
+	device="cuda:0",
+	reset_imgnorm=False,
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25,
+	conv_mode='phi', 
+	shuffle_label_options=False, nmax=-1, 
+	verbose=False
+):
+	""" Run TinyLLaVA inference on radio image dataset """
+	
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	description= ""
+	
+	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
+	question_subfix= "Please report the identified classes separated by commas. Report just NONE if none of the above classes is present in the image."
+	
+	label2id= {
+		"NONE": 0,
+		"EXTENDED": 1,
+		"DIFFUSE": 2,
+		"DIFFUSE-LARGE": 3
+	}
+	
+	class_options= ["EXTENDED","DIFFUSE","DIFFUSE-LARGE"]
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_multilabel",
+		"label_modifier_fcn": filter_smorph_label,
+		"label2id": label2id,
+		"class_options": class_options,
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_tinyllava_model_inference(
+		datalist, 
+		model, 
+		task_info, 
+		device=device,
+		reset_imgnorm=reset_imgnorm, 
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast,
+		conv_mode=conv_mode, 
+		shuffle_label_options=shuffle_label_options, nmax=nmax, 
+		verbose=verbose
+	)	
+
 
