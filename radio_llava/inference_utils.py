@@ -118,7 +118,11 @@ def process_model_output_multiclass_multilabel(model_output, labels, label2id, l
 	char_to_be_removed = ['!', '.', ';']
 	label_pred.translate({ord(x): '' for x in char_to_be_removed})
 	
+	# - Split string into label list
 	labels_pred= [str(x.strip()) for x in label_pred.split(',')]
+
+	# - Remove duplicated classes from list
+	labels_pred = list(dict.fromkeys(labels_pred))
 
 	print("--> labels (TRUE)")	
 	print(labels)
