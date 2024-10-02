@@ -58,7 +58,7 @@ def process_model_output_multiclass_singlelabel(model_output, label, label2id, l
 	
 	# - Remove list of characters from the label
 	char_to_be_removed = [',', '!', '.', ';']
-	label_pred.translate({ord(x): '' for x in char_to_be_removed})
+	label_pred= label_pred.translate({ord(x): '' for x in char_to_be_removed})
 
 	# - Check if label is correct
 	if label_pred not in label2id:
@@ -116,7 +116,7 @@ def process_model_output_multiclass_multilabel(model_output, labels, label2id, l
 	
 	# - Remove list of characters from the label
 	char_to_be_removed = ['!', '.', ';']
-	label_pred.translate({ord(x): '' for x in char_to_be_removed})
+	label_pred= label_pred.translate({ord(x): '' for x in char_to_be_removed})
 	
 	# - Split string into label list
 	labels_pred= [str(x.strip()) for x in label_pred.split(',')]
