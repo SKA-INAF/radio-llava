@@ -173,4 +173,43 @@ def process_model_output_multiclass_multilabel(model_output, labels, label2id, l
 	print(class_ids_pred_hotenc)
 	
 	return class_ids_hotenc, class_ids_pred_hotenc, labels, labels_pred
+	
+	
+	
+def format_context_model_response(response, classification_mode, modifier_fcn):
+	""" Format model response """
+	
+	res= None
+	if classification_mode=="multiclass_multilabel":
+		res= format_context_model_response_multiclass_multilabel(response, modifier_fcn)
+	elif classification_mode=="multiclass_singlelabel":
+		res= format_context_model_response_singlelabel(response, modifier_fcn)
+	else:
+		logger.error("Invalid/unknown classification mode specified!" % (classification_mode))
+		res= None
+	
+	return res
+	
+def format_context_model_response_multiclass_singlelabel(response, modifier_fcn=None):
+	""" Process model output for multi-class single-label classification """
+	
+	# - Response (read from json file) is the ground truth classification label
+	#   Return label unless there is a modifier_fcn specified
+	if modifier_fcn is None:
+		return response
+	else:
+		return modifier_fcn(response)
+	
+def format_context_model_response_multiclass_multilabel(response, modifier_fcn=None):
+	""" Process model output for multi-class multi-label classification """
+	
+	# - Response (read from json file) is a list of ground truth classification labels
+	#   Apply modifier_fcn and then convert to comma-separated strings
+	labels= response
+	if modified_fcn is not None:
+		labels= modified_fcn(labels)
+	
+	labels_str= ','.join(labels)
+	
+	return labels_str
 

@@ -78,6 +78,7 @@ def get_args():
 	parser.set_defaults(shuffle=False)
 	
 	parser.add_argument('-nmax','--nmax', dest='nmax', required=False, type=int, default=-1, help='Max number of entries processed in filelist (-1=all)') 
+	parser.add_argument('-nmax_context','--nmax_context', dest='nmax_context', required=False, type=int, default=-1, help='Max number of entries processed in context filelist (-1=all)') 
 	parser.add_argument('--resize', dest='resize', action='store_true',help='Resize input image (default=false)')	
 	parser.set_defaults(resize=False)
 	parser.add_argument('--imgsize', default=224, type=int, help='Image resize size in pixels')
@@ -198,6 +199,7 @@ def main():
 			zscale=args.zscale, contrast=args.contrast,
 			shuffle_label_options=args.shuffle_label_options,
 			nmax=args.nmax,
+			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
 			verbose=args.verbose
 		)
@@ -214,6 +216,7 @@ def main():
 			zscale=args.zscale, contrast=args.contrast,
 			shuffle_label_options=args.shuffle_label_options,
 			nmax=args.nmax,
+			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
 			verbose=args.verbose
 		)	

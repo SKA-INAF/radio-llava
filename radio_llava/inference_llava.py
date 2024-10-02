@@ -240,7 +240,19 @@ def run_llavaov_model_context_query(
 	
 
 
-def run_llavaov_model_inference(datalist, model, processor, task_info, datalist_context=None, device="cuda:0", resize=False, resize_size=384, zscale=False, contrast=0.25, shuffle_label_options=False, nmax=-1, verbose=False):
+def run_llavaov_model_inference(
+	datalist, 
+	model, processor, 
+	task_info, 
+	datalist_context=None, 
+	device="cuda:0", 
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25, 
+	shuffle_label_options=False, 
+	nmax=-1,
+	nmax_context=-1,
+	verbose=False
+):
 	""" Run LLaVA One Vision inference on radio image dataset """
 
 	#====================================
@@ -273,6 +285,11 @@ def run_llavaov_model_inference(datalist, model, processor, task_info, datalist_
 	
 	if datalist_context is not None:
 		for idx, item in enumerate(datalist_context):
+			# - Check stop condition
+			if nmax_context!=-1 and idx>=nmax:
+				logger.info("Stop loop condition reached (%d) for context data, as #%d entries were processed..." % (nmax_context, idx))
+				break
+			
 			# - Get image info
 			sname= item["sname"]
 			filename= item["filepaths"][0]
@@ -300,7 +317,8 @@ def run_llavaov_model_inference(datalist, model, processor, task_info, datalist_
 				question= question_prefix + ' \n ' + question_labels + question_subfix
 		
 			# - Set assistant response to true label
-			response= label
+			response= format_context_model_response(label, classification_mode, label_modifier_fcn)
+			#response= label
 			
 			# - Create conversation
 			conversation = [
@@ -448,7 +466,8 @@ def run_llavaov_model_rgz_inference(
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
 	shuffle_label_options=False, 
-	nmax=-1, 
+	nmax=-1,
+	nmax_context=-1,
 	add_task_description=False,
 	verbose=False
 ):
@@ -496,7 +515,9 @@ def run_llavaov_model_rgz_inference(
 		device=device, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast, 
-		shuffle_label_options=shuffle_label_options, nmax=nmax, 
+		shuffle_label_options=shuffle_label_options, 
+		nmax=nmax, 
+		nmax_context=nmax_context,
 		verbose=verbose
 	)
 		
@@ -510,6 +531,7 @@ def run_llavaov_model_smorph_inference(
 	zscale=False, contrast=0.25, 
 	shuffle_label_options=False, 
 	nmax=-1, 
+	nmax_context=nmax_context,
 	add_task_description=False,
 	verbose=False
 ):
@@ -557,7 +579,9 @@ def run_llavaov_model_smorph_inference(
 		device=device, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast, 
-		shuffle_label_options=shuffle_label_options, nmax=nmax, 
+		shuffle_label_options=shuffle_label_options, 
+		nmax=nmax, 
+		nmax_context=nmax_context,
 		verbose=verbose
 	)	
 	
