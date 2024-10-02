@@ -158,6 +158,8 @@ def load_tinyllava_model(
 		logger.warn("lora was found in model name but load_lora_model is False, will load as standard model but check if this is really the desired behavior!")
     
 	# - Load model from path
+	disable_torch_init()
+	
 	if load_lora_model:
 		model= load_tinyllava_model_lora(model_name_or_path, device)
 	else:
@@ -453,6 +455,7 @@ def run_tinyllava_model_rgz_inference(
 	zscale=False, contrast=0.25,
 	conv_mode='phi', 
 	shuffle_label_options=False, nmax=-1, 
+	add_task_description=False,
 	verbose=False
 ):
 	""" Run inference on RGZ dataset """
@@ -461,8 +464,11 @@ def run_tinyllava_model_rgz_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
-	
+	if add_task_description:
+		description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	else:
+		description= ""
+		
 	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
 	question_subfix= "Please report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
 	
@@ -510,6 +516,7 @@ def run_tinyllava_model_smorph_inference(
 	zscale=False, contrast=0.25,
 	conv_mode='phi', 
 	shuffle_label_options=False, nmax=-1, 
+	add_task_description=False,
 	verbose=False
 ):
 	""" Run TinyLLaVA inference on radio image dataset """
@@ -518,7 +525,10 @@ def run_tinyllava_model_smorph_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n EXTENDED: This class comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. Typical examples are extended radio galaxies formed by a single elongated island or by multiple islands, hosting the galaxy core and lobe structures; \n DIFFUSE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology; \n DIFFUSE-LARGE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	if add_task_description:
+		description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n EXTENDED: This class comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. Typical examples are extended radio galaxies formed by a single elongated island or by multiple islands, hosting the galaxy core and lobe structures; \n DIFFUSE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology; \n DIFFUSE-LARGE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	else:
+		description= ""
 	
 	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
 	question_subfix= "Please report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
