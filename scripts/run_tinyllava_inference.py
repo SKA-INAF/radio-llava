@@ -220,7 +220,8 @@ def main():
 			shuffle_label_options=args.shuffle_label_options, nmax=args.nmax,
 			verbose=args.verbose
 		)	
-		elif args.benchmark=="smorph-radioimg_old":
+	
+	elif args.benchmark=="smorph-radioimg_old":
 		run_tinyllava_model_smorph_inference_old(
 			datalist=datalist,
 			model=model,
