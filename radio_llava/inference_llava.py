@@ -531,7 +531,7 @@ def run_llavaov_model_smorph_inference(
 	zscale=False, contrast=0.25, 
 	shuffle_label_options=False, 
 	nmax=-1, 
-	nmax_context=nmax_context,
+	nmax_context=-1,
 	add_task_description=False,
 	verbose=False
 ):
