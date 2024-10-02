@@ -141,6 +141,10 @@ def process_model_output_multiclass_multilabel(model_output, labels, label2id, l
 	print(labels_pred)
 
 	# - Check if labels are correct
+	if not labels_pred:
+		logger.warning("Empty labels_pred, returning None!")
+		return None
+	
 	for item in labels_pred:
 		if item not in label2id:
 			logger.warning("Unexpected label (%s) returned, return None!" % (item))

@@ -438,6 +438,10 @@ def run_llavaov_model_inference(
 	#==   COMPUTE METRICS
 	#===========================
 	# - Compute and print metrics
+	if not class_ids_pred or not class_ids:
+		logger.warn("class_ids or class_ids_pred are empty, skip metric calculation!")
+		return 0
+	
 	y_pred= np.array(class_ids_pred)
 	y_true= np.array(class_ids)
 
