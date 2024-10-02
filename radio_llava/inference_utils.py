@@ -206,8 +206,8 @@ def format_context_model_response_multiclass_multilabel(response, modifier_fcn=N
 	# - Response (read from json file) is a list of ground truth classification labels
 	#   Apply modifier_fcn and then convert to comma-separated strings
 	labels= response
-	if modified_fcn is not None:
-		labels= modified_fcn(labels)
+	if modifier_fcn is not None:
+		labels= modifier_fcn(labels)
 	
 	labels_str= ','.join(labels)
 	
