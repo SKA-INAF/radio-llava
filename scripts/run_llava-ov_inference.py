@@ -76,6 +76,8 @@ def get_args():
 	# - Data options
 	parser.add_argument('--shuffle', dest='shuffle', action='store_true',help='Shuffle image data list (default=false)')	
 	parser.set_defaults(shuffle=False)
+	parser.add_argument('--shuffle_context', dest='shuffle_context', action='store_true',help='Shuffle context data (default=false)')	
+	parser.set_defaults(shuffle_context=False)
 	
 	parser.add_argument('-nmax','--nmax', dest='nmax', required=False, type=int, default=-1, help='Max number of entries processed in filelist (-1=all)') 
 	parser.add_argument('-nmax_context','--nmax_context', dest='nmax_context', required=False, type=int, default=-1, help='Max number of entries processed in context filelist (-1=all)') 
@@ -174,6 +176,8 @@ def main():
 	if inputfile_context!="":
 		logger.info("Read image context dataset filelist %s ..." % (inputfile_context))
 		datalist_context= read_datalist(inputfile_context)
+		if args.shuffle_context:
+			random.shuffle(datalist_context)
 		nfiles_context= len(datalist_context)
 		logger.info("#%d images present in context file %s " % (nfiles_context, inputfile_context))
 		
