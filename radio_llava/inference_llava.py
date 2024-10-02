@@ -286,7 +286,7 @@ def run_llavaov_model_inference(
 	if datalist_context is not None:
 		for idx, item in enumerate(datalist_context):
 			# - Check stop condition
-			if nmax_context!=-1 and idx>=nmax:
+			if nmax_context!=-1 and idx>=nmax_context:
 				logger.info("Stop loop condition reached (%d) for context data, as #%d entries were processed..." % (nmax_context, idx))
 				break
 			
