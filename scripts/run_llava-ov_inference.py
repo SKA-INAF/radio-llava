@@ -106,6 +106,8 @@ def get_args():
 	# - Data conversation options
 	parser.add_argument('--shuffle_label_options', dest='shuffle_label_options', action='store_true',help='Shuffle label options (default=false)')	
 	parser.set_defaults(shuffle_labels=False)
+	parser.add_argument('--add_task_description', dest='add_task_description', action='store_true',help='Add task description (default=false)')	
+	parser.set_defaults(add_task_description=False)
 	
 	# - Run options
 	parser.add_argument('-device','--device', dest='device', required=False, type=str, default="cuda", help='Device where to run inference. Default is cuda, if not found use cpu.') 
@@ -196,6 +198,7 @@ def main():
 			zscale=args.zscale, contrast=args.contrast,
 			shuffle_label_options=args.shuffle_label_options,
 			nmax=args.nmax,
+			add_task_description=args.add_task_description,
 			verbose=args.verbose
 		)
 		
@@ -211,6 +214,7 @@ def main():
 			zscale=args.zscale, contrast=args.contrast,
 			shuffle_label_options=args.shuffle_label_options,
 			nmax=args.nmax,
+			add_task_description=args.add_task_description,
 			verbose=args.verbose
 		)	
 		
