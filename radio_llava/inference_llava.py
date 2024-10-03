@@ -126,7 +126,7 @@ def run_llavaov_model_query(
 	output = model.generate(
 		**inputs, 
 		do_sample=do_sample,
-		temperature=None if do_sample else temperature,
+		temperature=temperature if do_sample else None,
 		top_p=top_p,
 		num_beams=num_beams,
 		max_new_tokens=max_new_tokens,
