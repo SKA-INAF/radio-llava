@@ -73,7 +73,7 @@ def load_llama_vision_model(model_id="alpindale/Llama-3.2-11B-Vision-Instruct", 
 	logger.info("Loading processor %s ..." % (model_id))
 	processor = AutoProcessor.from_pretrained(model_id)
 	
-	return model, tokenizer
+	return model, processor
 
 ######################
 ##   QUERY MODEL
