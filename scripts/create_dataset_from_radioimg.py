@@ -282,7 +282,7 @@ def main():
 				)
 			print("description (LLAMA generated): ", description_final)
 			
-		a1= {"from": "gpt", "value": description_final}
+		a1= {"from": "gpt", "value": description_final.strip()}
 	
 		# ---------------------------------------
 		# - Image source morphology classification
@@ -385,7 +385,7 @@ def main():
 					resize=args.resize, resize_size=args.imgsize,
 					zscale=args.zscale, contrast=args.contrast
 				)
-			print("Anomaly description (LLAMA generated): ", response_final)
+			print("Anomaly description (LLAMA generated): ", response_final.strip())
 	
 		a6= {"from": "gpt", "value": response_final}
 		
