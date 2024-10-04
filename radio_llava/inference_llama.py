@@ -248,10 +248,10 @@ def generate_llama_vision_alternative_text(
 	""" Generate text variation """
 
 	# - Create prompt
-	#prompt_start= "Generate a text variation of the following description of the input image, keeping the same content, using words that match the original sentence's meaning, and using an astronomical scientific style, without adding additional details: \n"
-	prompt_start= "Generate a text variation of the following description of the input image: \n"  
-	#prompt_end= "\n Please report only the best alternative sentence without any prefix, preamble or explanation."
-	prompt_end= "\n Use an astronomical scientific style, keeping the original sentence's meaning without adding additional unrelated contents."
+	prompt_start= "Generate a text variation of the following description of the input image, keeping the same content, using words that match the original sentence's meaning, and using an astronomical scientific style, without adding additional details: \n"
+	#prompt_start= "Generate a text variation of the following description of the given input image: \n"  
+	prompt_end= "\n Please report only the best alternative sentence without any prefix, preamble or explanation."
+	#prompt_end= "\n Use an astronomical scientific style, keeping the original sentence's meaning without adding additional unrelated contents."
 	prompt= prompt_start + input_text + prompt_end
 
 	# - Generate text
