@@ -248,8 +248,8 @@ def get_zscaled_data(data, contrast=0.25):
 def transform_img(data, nchans=1, norm_range=(0.,1.), resize=False, resize_size=224, apply_zscale=True, contrast=0.25, to_uint8=False, set_nans_to_min=False, verbose=False):
   """ Transform input image data and return transformed data """
 
-	# - Make copy
-	data_transf= data.copy()
+  # - Make copy
+  data_transf= data.copy()
 
   # - Replace NANs pixels with 0 or min
   cond_nonan= np.isfinite(data_transf)
