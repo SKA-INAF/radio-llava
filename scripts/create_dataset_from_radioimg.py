@@ -192,7 +192,7 @@ def main():
 		is_complex= ("EXTENDED" in labels) or ("DIFFUSE" in labels) or ("RADIO-GALAXY" in labels)
 		is_wtf= 'WTF' in labels
 		
-		logger.info("Processing image %d/%d (%s) ..." % (idx, len(datalist), filename))	
+		print("Processing image %d/%d (%s) ..." % (idx, len(datalist), filename))	
 	
 		# - Initialize outdict
 		outdict = dict()
