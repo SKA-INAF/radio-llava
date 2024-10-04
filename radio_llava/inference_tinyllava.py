@@ -645,7 +645,7 @@ def run_tinyllava_model_artefact_inference(
 	#===========================
 	# - Define message
 	description= ""
-	question_prefix= "Do you see any imaging artefacts with a ring pattern around bright sources in the image? "
+	question_prefix= "Do you see any imaging artefact with a ring pattern around bright sources in the image? "
 	question_subfix= "Answer concisely: Yes or No."
 	
 	label2id= {
@@ -677,6 +677,64 @@ def run_tinyllava_model_artefact_inference(
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
 		conv_mode=conv_mode, 
+		nmax=nmax, 
+		verbose=verbose
+	)	
+	
+def run_tinyllava_model_anomaly_inference(
+	datalist, 
+	model,
+	device="cuda:0",
+	reset_imgnorm=False,
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25,
+	conv_mode='phi', 
+	shuffle_options=False,
+	nmax=-1, 
+	verbose=False
+):
+	""" Run TinyLLaVA inference on radio image dataset (artefact detection) """
+	
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	description= ""
+	question_prefix= "Can you identify which of these peculiarity class the presented image belongs to? \n ORDINARY \n COMPLEX \n PECULIAR. Please report only one class. "
+	question_subfix= "Answer concisely: Yes or No."
+	
+	
+	label2id= {
+		"ORDINARY": 0,
+		"COMPLEX": 1,
+		"PECULIAR": 2,
+	}
+	
+	class_options= ["ORDINARY","COMPLEX","PECULIAR"]
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": filter_anomaly_label,
+		"label2id": label2id,
+		"class_options": class_options,
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_tinyllava_model_inference(
+		datalist, 
+		model, 
+		task_info, 
+		device=device,
+		reset_imgnorm=reset_imgnorm, 
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast,
+		conv_mode=conv_mode, 
+		add_options=True, shuffle_options=shuffle_options
 		nmax=nmax, 
 		verbose=verbose
 	)	

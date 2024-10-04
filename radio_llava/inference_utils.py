@@ -125,6 +125,20 @@ def filter_artefact_label(labels):
 	
 	return label
 	
+def filter_anomaly_label(labels):
+	""" Modifies the input labels for smorph dataset """
+
+	label= "ORDINARY"
+	is_complex= ("EXTENDED" in labels) or ("DIFFUSE" in labels) or ("RADIO-GALAXY" in labels)
+	is_peculiar= 'WTF' in labels
+	
+	if is_complex and not is_peculiar:
+		label= "COMPLEX"
+	if is_peculiar:
+		label= "PECULIAR"
+			
+	return label
+	
 
 def process_model_output_multiclass_multilabel(model_output, labels, label2id, label_modifier_fcn=None):
 	""" Process model output for multi-class multi-label classification """

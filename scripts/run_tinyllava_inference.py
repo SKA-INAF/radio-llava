@@ -205,7 +205,8 @@ def main():
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
 			conv_mode=args.conv_mode,
-			shuffle_options=args.shuffle_options, nmax=args.nmax,
+			shuffle_options=args.shuffle_options, 
+			nmax=args.nmax,
 			add_task_description=args.add_task_description,
 			verbose=args.verbose
 		)
@@ -219,7 +220,8 @@ def main():
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
 			conv_mode=args.conv_mode,
-			shuffle_options=args.shuffle_options, nmax=args.nmax,
+			shuffle_options=args.shuffle_options, 
+			nmax=args.nmax,
 			add_task_description=args.add_task_description,
 			verbose=args.verbose
 		)	
@@ -246,6 +248,20 @@ def main():
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
 			conv_mode=args.conv_mode,
+			nmax=args.nmax,
+			verbose=args.verbose
+		)
+		
+	elif args.benchmark=="anomalydet-radioimg":
+		run_tinyllava_model_anomaly_inference(
+			datalist=datalist,
+			model=model,
+			device=device,
+			reset_imgnorm=args.reset_imgnorm,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			conv_mode=args.conv_mode,
+			shuffle_options=args.shuffle_options, 
 			nmax=args.nmax,
 			verbose=args.verbose
 		)
