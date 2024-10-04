@@ -41,6 +41,7 @@ def get_args():
 
 	# - Input options
 	parser.add_argument('-inputfile','--inputfile', dest='inputfile', required=True, type=str, help='Input data json filelist') 
+	parser.add_argument('-nmax','--nmax', dest='nmax', required=False, default=-1, type=int, help='Max number of processed images') 
 	
 	# - Run options
 	parser.add_argument('--generate_text_variations', dest='generate_text_variations', action='store_true', help='Generate text variations using LLAMA model (default=false)')	
@@ -161,7 +162,12 @@ def main():
 		anomaly_class_msg_header + "Can you identify which peculiarity class the presented image belongs to?"
 	]
 	
-	for item in datalist:
+	for idx, item in enumerate(datalist):
+		# - Check stop condition
+		if args.nmax!=-1 and idx>=args.nmax:
+			logger.info("Stop loop condition reached (%d), as #%d entries were processed..." % (args.nmax, idx))
+			break
+			
 		uuid = shortuuid.uuid()
 		filenames= item["filepaths"]
 		class_ids= item["id"]
