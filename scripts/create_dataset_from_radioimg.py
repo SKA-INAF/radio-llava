@@ -45,6 +45,7 @@ def get_args():
 	# - Run options
 	parser.add_argument('--generate_text_variations', dest='generate_text_variations', action='store_true', help='Generate text variations using LLAMA model (default=false)')	
 	parser.set_defaults(generate_text_variations=False)
+	parser.add_argument('-model','--model', dest='model', required=False, default="meta-llama/Meta-Llama-3.1-8B-Instruct", type=str, help='LLAMA model used to generate variations') 
 	parser.add_argument('-device_map','--device_map', dest='device_map', required=False, default="auto", type=str, help='Device map used when loading model') 
 	parser.add_argument('-max_new_tokens','--max_new_tokens', dest='max_new_tokens', required=False, default=1024, type=int, help='The max number of tokens to be generated') 
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=1.0, type=float, help='If set to < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation') 
@@ -79,6 +80,7 @@ def main():
 	inputfile= args.inputfile		
 	outfile= args.outfile
 	generate_text_variations= args.generate_text_variations
+	model_id= args.model
 		
 	#===========================
 	#==   READ DATA
