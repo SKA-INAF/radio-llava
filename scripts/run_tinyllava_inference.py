@@ -236,6 +236,19 @@ def main():
 			nmax=args.nmax,
 			verbose=args.verbose
 		)
+	
+	elif args.benchmark=="artefactdet-radioimg":
+		run_tinyllava_model_artefact_inference(
+			datalist=datalist,
+			model=model,
+			device=device,
+			reset_imgnorm=args.reset_imgnorm,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			conv_mode=args.conv_mode,
+			nmax=args.nmax,
+			verbose=args.verbose
+		)
 		
 	else:
 		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))
