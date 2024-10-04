@@ -168,20 +168,21 @@ def main():
 			logger.info("Stop loop condition reached (%d), as #%d entries were processed..." % (args.nmax, idx))
 			break
 			
-		logger.info("Processing image %d/%d (%s) ..." % (idx, len(datalist), filenames[0]))	
 			
 		uuid = shortuuid.uuid()
-		filenames= item["filepaths"]
+		filename= item["filepaths"][0]
 		class_ids= item["id"]
 		labels= item["label"]
 		nlabels= len(labels)
 		is_complex= ("EXTENDED" in labels) or ("DIFFUSE" in labels) or ("RADIO-GALAXY" in labels)
 		is_wtf= 'WTF' in labels
+		
+		logger.info("Processing image %d/%d (%s) ..." % (idx, len(datalist), filename))	
 	
 		# - Initialize outdict
 		outdict = dict()
 		outdict['id'] = uuid
-		outdict['image'] = filenames[0]
+		outdict['image'] = filename
 	
 		# - Fill message conversations
 		conversations = []
