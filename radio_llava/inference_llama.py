@@ -212,10 +212,10 @@ def run_llama_vision_model_query(
 	# - Generate model response
 	logger.debug("Generate model response ...")
 	
-	terminators = [
-		tokenizer.eos_token_id,
-		tokenizer.convert_tokens_to_ids("<|eot_id|>")
-	]
+	#terminators = [
+	#	tokenizer.eos_token_id,
+	#	tokenizer.convert_tokens_to_ids("<|eot_id|>")
+	#]
 	
 	output = model.generate(
 		**inputs, 

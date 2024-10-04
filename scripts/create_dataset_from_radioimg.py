@@ -358,6 +358,7 @@ def main():
 					response= "The image is ordinary and does not contain radio sources with a particular morphological structure. "
 	
 		response_final= response
+		print("Anomaly description: ", response_final)
 		if generate_text_variations:
 			if args.model_type=="llama":
 				response_final= generate_llama_alternative_text(
@@ -371,7 +372,7 @@ def main():
 					penalty=args.penalty
 				)
 			elif args.model_type=="llama-vision":
-				description_final= generate_llama_vision_alternative_text(
+				response_final= generate_llama_vision_alternative_text(
 					response,
 					filename,
 					model, 
@@ -384,6 +385,7 @@ def main():
 					resize=args.resize, resize_size=args.imgsize,
 					zscale=args.zscale, contrast=args.contrast
 				)
+			print("Anomaly description (LLAMA generated): ", response_final)
 	
 		a6= {"from": "gpt", "value": response_final}
 		
