@@ -115,6 +115,16 @@ def filter_galaxy_label(labels):
 	
 	return label
 	
+def filter_artefact_label(labels):
+	""" Modifies the input labels for smorph dataset """
+
+	# - Check if Galaxy is present in labels
+	label= "NO"
+	if "ARTEFACT" in labels:
+		label= "YES"
+	
+	return label
+	
 
 def process_model_output_multiclass_multilabel(model_output, labels, label2id, label_modifier_fcn=None):
 	""" Process model output for multi-class multi-label classification """
