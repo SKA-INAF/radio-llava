@@ -168,7 +168,6 @@ def main():
 			logger.info("Stop loop condition reached (%d), as #%d entries were processed..." % (args.nmax, idx))
 			break
 			
-			
 		uuid = shortuuid.uuid()
 		filename= item["filepaths"][0]
 		class_ids= item["id"]
@@ -238,7 +237,7 @@ def main():
 				description+= "The image include residual mosaicking artefact patterns with diagonal line orientation. "
 		
 		description_final= description
-		logger.info("description: %s" % (description_final))
+		print("description: ", description_final)
 		if generate_text_variations:
 			description_final= generate_llama_alternative_text(
 				description,
@@ -250,7 +249,7 @@ def main():
 				top_k=args.top_k,
 				penalty=args.penalty
 			)
-			logger.info("description (LLAMA generated): %s" % (description_final))
+			print("description (LLAMA generated): ", description_final)
 			
 		a1= {"from": "gpt", "value": description_final}
 	
