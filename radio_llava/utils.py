@@ -248,20 +248,21 @@ def get_zscaled_data(data, contrast=0.25):
 def transform_img(data, nchans=1, norm_range=(0.,1.), resize=False, resize_size=224, apply_zscale=True, contrast=0.25, to_uint8=False, set_nans_to_min=False, verbose=False):
   """ Transform input image data and return transformed data """
 
+	# - Make copy
+	data_transf= data.copy()
+
   # - Replace NANs pixels with 0 or min
-  cond_nonan= np.isfinite(data)
-  cond_nonan_noblank= np.logical_and(data!=0, np.isfinite(data))
-  data_1d= data[cond_nonan_noblank]
+  cond_nonan= np.isfinite(data_transf)
+  cond_nonan_noblank= np.logical_and(data_transf!=0, np.isfinite(data_transf))
+  data_1d= data_transf[cond_nonan_noblank]
   if data_1d.size==0:
     logger.warn("Input data are all zeros/nan, return None!")
     return None
 
   if set_nans_to_min:
-    data[~cond_nonan]= data_min
+    data_transf[~cond_nonan]= data_min
   else:
-    data[~cond_nonan]= 0
-
-  data_transf= data
+    data_transf[~cond_nonan]= 0
 
   if verbose:
     print("== DATA MIN/MAX (BEFORE TRANSFORM)==")
