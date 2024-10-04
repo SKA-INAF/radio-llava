@@ -226,9 +226,10 @@ def run_llama_vision_model_query(
 		#top_k = top_k,
 		#repetition_penalty=penalty,
 	)
-	output_decoded= processor.decode(output[0], skip_special_tokens=True)
-	
-	return output_decoded
+	response= processor.decode(output[0], skip_special_tokens=True)
+	output_text= response.split("assistant")[1]
+
+	return output_text
 	
 def generate_llama_vision_alternative_text(
 	input_text,
