@@ -43,16 +43,26 @@ def get_args():
 	parser.add_argument('-inputfile','--inputfile', dest='inputfile', required=True, type=str, help='Input data json filelist') 
 	parser.add_argument('-nmax','--nmax', dest='nmax', required=False, default=-1, type=int, help='Max number of processed images') 
 	
-	# - Run options
+	# - Model options
 	parser.add_argument('--generate_text_variations', dest='generate_text_variations', action='store_true', help='Generate text variations using LLAMA model (default=false)')	
 	parser.set_defaults(generate_text_variations=False)
 	parser.add_argument('-model','--model', dest='model', required=False, default="meta-llama/Meta-Llama-3.1-8B-Instruct", type=str, help='LLAMA model used to generate variations') 
+	parser.add_argument('-model_type','--model_type', dest='model_type', required=False, default="llama", type=str, help='Model to be used {llama, llama-vision}') 
+	
 	parser.add_argument('-device_map','--device_map', dest='device_map', required=False, default="auto", type=str, help='Device map used when loading model') 
 	parser.add_argument('-max_new_tokens','--max_new_tokens', dest='max_new_tokens', required=False, default=1024, type=int, help='The max number of tokens to be generated') 
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=1.0, type=float, help='If set to < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation') 
 	parser.add_argument('-top_k','--top_k', dest='top_k', required=False, default=20, type=int, help='The number of highest probability vocabulary tokens to keep for top-k-filtering') 
 	parser.add_argument('-temperature','--temperature', dest='temperature', required=False, default=0.2, type=float, help='Temperature parameter') 
 	parser.add_argument('-penalty','--penalty', dest='penalty', required=False, default=1.2, type=float, help='The parameter for repetition penalty. 1.0 means no penalty. Above 1.0 rewards prompt tokens. Between 0.0 and 1.0 penalizes prompt tokens') 
+	
+	# - Image options
+	parser.add_argument('--resize', dest='resize', action='store_true',help='Resize input image (default=false)')	
+	parser.set_defaults(resize=False)
+	parser.add_argument('--imgsize', default=224, type=int, help='Image resize size in pixels')
+	parser.add_argument('--zscale', dest='zscale', action='store_true',help='Apply zscale transform (default=false)')	
+	parser.set_defaults(zscale=False)
+	parser.add_argument('--contrast', default=0.25, type=float, help='zscale contrast (default=0.25)')
 	
 	# - Output options
 	parser.add_argument('-outfile','--outfile', dest='outfile', required=False, default="dump.json", type=str, help='Output data file') 
@@ -96,10 +106,16 @@ def main():
 	#===========================
 	model= None
 	tokenizer= None
+	processor= None
 	if generate_text_variations:
 		logger.info("Loading model %s ..." % (model_id))
-		model, tokenizer= load_llama_model(model_id, args.device_map)
-
+		if args.model_type=="llama":
+			model, tokenizer= load_llama_model(model_id, args.device_map)
+		elif args.model_type=="llama-vision":
+			model, processor= load_llama_vision_model(model_id)
+		else:
+			logger.error("Invalid/unknown model_type specified (%s)!" % (args.model_type))
+		
 	#===========================
 	#==   PROCESS DATA
 	#===========================	
@@ -239,16 +255,31 @@ def main():
 		description_final= description
 		print("description: ", description_final)
 		if generate_text_variations:
-			description_final= generate_llama_alternative_text(
-				description,
-				model, 
-				tokenizer,
-				temperature=args.temperature,
-				max_new_tokens=args.max_new_tokens,
-				top_p=args.top_p,
-				top_k=args.top_k,
-				penalty=args.penalty
-			)
+			if args.model_type=="llama":
+				description_final= generate_llama_alternative_text(
+					description,
+					model, 
+					tokenizer,
+					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
+					top_p=args.top_p,
+					top_k=args.top_k,
+					penalty=args.penalty
+				)
+			elif args.model_type=="llama-vision":
+				description_final= generate_llama_vision_alternative_text(
+					description,
+					filename,
+					model, 
+					processor,
+					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
+					top_p=args.top_p,
+					top_k=args.top_k,
+					penalty=args.penalty,
+					resize=args.resize, resize_img=args.img_size,
+					zscale=args.zscale, contrast=args.contrast
+				)
 			print("description (LLAMA generated): ", description_final)
 			
 		a1= {"from": "gpt", "value": description_final}
@@ -328,16 +359,31 @@ def main():
 	
 		response_final= response
 		if generate_text_variations:
-			response_final= generate_llama_alternative_text(
-				response,
-				model, 
-				tokenizer,
-				temperature=args.temperature,
-				max_new_tokens=args.max_new_tokens,
-				top_p=args.top_p,
-				top_k=args.top_k,
-				penalty=args.penalty
-			)
+			if args.model_type=="llama":
+				response_final= generate_llama_alternative_text(
+					response,
+					model, 
+					tokenizer,
+					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
+					top_p=args.top_p,
+					top_k=args.top_k,
+					penalty=args.penalty
+				)
+			elif args.model_type=="llama-vision":
+				description_final= generate_llama_vision_alternative_text(
+					response,
+					filename,
+					model, 
+					processor,
+					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
+					top_p=args.top_p,
+					top_k=args.top_k,
+					penalty=args.penalty,
+					resize=args.resize, resize_img=args.img_size,
+					zscale=args.zscale, contrast=args.contrast
+				)
 	
 		a6= {"from": "gpt", "value": response_final}
 		
