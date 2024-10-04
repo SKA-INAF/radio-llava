@@ -46,7 +46,6 @@ def get_args():
 	parser.add_argument('--generate_text_variations', dest='generate_text_variations', action='store_true', help='Generate text variations using LLAMA model (default=false)')	
 	parser.set_defaults(generate_text_variations=False)
 	parser.add_argument('-device_map','--device_map', dest='device_map', required=False, default="auto", type=str, help='Device map used when loading model') 
-	parser.add_argument('-temperature','--temperature', dest='temperature', required=False, default=0.2, type=float, help='Temperature parameter') 
 	parser.add_argument('-max_new_tokens','--max_new_tokens', dest='max_new_tokens', required=False, default=1024, type=int, help='The max number of tokens to be generated') 
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=1.0, type=float, help='If set to < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation') 
 	parser.add_argument('-top_k','--top_k', dest='top_k', required=False, default=20, type=int, help='The number of highest probability vocabulary tokens to keep for top-k-filtering') 
@@ -248,9 +247,7 @@ def main():
 		q2= {"from": "human", "value": random.choice(classification_msg_list)}
 	
 		visible_classes= []
-		if 'RADIO-GALAXY' in labels:
-			visible_classes.append("EXTENDED")
-		if 'EXTENDED' in labels:
+		if 'RADIO-GALAXY' in labels or 'EXTENDED' in labels:
 			visible_classes.append("EXTENDED")
 		if 'DIFFUSE' in labels:
 			visible_classes.append("DIFFUSE")
@@ -303,6 +300,7 @@ def main():
 		# .......................................
 		q6= {"from": "human", "value": random.choice(anomaly_msg_list)} 
 	
+		response= ""
 		if is_complex:
 			response= "The image contains radio sources with an extended or diffuse morphology that could be relevant or interesting for the user, depending on the analysis case or field of study."
 			if is_wtf:
@@ -316,7 +314,20 @@ def main():
 				else:
 					response= "The image is ordinary and does not contain radio sources with a particular morphological structure. "
 	
-		a6= {"from": "gpt", "value": response}
+		response_final= response
+		if generate_text_variations:
+			response_final= generate_llama_alternative_text(
+				response,
+				model, 
+				tokenizer,
+				temperature=args.temperature,
+				max_new_tokens=args.max_new_tokens,
+				top_p=args.top_p,
+				top_k=args.top_k,
+				penalty=args.penalty
+			)
+	
+		a6= {"from": "gpt", "value": response_final}
 		
 		# ---------------------------------------
 		# - Anomaly class question
