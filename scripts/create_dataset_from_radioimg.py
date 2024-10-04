@@ -277,7 +277,7 @@ def main():
 					top_p=args.top_p,
 					top_k=args.top_k,
 					penalty=args.penalty,
-					resize=args.resize, resize_img=args.imgsize,
+					resize=args.resize, resize_size=args.imgsize,
 					zscale=args.zscale, contrast=args.contrast
 				)
 			print("description (LLAMA generated): ", description_final)
@@ -381,7 +381,7 @@ def main():
 					top_p=args.top_p,
 					top_k=args.top_k,
 					penalty=args.penalty,
-					resize=args.resize, resize_img=args.imgsize,
+					resize=args.resize, resize_size=args.imgsize,
 					zscale=args.zscale, contrast=args.contrast
 				)
 	
