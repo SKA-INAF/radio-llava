@@ -360,35 +360,35 @@ def main():
 					response= "The image is ordinary and does not contain radio sources with a particular morphological structure. "
 	
 		response_final= response
-		print("Anomaly description: ", response_final)
-		if generate_text_variations:
-			if args.model_type=="llama":
-				response_final= generate_llama_alternative_text(
-					response,
-					model, 
-					tokenizer,
-					temperature=args.temperature,
-					max_new_tokens=args.max_new_tokens,
-					top_p=args.top_p,
-					top_k=args.top_k,
-					penalty=args.penalty
-				)
-			elif args.model_type=="llama-vision":
-				response_final= generate_llama_vision_alternative_text(
-					response,
-					filename,
-					model, 
-					processor,
-					temperature=args.temperature,
-					max_new_tokens=args.max_new_tokens,
-					top_p=args.top_p,
-					top_k=args.top_k,
-					penalty=args.penalty,
-					resize=args.resize, resize_size=args.imgsize,
-					zscale=args.zscale, contrast=args.contrast
-				)
-			response_final= response_final.strip('\n')
-			print("Anomaly description (LLAMA generated): ", response_final)
+		#print("Anomaly description: ", response_final)
+		#if generate_text_variations:
+		#	if args.model_type=="llama":
+		#		response_final= generate_llama_alternative_text(
+		#			response,
+		#			model, 
+		#			tokenizer,
+		#			temperature=args.temperature,
+		#			max_new_tokens=args.max_new_tokens,
+		#			top_p=args.top_p,
+		#			top_k=args.top_k,
+		#			penalty=args.penalty
+		#		)
+		#	elif args.model_type=="llama-vision":
+		#		response_final= generate_llama_vision_alternative_text(
+		#			response,
+		#			filename,
+		#			model, 
+		#			processor,
+		#			temperature=args.temperature,
+		#			max_new_tokens=args.max_new_tokens,
+		#			top_p=args.top_p,
+		#			top_k=args.top_k,
+		#			penalty=args.penalty,
+		#			resize=args.resize, resize_size=args.imgsize,
+		#			zscale=args.zscale, contrast=args.contrast
+		#		)
+		#	response_final= response_final.strip('\n')
+		#	print("Anomaly description (LLAMA generated): ", response_final)
 	
 		a6= {"from": "gpt", "value": response_final}
 		
