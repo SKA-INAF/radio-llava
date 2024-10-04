@@ -217,9 +217,9 @@ def run_llama_vision_model_query(
 		max_new_tokens = max_new_tokens,
 		do_sample = do_sample,
 		temperature = temperature if do_sample else None,
-		top_p = top_p,
-		top_k = top_k,
-		repetition_penalty=penalty,
+		#top_p = top_p,
+		#top_k = top_k,
+		#repetition_penalty=penalty,
 	)
 	output_decoded= processor.decode(output[0])
 	
