@@ -189,7 +189,7 @@ def main():
 	logger.info("Loading model %s ..." % (model_id))
 	model= load_tinyllava_model(model_id, args.load_lora_model, device)
 	if model is None:
-		logger.error("Failed to load model %s ..." % ())
+		logger.error("Failed to load model %s ..." % (model_id))
 		return 1
 	
 	#===========================
