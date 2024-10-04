@@ -166,7 +166,7 @@ def main():
 		class_ids= item["id"]
 		labels= item["label"]
 		nlabels= len(labels)
-		is_peculiar= ("EXTENDED" in labels) or ("DIFFUSE" in labels) or ("RADIO-GALAXY" in labels)
+		is_complex= ("EXTENDED" in labels) or ("DIFFUSE" in labels) or ("RADIO-GALAXY" in labels)
 		is_wtf= 'WTF' in labels
 	
 		# - Initialize outdict
@@ -303,15 +303,18 @@ def main():
 		# .......................................
 		q6= {"from": "human", "value": random.choice(anomaly_msg_list)} 
 	
-		if is_peculiar:
+		if is_complex:
 			response= "The image contains radio sources with an extended or diffuse morphology that could be relevant or interesting for the user, depending on the analysis case or field of study."
-		elif is_wtf:
-			response= "The image contains radio sources with a very peculiar morphology."
+			if is_wtf:
+				response= "Some of these radio sources have a very peculiar morphology."
 		else:
-			if nlabels==1 and ('BACKGROUND' in labels or 'COMPACT' in labels):
-				response= "The image is very ordinary as it does contain only sky background and compact/point-like sources. "
+			if is_wtf:
+				response= "The image contains radio sources with a very peculiar morphology."			
 			else:
-				response= "The image is ordinary and does not contain radio sources with a particular morphological structure. "
+				if nlabels==1 and ('BACKGROUND' in labels or 'COMPACT' in labels):
+					response= "The image is very ordinary as it does contain only compact or point-like radio sources superimposed over the sky background. "
+				else:
+					response= "The image is ordinary and does not contain radio sources with a particular morphological structure. "
 	
 		a6= {"from": "gpt", "value": response}
 		
@@ -321,10 +324,11 @@ def main():
 		q7= {"from": "human", "value": random.choice(anomaly_class_msg_list)} 
 	
 		response= "ORDINARY"
-		if is_peculiar:
-			response= "COMPLEX"
-		elif is_wtf:
+		if is_wtf:
 			response= "PECULIAR"
+		else:
+			if is_complex:
+				response= "COMPLEX"
 		
 		a7= {"from": "gpt", "value": response}
 		
