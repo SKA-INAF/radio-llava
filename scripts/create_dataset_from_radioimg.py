@@ -304,7 +304,7 @@ def main():
 		if is_complex:
 			response= "The image contains radio sources with an extended or diffuse morphology that could be relevant or interesting for the user, depending on the analysis case or field of study."
 			if is_wtf:
-				response+= "Some of these radio sources have a very peculiar morphology."
+				response+= " Some of these radio sources have a very peculiar morphology."
 		else:
 			if is_wtf:
 				response= "The image contains radio sources with a very peculiar morphology."			
