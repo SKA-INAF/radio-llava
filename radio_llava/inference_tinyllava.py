@@ -328,7 +328,7 @@ def run_tinyllava_model_inference(
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
 	conv_mode='phi',
-	shuffle_label_options=False, nmax=-1, 
+	add_options=False, shuffle_options=False, nmax=-1, 
 	verbose=False
 ):
 	""" Run TinyLLaVA inference on radio image dataset """
@@ -374,13 +374,16 @@ def run_tinyllava_model_inference(
 		label= item["label"]
 		
 		# - Create question
-		option_choices= class_options.copy()
-		if shuffle_label_options:
-			random.shuffle(option_choices)
+		if add_options:
+			option_choices= class_options.copy()
+			if shuffle_options:
+				random.shuffle(option_choices)
 		
-		question_labels= ' \n '.join(option_choices)
-		question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
-		
+			question_labels= ' \n '.join(option_choices)		
+			question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+		else:
+			question= description + ' \n' + question_prefix + ' \n ' + question_subfix
+			
 		# - Query model
 		output= run_tinyllava_model_query(
 			model=model, 
@@ -454,7 +457,7 @@ def run_tinyllava_model_rgz_inference(
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
 	conv_mode='phi', 
-	shuffle_label_options=False, nmax=-1, 
+	shuffle_options=False, nmax=-1, 
 	add_task_description=False,
 	verbose=False
 ):
@@ -502,7 +505,7 @@ def run_tinyllava_model_rgz_inference(
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
 		conv_mode=conv_mode, 
-		shuffle_label_options=shuffle_label_options, nmax=nmax, 
+		add_options=True, shuffle_options=shuffle_options, nmax=nmax, 
 		verbose=verbose
 	)
 	
@@ -515,7 +518,7 @@ def run_tinyllava_model_smorph_inference(
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
 	conv_mode='phi', 
-	shuffle_label_options=False, nmax=-1, 
+	shuffle_options=False, nmax=-1, 
 	add_task_description=False,
 	verbose=False
 ):
@@ -564,14 +567,12 @@ def run_tinyllava_model_smorph_inference(
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
 		conv_mode=conv_mode, 
-		shuffle_label_options=shuffle_label_options, nmax=nmax, 
+		add_options=True, shuffle_options=shuffle_options, nmax=nmax, 
 		verbose=verbose
 	)	
 	
 
-
-
-def run_tinyllava_model_smorph_inference_old(
+def run_tinyllava_model_galaxy_inference(
 	datalist, 
 	model,
 	device="cuda:0",
@@ -579,35 +580,32 @@ def run_tinyllava_model_smorph_inference_old(
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
 	conv_mode='phi', 
-	shuffle_label_options=False, nmax=-1, 
+	nmax=-1, 
 	verbose=False
 ):
-	""" Run TinyLLaVA inference on radio image dataset """
+	""" Run TinyLLaVA inference on radio image dataset (galaxy detection) """
 	
 	#===========================
 	#==   INIT TASK
 	#===========================
 	# - Define message
 	description= ""
-	
-	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
-	question_subfix= "Please report the identified classes separated by commas. Report just NONE if none of the above classes is present in the image."
+	question_prefix= "Do you see any likely radio galaxy with an extended morphology in the image? "
+	question_subfix= "Answer concisely: Yes or No."
 	
 	label2id= {
-		"NONE": 0,
-		"EXTENDED": 1,
-		"DIFFUSE": 2,
-		"DIFFUSE-LARGE": 3
+		"NO": 0,
+		"YES": 1,
 	}
 	
-	class_options= ["EXTENDED","DIFFUSE","DIFFUSE-LARGE"]
+	class_options= None
 	
 	task_info= {
 		"description": description,
 		"question_prefix": question_prefix,
 		"question_subfix": question_subfix,
-		"classification_mode": "multiclass_multilabel",
-		"label_modifier_fcn": filter_smorph_label,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": filter_galaxy_label,
 		"label2id": label2id,
 		"class_options": class_options,
 	}
@@ -624,8 +622,9 @@ def run_tinyllava_model_smorph_inference_old(
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
 		conv_mode=conv_mode, 
-		shuffle_label_options=shuffle_label_options, nmax=nmax, 
+		nmax=nmax, 
 		verbose=verbose
 	)	
+	
 
 

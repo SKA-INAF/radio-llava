@@ -77,8 +77,7 @@ def get_args():
 
 	# - Input options
 	parser.add_argument('-inputfile','--inputfile', dest='inputfile', required=True, type=str, help='Path to file with image datalist (.json)') 
-	#parser.add_argument('-inputfile_context','--inputfile_context', dest='inputfile_context', required=False, default="", type=str, help='Path to file with image datalist for context (.json)') 
-
+	
 	# - Benchmark type
 	parser.add_argument('-benchmark','--benchmark', dest='benchmark', required=False, default="smorph-rgz", type=str, help='Type of benchmark to run') 
 
@@ -118,8 +117,8 @@ def get_args():
 	parser.add_argument('-conv_mode','--conv_mode', dest='conv_mode', required=False, default="phi", type=str, help='conv_mode inference par') 
 	
 	# - Data conversation options
-	parser.add_argument('--shuffle_label_options', dest='shuffle_label_options', action='store_true',help='Shuffle label options (default=false)')	
-	parser.set_defaults(shuffle_labels=False)
+	parser.add_argument('--shuffle_options', dest='shuffle_options', action='store_true',help='Shuffle task options (default=false)')	
+	parser.set_defaults(shuffle_options=False)
 	parser.add_argument('--add_task_description', dest='add_task_description', action='store_true',help='Add task description (default=false)')	
 	parser.set_defaults(add_task_description=False)
 	
@@ -206,7 +205,7 @@ def main():
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
 			conv_mode=args.conv_mode,
-			shuffle_label_options=args.shuffle_label_options, nmax=args.nmax,
+			shuffle_options=args.shuffle_options, nmax=args.nmax,
 			add_task_description=args.add_task_description,
 			verbose=args.verbose
 		)
@@ -220,13 +219,13 @@ def main():
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
 			conv_mode=args.conv_mode,
-			shuffle_label_options=args.shuffle_label_options, nmax=args.nmax,
+			shuffle_options=args.shuffle_options, nmax=args.nmax,
 			add_task_description=args.add_task_description,
 			verbose=args.verbose
 		)	
 	
-	elif args.benchmark=="smorph-radioimg_old":
-		run_tinyllava_model_smorph_inference_old(
+	elif args.benchmark=="galaxydet-radioimg":
+		run_tinyllava_model_galaxy_inference(
 			datalist=datalist,
 			model=model,
 			device=device,
@@ -234,7 +233,7 @@ def main():
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
 			conv_mode=args.conv_mode,
-			shuffle_label_options=args.shuffle_label_options, nmax=args.nmax,
+			nmax=args.nmax,
 			verbose=args.verbose
 		)
 		

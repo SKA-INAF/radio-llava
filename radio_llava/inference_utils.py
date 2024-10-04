@@ -104,6 +104,18 @@ def filter_smorph_label(labels):
 	return labels_sel
 	
 
+
+def filter_galaxy_label(labels):
+	""" Modifies the input labels for smorph dataset """
+
+	# - Check if Galaxy is present in labels
+	label= "NO"
+	if "RADIO-GALAXY" in labels:
+		label= "YES"
+	
+	return label
+	
+
 def process_model_output_multiclass_multilabel(model_output, labels, label2id, label_modifier_fcn=None):
 	""" Process model output for multi-class multi-label classification """
 

@@ -107,8 +107,8 @@ def get_args():
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=None, type=float, help='top_p parameter') 
 	
 	# - Data conversation options
-	parser.add_argument('--shuffle_label_options', dest='shuffle_label_options', action='store_true',help='Shuffle label options (default=false)')	
-	parser.set_defaults(shuffle_labels=False)
+	parser.add_argument('--shuffle_options', dest='shuffle_options', action='store_true', help='Shuffle label options (default=false)')	
+	parser.set_defaults(shuffle_options=False)
 	parser.add_argument('--add_task_description', dest='add_task_description', action='store_true',help='Add task description (default=false)')	
 	parser.set_defaults(add_task_description=False)
 	
@@ -201,7 +201,7 @@ def main():
 			device=device,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
-			shuffle_label_options=args.shuffle_label_options,
+			shuffle_options=args.shuffle_options,
 			nmax=args.nmax,
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
@@ -218,7 +218,7 @@ def main():
 			device=device,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
-			shuffle_label_options=args.shuffle_label_options,
+			shuffle_options=args.shuffle_options,
 			nmax=args.nmax,
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
