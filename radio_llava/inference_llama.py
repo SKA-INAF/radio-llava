@@ -212,6 +212,11 @@ def run_llama_vision_model_query(
 	# - Generate model response
 	logger.debug("Generate model response ...")
 	
+	terminators = [
+		tokenizer.eos_token_id,
+		tokenizer.convert_tokens_to_ids("<|eot_id|>")
+	]
+	
 	output = model.generate(
 		**inputs, 
 		max_new_tokens = max_new_tokens,
@@ -221,7 +226,7 @@ def run_llama_vision_model_query(
 		#top_k = top_k,
 		#repetition_penalty=penalty,
 	)
-	output_decoded= processor.decode(output[0])
+	output_decoded= processor.decode(output[0], skip_special_tokens=True)
 	
 	return output_decoded
 	
