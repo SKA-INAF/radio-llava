@@ -164,9 +164,25 @@ def main():
 		# - Process annotation data
 		t= ascii.read(filename_ann)
 		
+		#obj_info= {
+		#	"ARTEFACT": {"count": 0, "bboxes": []},
+		#	"COMPACT": {"count": 0, "bboxes": []},
+		#	"EXTENDED": {"count": 0, "bboxes": []},
+		#	"EXTENDED-MULTISLAND": {"count": 0, "bboxes": []},
+		#	"FLAGGED": {"count": 0, "bboxes": []}		
+		#}
+		
 		obj_info= {
-			"ARTEFACT": {"count": 0, "bboxes": []},
-			"COMPACT": {"count": 0, "bboxes": []},
+			"ARTEFACT": {
+				"count": 0, 
+				"bboxes": [],
+				"description": "spurious sources, due to artefacts introduced in the radio image by the imaging process, having a ring-like or elongated compact morphology"
+			},
+			"COMPACT": {
+				"count": 0, 
+				"bboxes": [],
+				"description": ""
+			},
 			"EXTENDED": {"count": 0, "bboxes": []},
 			"EXTENDED-MULTISLAND": {"count": 0, "bboxes": []},
 			"FLAGGED": {"count": 0, "bboxes": []}		
@@ -269,7 +285,7 @@ def main():
 		query+= text
 			
 		#query+= "Use terms like top/bottom, left/right or image width/height fractions or percentages to report source object positions, rather than their exact bounding box coordinates. Please report just the description text using an astronomical scientific style, without any prefix, preamble or explanation or special characters. "
-		query+= "Use an astronomical scientific style for the description and terms like top/bottom, left/right or image width/height fractions or percentages to describe the source object positions, rather than their exact bounding box coordinates. Keep the description compact, without adding lengthy explanations or preambles. Avoid special unicode or ascii characters. "
+		query+= "Include in the description only the objects given in the above list. Use an astronomical scientific style and terms like top/bottom, left/right or image width/height fractions or percentages to describe the source object positions, rather than their exact bounding box coordinates. Keep the description compact, without adding lengthy explanations or preambles. Avoid special unicode or ascii characters. "
 			
 		print("--> Processing image %s: query " % (filename))
 		print(query)
