@@ -176,12 +176,12 @@ def main():
 			"ARTEFACT": {
 				"count": 0, 
 				"bboxes": [],
-				"description": "spurious sources, due to artefacts introduced in the radio image by the imaging process, having a ring-like or elongated compact morphology"
+				"description": "artefacts introduced in the radio image by the imaging process, having a ring-like or elongated compact morphology"
 			},
 			"COMPACT": {
 				"count": 0, 
 				"bboxes": [],
-				"description": "single-island isolated point- or slightly resolved compact radio sources, eventually hosting one or more blended components, each with morphology resembling the synthesized beam shape of the image"
+				"description": "single-island isolated point-like or slightly resolved radio sources with well-defined edges, hosting one or more blended components, each with morphology resembling the synthesized beam shape of the image"
 			},
 			"EXTENDED": {
 				"count": 0, 
@@ -191,7 +191,7 @@ def main():
 			"EXTENDED-MULTISLAND": {
 				"count": 0, 
 				"bboxes": [],
-				"description": "radio sources with an extended morphology, consisting of more (point-like or extended) islands, each one eventually hosting one or more blended components"
+				"description": "radio sources with an extended morphology, consisting of more (point-like or extended) islands, each one hosting one or more blended components"
 			},
 			"FLAGGED": {
 				"count": 0, 
@@ -256,6 +256,11 @@ def main():
 		#query= "Can you write a brief description of a radio astronomical image containing the following list of radio source objects, each represented by a class label and normalized bounding boxes (x,y,w,h)? "
 		#query= "Can you write a brief text that describes a radio astronomical image containing the following list of radio source objects, each represented by a class label and normalized bounding boxes in pixel coordinates (x,y,w,h)? "
 		
+		if model_type=="llama-vision":
+			query2= "Generate a brief description of the input radio astronomical image containing the following list of radio source objects: \n"
+		else:
+			query2= "Generate a brief description of a radio astronomical image containing the following list of radio source objects: \n"
+		
 		text= ""
 		for i in range(n_compact):
 			bbox= obj_info["COMPACT"]["bboxes"][i]
@@ -263,6 +268,7 @@ def main():
 			text+= "COMPACT: [" + bbox_str + "] \n"
 			
 		query+= text
+		
 			
 		text= ""
 		for i in range(n_ext):
@@ -296,18 +302,101 @@ def main():
 			
 		query+= text
 			
-		#query+= "Use terms like top/bottom, left/right or image width/height fractions or percentages to report source object positions, rather than their exact bounding box coordinates. Please report just the description text using an astronomical scientific style, without any prefix, preamble or explanation or special characters. "
-		query+= "Include in the description only the objects given in the above list. Use an astronomical scientific style and terms like top/bottom, left/right or image width/height fractions or percentages to describe the source object positions, rather than their exact bounding box coordinates. Avoid lengthy explanations or preambles and special unicode or ascii characters. "
+		# - Alternative text
+		text= str(n_compact) + " compact radio sources located at these normalized bounding box pixel coordinates (x,y,w,h): "
+		coords= ''
+		for i in range(n_compact):
+			bbox= obj_info["COMPACT"]["bboxes"][i]
+			bbox_str= (str(bbox)[1:-1])
+			coords+= "[" + bbox_str + "]"
+			if i!=n_compact-1:
+				coords+= ', '
+			else:
+				coords+= '. '
+		
+		text+= coords
+		text+= "Compact sources are " + obj_info["COMPACT"]["description"] + ".\n"
+		query2+= text
+		
+		text= str(n_ext) + " extended radio sources located at these normalized bounding box pixel coordinates (x,y,w,h): "
+		coords= ''
+		for i in range(n_ext):
+			bbox= obj_info["EXTENDED"]["bboxes"][i]
+			bbox_str= (str(bbox)[1:-1])
+			coords+= "[" + bbox_str + "]"
+			if i!=n_ext-1:
+				coords+= ', '
+			else:
+				coords+= '. '
+		
+		text+= coords
+		text+= "Extended sources are " + obj_info["EXTENDED"]["description"] + ".\n"
+		query2+= text	
+		
+		text= str(n_extmulti) + " extended-multisland radio sources located at these normalized bounding box pixel coordinates (x,y,w,h): "
+		coords= ''
+		for i in range(n_extmulti):
+			bbox= obj_info["EXTENDED-MULTISLAND"]["bboxes"][i]
+			bbox_str= (str(bbox)[1:-1])
+			coords+= "[" + bbox_str + "]"
+			if i!=n_extmulti-1:
+				coords+= ', '
+			else:
+				coords+= '. '
+		
+		text+= coords
+		text+= "Extended multi-island sources are " + obj_info["EXTENDED-MULTISLAND"]["description"] + ".\n"
+		query2+= text	
+		
+		text= str(n_artefact) + " spurious radio sources located at these normalized bounding box pixel coordinates (x,y,w,h): "
+		coords= ''
+		for i in range(n_artefact):
+			bbox= obj_info["ARTEFACT"]["bboxes"][i]
+			bbox_str= (str(bbox)[1:-1])
+			coords+= "[" + bbox_str + "]"
+			if i!=n_artefact-1:
+				coords+= ', '
+			else:
+				coords+= '. '
+		
+		text+= coords
+		text+= "Spurious sources are " + obj_info["ARTEFACT"]["description"] + ".\n"
+		query2+= text	
+		
+		text= str(n_flagged) + " flagged radio sources located at these normalized bounding box pixel coordinates (x,y,w,h): "
+		coords= ''
+		for i in range(n_flagged):
+			bbox= obj_info["FLAGGED"]["bboxes"][i]
+			bbox_str= (str(bbox)[1:-1])
+			coords+= "[" + bbox_str + "]"
+			if i!=n_flagged-1:
+				coords+= ', '
+			else:
+				coords+= '. '
+		
+		text+= coords
+		text+= "Flagged sources are " + obj_info["FLAGGED"]["description"] + ".\n"
+		query2+= text	
+		
+		
+		# - Define additional prompt requirements
+		#prompt_requirements= "Use terms like top/bottom, left/right or image width/height fractions or percentages to report source object positions, rather than their exact bounding box coordinates. Please report just the description text using an astronomical scientific style, without any prefix, preamble or explanation or special characters. "
+		prompt_requirements= "Include in the description only the objects given in the above list. Use an astronomical scientific style and terms like top/bottom, left/right or image width/height fractions or percentages to describe the source object positions, rather than their exact bounding box coordinates. Avoid lengthy explanations or preambles and special unicode or ascii characters. "
+		
+		query+= prompt_requirements
+		query2+= prompt_requirements
 			
-		print("--> Processing image %s: query " % (filename))
-		print(query)
+		print("--> Processing image %s " % (filename))
+		#print(query)
+		print(query2)
+		print("")
 		
 		#print("obj_info")
 		#print(obj_info)
 		
 		if args.model_type=="llama":
 			gen_description= run_llama_model_query(
-				query, 
+				query2, 
 				model, tokenizer, 
 				do_sample=True,
 				temperature=args.temperature,
@@ -319,7 +408,7 @@ def main():
 			
 		elif args.model_type=="llama-vision":
 			gen_description= run_llama_vision_model_query(
-				query,
+				query2,
 				filename,
 				model, processor, 
 				do_sample=True,
@@ -336,7 +425,8 @@ def main():
 		
 		print("description (LLAMA-generated)")
 		print(gen_description)
-			
+		print("")
+		
 		q1= {"from": "human", "value": "<image>\n" + random.choice(description_list)}
 		a1= {"from": "gpt", "value": gen_description}
 		
