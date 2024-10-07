@@ -108,14 +108,13 @@ def main():
 	model= None
 	tokenizer= None
 	processor= None
-	if generate_text_variations:
-		logger.info("Loading model %s ..." % (model_id))
-		if args.model_type=="llama":
-			model, tokenizer= load_llama_model(model_id, args.device_map)
-		elif args.model_type=="llama-vision":
-			model, processor= load_llama_vision_model(model_id)
-		else:
-			logger.error("Invalid/unknown model_type specified (%s)!" % (args.model_type))
+	logger.info("Loading model %s ..." % (model_id))
+	if args.model_type=="llama":
+		model, tokenizer= load_llama_model(model_id, args.device_map)
+	elif args.model_type=="llama-vision":
+		model, processor= load_llama_vision_model(model_id)
+	else:
+		logger.error("Invalid/unknown model_type specified (%s)!" % (args.model_type))
 
 	#===========================
 	#==   PROCESS DATA
