@@ -734,7 +734,7 @@ def run_tinyllava_model_anomaly_inference(
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
 		conv_mode=conv_mode, 
-		add_options=True, shuffle_options=shuffle_options
+		add_options=True, shuffle_options=shuffle_options,
 		nmax=nmax, 
 		verbose=verbose
 	)	
