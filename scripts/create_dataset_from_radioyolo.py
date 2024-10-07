@@ -256,7 +256,7 @@ def main():
 		#query= "Can you write a brief description of a radio astronomical image containing the following list of radio source objects, each represented by a class label and normalized bounding boxes (x,y,w,h)? "
 		#query= "Can you write a brief text that describes a radio astronomical image containing the following list of radio source objects, each represented by a class label and normalized bounding boxes in pixel coordinates (x,y,w,h)? "
 		
-		if model_type=="llama-vision":
+		if args.model_type=="llama-vision":
 			query2= "Generate a brief description of the input radio astronomical image containing the following list of radio source objects: \n"
 		else:
 			query2= "Generate a brief description of a radio astronomical image containing the following list of radio source objects: \n"
