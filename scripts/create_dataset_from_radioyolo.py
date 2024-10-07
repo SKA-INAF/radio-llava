@@ -44,13 +44,23 @@ def get_args():
 	parser.add_argument('-nmax','--nmax', dest='nmax', required=False, default=-1, type=int, help='Max number of processed images') 
 	
 	# - Run options
-	parser.add_argument('-model','--model', dest='model', required=False, default="meta-llama/Meta-Llama-3.1-8B-Instruct", type=str, help='LLAMA model used to generate variations') 
+	parser.add_argument('-model','--model', dest='model', required=False, default="meta-llama/Meta-Llama-3.1-8B-Instruct", type=str, help='LLAMA model used to generate variations')
+	parser.add_argument('-model_type','--model_type', dest='model_type', required=False, default="llama", type=str, help='Model to be used {llama, llama-vision}') 
+	
 	parser.add_argument('-device_map','--device_map', dest='device_map', required=False, default="auto", type=str, help='Device map used when loading model') 
 	parser.add_argument('-max_new_tokens','--max_new_tokens', dest='max_new_tokens', required=False, default=1024, type=int, help='The max number of tokens to be generated') 
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=1.0, type=float, help='If set to < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation') 
 	parser.add_argument('-top_k','--top_k', dest='top_k', required=False, default=20, type=int, help='The number of highest probability vocabulary tokens to keep for top-k-filtering') 
 	parser.add_argument('-temperature','--temperature', dest='temperature', required=False, default=0.2, type=float, help='Temperature parameter') 
 	parser.add_argument('-penalty','--penalty', dest='penalty', required=False, default=1.2, type=float, help='The parameter for repetition penalty. 1.0 means no penalty. Above 1.0 rewards prompt tokens. Between 0.0 and 1.0 penalizes prompt tokens') 
+	
+	# - Image options
+	parser.add_argument('--resize', dest='resize', action='store_true',help='Resize input image (default=false)')	
+	parser.set_defaults(resize=False)
+	parser.add_argument('--imgsize', default=224, type=int, help='Image resize size in pixels')
+	parser.add_argument('--zscale', dest='zscale', action='store_true',help='Apply zscale transform (default=false)')	
+	parser.set_defaults(zscale=False)
+	parser.add_argument('--contrast', default=0.25, type=float, help='zscale contrast (default=0.25)')
 	
 	# - Output options
 	parser.add_argument('-outfile','--outfile', dest='outfile', required=False, default="dump.json", type=str, help='Output data file') 
@@ -95,8 +105,17 @@ def main():
 	#===========================
 	#==   LOAD LLAMA MODEL
 	#===========================
-	logger.info("Loading model %s ..." % (model_id))
-	model, tokenizer= load_llama_model(model_id, args.device_map)
+	model= None
+	tokenizer= None
+	processor= None
+	if generate_text_variations:
+		logger.info("Loading model %s ..." % (model_id))
+		if args.model_type=="llama":
+			model, tokenizer= load_llama_model(model_id, args.device_map)
+		elif args.model_type=="llama-vision":
+			model, processor= load_llama_vision_model(model_id)
+		else:
+			logger.error("Invalid/unknown model_type specified (%s)!" % (args.model_type))
 
 	#===========================
 	#==   PROCESS DATA
@@ -196,7 +215,7 @@ def main():
 		# ---------------------------------------
 		# - Image generated description
 		# .......................................
-		query= "Consider a radio astronomical image extracted from a radio-continuum survey map produced by an interferemoter telescope. Let's consider these possible classes of radio sources that can be contained in a radio astronomical image: \n COMPACT: single-island isolated point- or slightly resolved compact radio sources, eventually hosting one or more blended components, each with morphology resembling the synthesized beam shape of the image; \n EXTENDED: radio sources with a single-island extended morphology, eventually hosting one or more blended components, with some deviating from the synthesized beam shape; \n EXTENDED-MULTISLAND: including radio sources with an extended morphology, consisting of more (point-like or extended) islands, each one eventually hosting one or more blended components; \n SPURIOUS: spurious sources, due to artefacts introduced in the radio image by the imaging process, having a ring-like or elongated compact morphology; \n FLAGGED: including single-island radio sources, with compact or extended morphology, that are poorly imaged and largely overlapping with close imaging artefacts. \n Can you generate a detailed description of a radio astronomical image containing the following list of radio source objects, each identified by a class label and normalized bounding box pixel coordinates (x,y,w,h): \n "
+		query= "Consider a radio astronomical image extracted from a radio-continuum survey map produced by an interferemoter telescope. Let's consider these possible classes of radio sources that can be contained in a radio astronomical image: \n COMPACT: single-island isolated point- or slightly resolved compact radio sources, eventually hosting one or more blended components, each with morphology resembling the synthesized beam shape of the image; \n EXTENDED: radio sources with a single-island extended morphology, eventually hosting one or more blended components, with some deviating from the synthesized beam shape; \n EXTENDED-MULTISLAND: including radio sources with an extended morphology, consisting of more (point-like or extended) islands, each one eventually hosting one or more blended components; \n SPURIOUS: spurious sources, due to artefacts introduced in the radio image by the imaging process, having a ring-like or elongated compact morphology; \n FLAGGED: including single-island radio sources, with compact or extended morphology, that are poorly imaged and largely overlapping with close imaging artefacts. \n Generate a brief description of a radio astronomical image containing the following list of radio source objects, each identified by a class label and normalized bounding box pixel coordinates (x,y,w,h): \n "
 		
 		#query= "Can you write a brief description of a radio astronomical image containing the following list of radio source objects, each represented by a class label and normalized bounding boxes (x,y,w,h)? "
 		#query= "Can you write a brief text that describes a radio astronomical image containing the following list of radio source objects, each represented by a class label and normalized bounding boxes in pixel coordinates (x,y,w,h)? "
@@ -241,33 +260,49 @@ def main():
 			
 		query+= text
 			
-		query+= "Use terms like top/bottom, left/right or image width/height fractions or percentages to report source object positions, rather than their exact bounding box coordinates. Please report just the description text using an astronomical scientific style, without any prefix, preamble or explanation. "
+		#query+= "Use terms like top/bottom, left/right or image width/height fractions or percentages to report source object positions, rather than their exact bounding box coordinates. Please report just the description text using an astronomical scientific style, without any prefix, preamble or explanation or special characters. "
+		query+= "Use an astronomical scientific style for the description and terms like top/bottom, left/right or image width/height fractions or percentages to describe the source object positions, rather than their exact bounding box coordinates. Keep the description compact, without adding lengthy explanations or preambles. Avoid special unicode or ascii characters. "
 			
-		print("--> query ")
+		print("--> Processing image %s: query " % (filename))
 		print(query)
 		
 		#print("obj_info")
 		#print(obj_info)
 		
-		gen_description= run_llama_model_query(
-			query, 
-			model, tokenizer, 
-			temperature
-			do_sample=True,
-			temperature=args.temperature,
-			max_new_tokens=args.max_new_tokens,
-			top_p=args.top_p,
-			top_k=args.top_k,
-			penalty=args.penalty
-		)
+		if args.model_type=="llama":
+			gen_description= run_llama_model_query(
+				query, 
+				model, tokenizer, 
+				do_sample=True,
+				temperature=args.temperature,
+				max_new_tokens=args.max_new_tokens,
+				top_p=args.top_p,
+				top_k=args.top_k,
+				penalty=args.penalty
+			)
+			
+		elif args.model_type=="llama-vision":
+			gen_description= run_llama_vision_model_query(
+				query,
+				filename,
+				model, processor, 
+				do_sample=True,
+				temperature=args.temperature,
+				max_new_tokens=args.max_new_tokens,
+				top_p=args.top_p,
+				top_k=args.top_k,
+				penalty=args.penalty,
+				resize=args.resize, resize_size=args.imgsize,
+				zscale=args.zscale, contrast=args.contrast
+			)
+				
+		gen_description= gen_description.strip('\n')
 		
-		print("description (model-generated)")
+		print("description (LLAMA-generated)")
 		print(gen_description)
 			
 		q1= {"from": "human", "value": "<image>\n" + random.choice(description_list)}
 		a1= {"from": "gpt", "value": gen_description}
-		###a1= {"from": "gpt", "value": ""}
-		
 		
 		# ---------------------------------------
 		# - Source bounding boxes
