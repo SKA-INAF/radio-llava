@@ -181,11 +181,23 @@ def main():
 			"COMPACT": {
 				"count": 0, 
 				"bboxes": [],
-				"description": ""
+				"description": "single-island isolated point- or slightly resolved compact radio sources, eventually hosting one or more blended components, each with morphology resembling the synthesized beam shape of the image"
 			},
-			"EXTENDED": {"count": 0, "bboxes": []},
-			"EXTENDED-MULTISLAND": {"count": 0, "bboxes": []},
-			"FLAGGED": {"count": 0, "bboxes": []}		
+			"EXTENDED": {
+				"count": 0, 
+				"bboxes": [],
+				"description": "radio sources with a single-island extended morphology, eventually hosting one or more blended components, with some deviating from the synthesized beam shape"
+			},
+			"EXTENDED-MULTISLAND": {
+				"count": 0, 
+				"bboxes": [],
+				"description": "radio sources with an extended morphology, consisting of more (point-like or extended) islands, each one eventually hosting one or more blended components"
+			},
+			"FLAGGED": {
+				"count": 0, 
+				"bboxes": [],
+				"description": "single-island radio sources, with compact or extended morphology, that are poorly imaged and largely overlapping with close imaging artefacts"
+			}		
 		}
 		
 		only_compact= True
