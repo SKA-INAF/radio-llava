@@ -88,6 +88,15 @@ def main():
 	inputfile= args.inputfile		
 	outfile= args.outfile
 	model_id= args.model
+	
+	id2label= {
+		0: "ARTEFACT",
+  	1: "COMPACT",
+  	2: "EXTENDED",
+  	3: "EXTENDED-MULTISLAND",
+  	4: "FLAGGED"
+	}
+
 		
 	#===========================
 	#==   READ DATA
