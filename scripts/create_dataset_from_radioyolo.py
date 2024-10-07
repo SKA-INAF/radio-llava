@@ -316,7 +316,8 @@ def main():
 		
 		text+= coords
 		text+= "Compact sources are " + obj_info["COMPACT"]["description"] + ".\n"
-		query2+= text
+		if n_compact>0:
+			query2+= text
 		
 		text= str(n_ext) + " extended radio sources located at these normalized bounding box pixel coordinates (x,y,w,h): "
 		coords= ''
@@ -331,7 +332,8 @@ def main():
 		
 		text+= coords
 		text+= "Extended sources are " + obj_info["EXTENDED"]["description"] + ".\n"
-		query2+= text	
+		if n_ext>0:
+			query2+= text
 		
 		text= str(n_extmulti) + " extended-multisland radio sources located at these normalized bounding box pixel coordinates (x,y,w,h): "
 		coords= ''
@@ -346,7 +348,8 @@ def main():
 		
 		text+= coords
 		text+= "Extended multi-island sources are " + obj_info["EXTENDED-MULTISLAND"]["description"] + ".\n"
-		query2+= text	
+		if n_extmulti>0:
+			query2+= text
 		
 		text= str(n_artefact) + " spurious radio sources located at these normalized bounding box pixel coordinates (x,y,w,h): "
 		coords= ''
@@ -361,7 +364,8 @@ def main():
 		
 		text+= coords
 		text+= "Spurious sources are " + obj_info["ARTEFACT"]["description"] + ".\n"
-		query2+= text	
+		if n_artefact>0:
+			query2+= text
 		
 		text= str(n_flagged) + " flagged radio sources located at these normalized bounding box pixel coordinates (x,y,w,h): "
 		coords= ''
@@ -376,7 +380,8 @@ def main():
 		
 		text+= coords
 		text+= "Flagged sources are " + obj_info["FLAGGED"]["description"] + ".\n"
-		query2+= text	
+		if n_flagged>0:
+			query2+= text
 		
 		
 		# - Define additional prompt requirements
