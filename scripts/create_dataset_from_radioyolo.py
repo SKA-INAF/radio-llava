@@ -297,7 +297,7 @@ def main():
 		query+= text
 			
 		#query+= "Use terms like top/bottom, left/right or image width/height fractions or percentages to report source object positions, rather than their exact bounding box coordinates. Please report just the description text using an astronomical scientific style, without any prefix, preamble or explanation or special characters. "
-		query+= "Include in the description only the objects given in the above list. Use an astronomical scientific style and terms like top/bottom, left/right or image width/height fractions or percentages to describe the source object positions, rather than their exact bounding box coordinates. Keep the description compact, without adding lengthy explanations or preambles. Avoid special unicode or ascii characters. "
+		query+= "Include in the description only the objects given in the above list. Use an astronomical scientific style and terms like top/bottom, left/right or image width/height fractions or percentages to describe the source object positions, rather than their exact bounding box coordinates. Avoid lengthy explanations or preambles and special unicode or ascii characters. "
 			
 		print("--> Processing image %s: query " % (filename))
 		print(query)
