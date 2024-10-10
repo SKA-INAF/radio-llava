@@ -517,7 +517,7 @@ def run_llavaov_model_smorph_inference(
 	#=============================
 	#==   RUN TASK
 	#=============================
-	return run_llavaov_model_inference_hf(
+	return run_llavaov_model_inference(
 		datalist, 
 		model, tokenizer, image_processor, 
 		task_info, 
