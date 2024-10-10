@@ -139,7 +139,7 @@ def run_llavaov_model_query(
 
 	#output_parsed = tokenizer.batch_decode(output, skip_special_tokens=True)
 	output_parsed= tokenizer.decode(output[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
-	output_parsed_list= output_parsed.split("assistant")
+	#output_parsed_list= output_parsed.split("assistant")
 	
 	if verbose:
 		print("output")
@@ -148,12 +148,13 @@ def run_llavaov_model_query(
 		print("output_parsed")
 		print(output_parsed)
 		
-		print("output_parsed (split assistant)")
-		print(output_parsed_list)
+		#print("output_parsed (split assistant)")
+		#print(output_parsed_list)
 			
 	# - Extract predicted label
 	#response= output_parsed_list[-1].strip("\n").strip()
-	response= output_parsed
+	#response= output_parsed
+	response= output_parsed.strip("\n").strip()
 	
 	return response
 	
