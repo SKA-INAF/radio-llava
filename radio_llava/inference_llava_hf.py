@@ -39,11 +39,7 @@ from PIL import Image
 ## TORCH MODULES
 import torch
 import torchvision.transforms as T
-
-## LLAVA modules
-from llava.model.builder import load_pretrained_model
-from llava.mm_utils import get_model_name_from_path, process_images, tokenizer_image_token
-from llava.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN, IGNORE_INDEX
+from transformers import AutoProcessor, LlavaOnevisionForConditionalGeneration
 
 ## DRAW MODULES
 import matplotlib.pyplot as plt
@@ -59,79 +55,85 @@ logger = logging.getLogger(__name__)
 ######################
 ##   LOAD MODEL
 ######################
-def load_llavaov_model(model_name_or_path, model_name="llava_qwen", device_map="auto"):
+def load_llavaov_model_hf(model_name_or_path, device="cuda"):
 	""" Load LLaVA One Vision model """
 
-	# - Retrieve model name
-	if model_name=="":
-		logger.info("Empty model_name specified, retrieving name from model %s ..." % (model_name_or_path))
-		model_name= get_model_name_from_path(model_name_or_path)
-
-	# - Load the model
-	#   NB: See https://github.com/LLaVA-VL/LLaVA-NeXT/blob/main/docs/LLaVA_OneVision_Tutorials.ipynb
-	logger.info("Loading model %s (name=%s) ..." % (model_name_or_path, model_name))
-	tokenizer, model, image_processor, max_length = load_pretrained_model(
+	# - Load the model in half-precision
+	logger.info("Loading model %s ..." % (model_name_or_path))
+	model = LlavaOnevisionForConditionalGeneration.from_pretrained(
 		model_name_or_path, 
-		None, 
-		model_name, 
-		device_map=device_map
+		torch_dtype=torch.float16, 
+		device_map="auto"
 	)
-	#model.generation_config.pad_token_id = model.generation_config.eos_token_id
+	
+	model.generation_config.pad_token_id = model.generation_config.eos_token_id
 	model.eval()
 
-	return model, tokenizer, image_processor
+	# - Load processor
+	logger.info("Loading processor for model %s ..." % (model_name_or_path))
+	processor = AutoProcessor.from_pretrained(model_name_or_path)
+	
+	return model, processor	
+	
 
 ####################################
-##   INFERENCE UTILS
+##   INFERENCE UTILS (HF version)
 ####################################
-def run_llavaov_model_query(
+def run_llavaov_model_query_hf(
 	model,
-	tokenizer,
-	image_processor, 
+	processor, 
 	image, 
 	query,
 	do_sample=False,
-	temperature=0.2,
-	conv_template="qwen_1_5", 
+	temperature=0.2, 
 	verbose=False
 ):
 	""" Run llava one vision model inference """  
 	
-	
-	# - Process image
-	image_tensor = process_images([image], image_processor, model.config)
-	image_tensor = [_image.to(dtype=torch.float16, device=model.device) for _image in image_tensor]
-
+	# - Create conversation (eventually adding also context conversations)
+	conversation= [
+		{
+			"role": "user",
+			"content": [
+				{"type": "image"},
+				{"type": "text", "text": query},
+			],
+		},
+	]
+		
 	# - Create prompt 
-	question = DEFAULT_IMAGE_TOKEN + "\n" + query
-	conv = copy.deepcopy(conv_templates[conv_template])
-	conv.append_message(conv.roles[0], question)
-	conv.append_message(conv.roles[1], None)
-	prompt_question = conv.get_prompt()
-
-	# - Create model inputs
-	input_ids = tokenizer_image_token(prompt_question, tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt").unsqueeze(0).to(model.device)
-	image_sizes = [image.size]
+	prompt= processor.apply_chat_template(conversation, add_generation_prompt=True)
+	
+	# - Create model inputs (eventually combining context and inference prompts)
+	inputs= processor(image, prompt, return_tensors="pt").to(model.device, torch.float16)
+	
+	if verbose:
+		print("conversations")
+		print(json.dumps(conversation, indent=2))
+		print("inputs")
+		print(inputs)
+		print("inputs.pixel_values")
+		print(inputs['pixel_values'].shape)
 
 	# - Generate model response
 	logger.debug("Generate model response ...")
 	num_beams= 1
 	top_p= None
-	max_new_tokens= 4096
+	max_new_tokens= 512
 	
 	output = model.generate(
-		input_ids,
-		images=image_tensor,
-		image_sizes=image_sizes,
+		**inputs, 
 		do_sample=do_sample,
 		temperature=temperature if do_sample else None,
 		top_p=top_p,
 		num_beams=num_beams,
 		max_new_tokens=max_new_tokens,
-		#use_cache=True,
+		use_cache=True,
 	)
-
-	output_parsed = tokenizer.batch_decode(output, skip_special_tokens=True)
+		
+	# - Decode response
+	output_parsed= processor.decode(output[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+	output_parsed_list= output_parsed.split("assistant")
 	
 	if verbose:
 		print("output")
@@ -140,39 +142,103 @@ def run_llavaov_model_query(
 		print("output_parsed")
 		print(output_parsed)
 			
+		print("output_parsed (split assistant)")
+		print(output_parsed_list)
+		
 	# - Extract predicted label
-	#response= output_parsed_list[-1].strip("\n").strip()
-	response= output_parse
-	
+	response= output_parsed_list[-1].strip("\n").strip()
+		
 	return response
-	
 
 
-def run_llavaov_model_context_query(
+def run_llavaov_model_context_query_hf(
 	model,
-	tokenizer,
-	image_processor, 
+	processor, 
 	image, 
 	query,
 	images_context,
 	conversations_context,
 	do_sample=False,
-	temperature=0.2,
-	conv_template="qwen_1_5",
+	temperature=0.2, 
 	verbose=False
 ):
 	""" Run llava one vision model inference """  
 
-	# IMPLEMENT ME
-	# ...
+	# - Check context info
+	if not images_context or not conversations_context:
+		logger.error("Empty list given for either context images, queries or responses!")
+		return None
 	
-	return None
+	# - Create conversation and add after context conversations)
+	conversation= [
+		{
+			"role": "user",
+			"content": [
+				{"type": "image"},
+				{"type": "text", "text": query},
+			],
+    },
+	]
+	conversations= conversations_context.copy()
+	conversations.extend(conversation)
+		
+	# - Create prompt 
+	prompts= processor.apply_chat_template(conversations, add_generation_prompt=True)
+		
+	# - Create model inputs (combining context and inference prompts)
+	images= images_context.copy()
+	images.append(image)
+		
+	inputs = processor(images, prompts, padding=True, return_tensors="pt").to(model.device, torch.float16)
+		
+	if verbose:
+		print("conversations")
+		print(json.dumps(conversations, indent=2))
+		print("inputs")
+		print(inputs)
+		print("inputs.pixel_values")
+		print(inputs['pixel_values'].shape)
+
+	# - Generate model response
+	logger.debug("Generate model response ...")
+	num_beams= 1
+	top_p= None
+	max_new_tokens= 512
+	
+	output = model.generate(
+		**inputs, 
+		do_sample=do_sample,
+		temperature=None if do_sample else temperature,
+		top_p=top_p,
+		num_beams=num_beams,
+		max_new_tokens=max_new_tokens,
+		use_cache=True,
+	)
+		
+	# - Decode response
+	output_parsed= processor.decode(output[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+	output_parsed_list= output_parsed.split("assistant")
+
+	if verbose:
+		print("output")
+		print(output)
+
+		print("output_parsed")
+		print(output_parsed)
+		
+		print("output_parsed (split assistant)")
+		print(output_parsed_list)
+		
+	# - Extract predicted label
+	response= output_parsed_list[-1].strip("\n").strip()
+
+	return response
 	
 
 
-def run_llavaov_model_inference(
+def run_llavaov_model_inference_hf(
 	datalist, 
-	model, tokenizer, image_processor, 
+	model, processor, 
 	task_info, 
 	datalist_context=None, 
 	device="cuda:0", 
@@ -181,7 +247,6 @@ def run_llavaov_model_inference(
 	shuffle_label_options=False, 
 	nmax=-1,
 	nmax_context=-1,
-	conv_template="qwen_1_5",
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on radio image dataset """
@@ -205,6 +270,7 @@ def run_llavaov_model_inference(
 	class_options= class_names
 	if "class_options" in task_info:
 		class_options= task_info["class_options"]
+
 
 	#====================================
 	#==   CREATE CONTEXT CONVERSATIONS
@@ -313,25 +379,23 @@ def run_llavaov_model_inference(
 
 		# - Run inference with or without context
 		if conversations_context:
-			output= run_llavaov_model_context_query(
-				model, tokenizer, image_processor, 
+			output= run_llavaov_model_context_query_hf(
+				model, processor, 
 				image, 
 				question,
 				images_context,
 				conversations_context,
 				do_sample=False,
 				temperature=None,
-				conv_template,
 				verbose=verbose
 			)
 		else:
-			output= run_llavaov_model_query(
-				model, tokenizer, image_processor, 
+			output= run_llavaov_model_query_hf(
+				model, processor, 
 				image, 
 				question,
 				do_sample=False,
 				temperature=None,
-				conv_template,
 				verbose=verbose
 			)
 
@@ -390,9 +454,9 @@ def run_llavaov_model_inference(
 #############################################
 ###       INFERENCE TASKS
 #############################################
-def run_llavaov_model_rgz_inference(
+def run_llavaov_model_rgz_inference_hf(
 	datalist, 
-	model, tokenizer, image_processor, 
+	model, processor, 
 	datalist_context=None, 
 	device="cuda:0", 
 	resize=False, resize_size=384, 
@@ -401,7 +465,6 @@ def run_llavaov_model_rgz_inference(
 	nmax=-1,
 	nmax_context=-1,
 	add_task_description=False,
-	conv_template="qwen_1_5",
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on RGZ dataset """
@@ -440,9 +503,9 @@ def run_llavaov_model_rgz_inference(
 	#=============================
 	#==   RUN TASK
 	#=============================
-	return run_llavaov_model_inference(
+	return run_llavaov_model_inference_hf(
 		datalist, 
-		model, tokenizer, image_processor, 
+		model, processor, 
 		task_info, 
 		datalist_context=datalist_context, 
 		device=device, 
@@ -451,14 +514,13 @@ def run_llavaov_model_rgz_inference(
 		shuffle_label_options=shuffle_label_options, 
 		nmax=nmax, 
 		nmax_context=nmax_context,
-		conv_template=conv_template,
 		verbose=verbose
 	)
 		
 
-def run_llavaov_model_smorph_inference(
+def run_llavaov_model_smorph_inference_hf(
 	datalist, 
-	model, tokenizer, image_processor, 
+	model, processor, 
 	datalist_context=None, 
 	device="cuda:0", 
 	resize=False, resize_size=384, 
@@ -467,7 +529,6 @@ def run_llavaov_model_smorph_inference(
 	nmax=-1, 
 	nmax_context=-1,
 	add_task_description=False,
-	conv_template="qwen_1_5",
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on radio image dataset """
@@ -508,7 +569,7 @@ def run_llavaov_model_smorph_inference(
 	#=============================
 	return run_llavaov_model_inference_hf(
 		datalist, 
-		model, tokenizer, image_processor, 
+		model, processor, 
 		task_info, 
 		datalist_context=datalist_context, 
 		device=device, 
@@ -517,7 +578,6 @@ def run_llavaov_model_smorph_inference(
 		shuffle_label_options=shuffle_label_options, 
 		nmax=nmax, 
 		nmax_context=nmax_context,
-		conv_template=conv_template,
 		verbose=verbose
 	)	
 	

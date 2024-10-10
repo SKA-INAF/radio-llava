@@ -33,7 +33,7 @@ import requests
 from PIL import Image
 import torch
 import torchvision.transforms as T
-from transformers import AutoProcessor, LlavaOnevisionForConditionalGeneration
+#from transformers import AutoProcessor, LlavaOnevisionForConditionalGeneration
 
 ## ASTRO/IMG PROCESSING MODULES
 from astropy.io import fits
@@ -45,7 +45,7 @@ import matplotlib.pyplot as plt
 
 ## MODULE
 from radio_llava.utils import *
-from radio_llava.inference_llava import *
+from radio_llava.inference_llava_hf import *
 
 ## LOGGER
 logger = logging.getLogger(__name__)
@@ -99,8 +99,6 @@ def get_args():
 	
 	# - Model option
 	parser.add_argument('-model','--model', dest='model', required=False, type=str, default="llava-hf/llava-onevision-qwen2-7b-ov-hf", help='LLaVA pretrained model') 
-	parser.add_argument('-conv_template','--conv_template', dest='conv_template', required=False, type=str, default="qwen_1_5", help='LLaVA conversation template') 
-	parser.add_argument('-model_name','--model_name', dest='model_name', required=False, type=str, default="llava_qwen", help='LLaVA model name') 
 	
 	# - Inference options
 	parser.add_argument('--do_sample', dest='do_sample', action='store_true',help='Sample model response using temperature option (default=false)')	
@@ -188,22 +186,17 @@ def main():
 	#===========================
 	# - Load the model in half-precision
 	logger.info("Loading model %s ..." % (model_id))
-	model, tokenizer, image_processor= load_llavaov_model(
-		model_id, 
-		model_name=args.model_name, 
-		device_map="auto"
-	)
+	model, processor= load_llavaov_model_hf(model_id, device)
 	
 	#===========================
 	#==   RUN MODEL INFERENCE
 	#===========================
 	if args.benchmark=="smorph-rgz":
 		logger.info("Running smorph-rgz benchmark inference ...")
-		run_llavaov_model_rgz_inference(
+		run_llavaov_model_rgz_inference_hf(
 			datalist=datalist,
 			model=model,
-			tokenizer=tokenizer,
-			image_processor=image_processor,
+			processor=processor,
 			datalist_context=datalist_context,
 			device=device,
 			resize=args.resize, resize_size=args.imgsize, 
@@ -212,17 +205,15 @@ def main():
 			nmax=args.nmax,
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
-			conv_template=args.conv_template,
 			verbose=args.verbose
 		)
 		
 	elif args.benchmark=="smorph-radioimg":
 		logger.info("Running smorph-radioimg benchmark inference")
-		run_llavaov_model_smorph_inference(
+		run_llavaov_model_smorph_inference_hf(
 			datalist=datalist,
 			model=model,
-			tokenizer=tokenizer,
-			image_processor=image_processor,
+			processor=processor,
 			datalist_context=datalist_context,
 			device=device,
 			resize=args.resize, resize_size=args.imgsize, 
@@ -231,7 +222,6 @@ def main():
 			nmax=args.nmax,
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
-			conv_template=args.conv_template,
 			verbose=args.verbose
 		)	
 		
