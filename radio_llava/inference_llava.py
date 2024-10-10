@@ -321,7 +321,7 @@ def run_llavaov_model_inference(
 				conversations_context,
 				do_sample=False,
 				temperature=None,
-				conv_template,
+				conv_template=conv_template,
 				verbose=verbose
 			)
 		else:
@@ -331,7 +331,7 @@ def run_llavaov_model_inference(
 				question,
 				do_sample=False,
 				temperature=None,
-				conv_template,
+				conv_template=conv_template,
 				verbose=verbose
 			)
 
