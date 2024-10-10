@@ -301,19 +301,28 @@ def run_tinyllava_model_query(
 	# - Decode output
 	outputs = tokenizer.batch_decode(
 		output_ids, skip_special_tokens=True
-	)[0]
-	outputs = outputs.strip()
+	)
 	
 	if verbose:
 		print("outputs")
 		print(outputs)
+		
+	outputs= outputs[0].strip()
+	
+	if verbose:
+		print("outputs (after strip)")
+		print(outputs)
 	
 	if outputs.endswith(stop_str):
 		outputs = outputs[: -len(stop_str)]
+		if verbose:
+			print("outputs (endswith) (stop_str=%s)" % (stop_str))
+			print(outputs)
+		
 	outputs = outputs.strip()
 	
 	if verbose:
-		print("outputs (parsed)")
+		print("outputs (final)")
 		print(outputs)
 	  
 	return outputs
