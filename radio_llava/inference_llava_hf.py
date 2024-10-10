@@ -244,7 +244,7 @@ def run_llavaov_model_inference_hf(
 	device="cuda:0", 
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
-	shuffle_label_options=False, 
+	shuffle_options=False, 
 	nmax=-1,
 	nmax_context=-1,
 	verbose=False
@@ -368,7 +368,7 @@ def run_llavaov_model_inference_hf(
 
 		# - Create question
 		option_choices= class_options.copy()
-		if shuffle_label_options:
+		if shuffle_options:
 			random.shuffle(option_choices)
 		
 		question_labels= ' \n '.join(option_choices)
@@ -461,7 +461,7 @@ def run_llavaov_model_rgz_inference_hf(
 	device="cuda:0", 
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
-	shuffle_label_options=False, 
+	shuffle_options=False, 
 	nmax=-1,
 	nmax_context=-1,
 	add_task_description=False,
@@ -511,7 +511,7 @@ def run_llavaov_model_rgz_inference_hf(
 		device=device, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast, 
-		shuffle_label_options=shuffle_label_options, 
+		shuffle_options=shuffle_options, 
 		nmax=nmax, 
 		nmax_context=nmax_context,
 		verbose=verbose
@@ -525,7 +525,7 @@ def run_llavaov_model_smorph_inference_hf(
 	device="cuda:0", 
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
-	shuffle_label_options=False, 
+	shuffle_options=False, 
 	nmax=-1, 
 	nmax_context=-1,
 	add_task_description=False,
@@ -575,7 +575,7 @@ def run_llavaov_model_smorph_inference_hf(
 		device=device, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast, 
-		shuffle_label_options=shuffle_label_options, 
+		shuffle_options=shuffle_options, 
 		nmax=nmax, 
 		nmax_context=nmax_context,
 		verbose=verbose

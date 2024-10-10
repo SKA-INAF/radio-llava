@@ -178,7 +178,7 @@ def run_llavaov_model_inference(
 	device="cuda:0", 
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
-	shuffle_label_options=False, 
+	shuffle_options=False, 
 	nmax=-1,
 	nmax_context=-1,
 	conv_template="qwen_1_5",
