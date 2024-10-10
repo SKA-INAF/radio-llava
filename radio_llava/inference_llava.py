@@ -110,6 +110,10 @@ def run_llavaov_model_query(
 	conv.append_message(conv.roles[0], question)
 	conv.append_message(conv.roles[1], None)
 	prompt_question = conv.get_prompt()
+	
+	if verbose:
+		print("prompt_question")
+		print(prompt_question)
 
 	# - Create model inputs
 	input_ids = tokenizer_image_token(prompt_question, tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt").unsqueeze(0).to(model.device)
