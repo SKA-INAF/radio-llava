@@ -144,7 +144,7 @@ def run_llavaov_model_query(
 			
 	# - Extract predicted label
 	#response= output_parsed_list[-1].strip("\n").strip()
-	response= output_parse
+	response= output_parsed
 	
 	return response
 	
