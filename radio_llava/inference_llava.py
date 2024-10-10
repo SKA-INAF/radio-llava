@@ -178,7 +178,7 @@ def run_llavaov_model_inference(
 	device="cuda:0", 
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
-	shuffle_options=False, 
+	add_options=False, shuffle_options=False
 	nmax=-1,
 	nmax_context=-1,
 	conv_template="qwen_1_5",
@@ -225,6 +225,7 @@ def run_llavaov_model_inference(
 			filename= item["filepaths"][0]
 			label= item["label"]
 			
+			
 			# - Read image into PIL
 			image= load_img_as_pil_rgb(
 				filename,
@@ -239,13 +240,17 @@ def run_llavaov_model_inference(
 			images_context.append(image)
 			
 			# - Create question
-			option_choices= class_options.copy()
-			question_labels= ' \n '.join(option_choices)
-			if idx==0:
-				question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+			if add_options:
+				option_choices= class_options.copy()
+				question_labels= ' \n '.join(option_choices)
+				if idx==0:
+					question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+				else:
+					question= question_prefix + ' \n ' + question_labels + question_subfix
 			else:
-				question= question_prefix + ' \n ' + question_labels + question_subfix
+				question= description + ' \n' + question_prefix + ' \n ' + question_subfix
 		
+			
 			# - Set assistant response to true label
 			response= format_context_model_response(label, classification_mode, label_modifier_fcn)
 			#response= label
@@ -301,15 +306,21 @@ def run_llavaov_model_inference(
 			continue
 
 		# - Create question
-		option_choices= class_options.copy()
-		if shuffle_label_options:
-			random.shuffle(option_choices)
+		if add_options:
+			option_choices= class_options.copy()
+			if shuffle_options:
+				random.shuffle(option_choices)
 		
-		question_labels= ' \n '.join(option_choices)
-		if conversations_context:
-			question= question_prefix + ' \n ' + question_labels + question_subfix
+			question_labels= ' \n '.join(option_choices)
+			if conversations_context:
+				question= question_prefix + ' \n ' + question_labels + question_subfix
+			else:
+				question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
 		else:
-			question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+			if conversations_context:
+				question= question_prefix + ' \n ' + question_subfix
+			else:
+				question= description + ' \n' + question_prefix + ' \n ' + question_subfix
 
 		# - Run inference with or without context
 		if conversations_context:
@@ -397,7 +408,7 @@ def run_llavaov_model_rgz_inference(
 	device="cuda:0", 
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
-	shuffle_label_options=False, 
+	shuffle_options=False, 
 	nmax=-1,
 	nmax_context=-1,
 	add_task_description=False,
@@ -448,7 +459,7 @@ def run_llavaov_model_rgz_inference(
 		device=device, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast, 
-		shuffle_label_options=shuffle_label_options, 
+		add_options=True, shuffle_options=shuffle_options, 
 		nmax=nmax, 
 		nmax_context=nmax_context,
 		conv_template=conv_template,
@@ -463,7 +474,7 @@ def run_llavaov_model_smorph_inference(
 	device="cuda:0", 
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
-	shuffle_label_options=False, 
+	shuffle_options=False, 
 	nmax=-1, 
 	nmax_context=-1,
 	add_task_description=False,
@@ -514,7 +525,7 @@ def run_llavaov_model_smorph_inference(
 		device=device, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast, 
-		shuffle_label_options=shuffle_label_options, 
+		add_options=True, shuffle_options=shuffle_options, 
 		nmax=nmax, 
 		nmax_context=nmax_context,
 		conv_template=conv_template,
