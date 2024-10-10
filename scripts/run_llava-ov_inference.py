@@ -33,7 +33,6 @@ import requests
 from PIL import Image
 import torch
 import torchvision.transforms as T
-from transformers import AutoProcessor, LlavaOnevisionForConditionalGeneration
 
 ## ASTRO/IMG PROCESSING MODULES
 from astropy.io import fits
