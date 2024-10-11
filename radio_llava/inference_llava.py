@@ -376,7 +376,7 @@ def run_llavaov_model_inference(
 			#		],
 			#	},
 			#]
-			conversations_context.extend(conversation)
+			conversations_context.append(conversation)
 
 	#===========================
 	#==   RUN INFERENCE
