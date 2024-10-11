@@ -207,9 +207,6 @@ def run_llavaov_model_context_query(
 	
 	
 	# - Create prompts (first add context prompt then user question)
-	print("conversations_context")
-	print(conversations_context)
-	
 	conv = copy.deepcopy(conv_templates[conv_template])
 	for item in conversations_context:
 		query_context= item['question']
@@ -225,6 +222,9 @@ def run_llavaov_model_context_query(
 	prompt = conv.get_prompt()
 	
 	if verbose:
+		print("--> conversations_context")
+		print(conversations_context)
+
 		print("--> prompt")
 		print(prompt)
 	
