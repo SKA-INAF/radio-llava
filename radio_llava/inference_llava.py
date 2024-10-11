@@ -205,6 +205,7 @@ def run_llavaov_model_context_query(
 	image_tensors = [_image.to(dtype=torch.float16, device=model.device) for _image in image_tensors]
 	image_sizes = [image.size for image in images]
 	
+	
 	# - Create prompts (first add context prompt then user question)
 	print("conversations_context")
 	print(conversations_context)
@@ -231,6 +232,7 @@ def run_llavaov_model_context_query(
 	
 	print("--> inputs")
 	print(input_ids)
+	print(input_ids.shape)
 
 	# - Generate model response
 	logger.debug("Generate model response ...")
