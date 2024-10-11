@@ -230,7 +230,7 @@ def run_llavaov_model_context_query(
 	input_ids = tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt").unsqueeze(0).to(model.device)
 	
 	print("--> inputs")
-	print(inputs)
+	print(inputs_ids)
 
 	# - Generate model response
 	logger.debug("Generate model response ...")
