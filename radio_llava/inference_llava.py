@@ -256,7 +256,7 @@ def run_llavaov_model_context_query(
 	print(output)
 	
 	#output_parsed= tokenizer.batch_decode(output, skip_special_tokens=True, clean_up_tokenization_spaces=False)
-	output_parsed= tokenizer.batch_decode(output[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+	output_parsed= tokenizer.decode(output[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
 	
 	print("--> output_parsed")
 	print(output_parsed)
