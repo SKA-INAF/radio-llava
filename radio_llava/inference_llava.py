@@ -205,35 +205,29 @@ def run_llavaov_model_context_query(
 	image_tensors = [_image.to(dtype=torch.float16, device=model.device) for _image in image_tensors]
 	image_sizes = [image.size for image in images]
 	
-	# - Create context prompts
+	# - Create prompts (first add context prompt then user question)
 	print("conversations_context")
 	print(conversations_context)
 	
-	prompts= []
+	conv = copy.deepcopy(conv_templates[conv_template])
 	for item in conversations_context:
-		conv = copy.deepcopy(conv_templates[conv_template])
 		query_context= item['question']
 		response_context= item['response']
 		question_context= DEFAULT_IMAGE_TOKEN + "\n" + query_context
 		conv.append_message(conv.roles[0], question_context)
 		conv.append_message(conv.roles[1], response_context)
-		prompt_context = conv.get_prompt()
-		prompts.append(prompt_context)
-		
-	# - Create question prompts	
+	
 	question = DEFAULT_IMAGE_TOKEN + "\n" + query
-
-	conv = copy.deepcopy(conv_templates[conv_template])
 	conv.append_message(conv.roles[0], question)
 	conv.append_message(conv.roles[1], None)	
+
 	prompt = conv.get_prompt()
-	prompts.append(prompt)
 	
-	print("--> prompts")
-	print(prompts)
+	print("--> prompt")
+	print(prompt)
 	
 	# - Create inputs
-	input_ids = tokenizer_image_token(prompts, tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt").unsqueeze(0).to(model.device)
+	input_ids = tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt").unsqueeze(0).to(model.device)
 	
 	print("--> inputs")
 	print(inputs)
