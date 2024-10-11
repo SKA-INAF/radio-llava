@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 ######################
 ##   LOAD MODEL
 ######################
-def load_llavaov_model(model_name_or_path, model_name="llava_qwen", device_map="auto"):
+def load_llavaov_model(model_name_or_path, is_multimodal_interleaved=False, model_name="llava_qwen", device_map="auto"):
 	""" Load LLaVA One Vision model """
 
 	# - Retrieve model name
@@ -69,15 +69,33 @@ def load_llavaov_model(model_name_or_path, model_name="llava_qwen", device_map="
 		logger.info("Empty model_name specified, retrieving name from model %s ..." % (model_name_or_path))
 		model_name= get_model_name_from_path(model_name_or_path)
 
+	# - Set arguments
+	llava_model_args = {
+		"multimodal": True,
+	}
+	overwrite_config = {}
+	overwrite_config["image_aspect_ratio"] = "pad"
+	llava_model_args["overwrite_config"] = overwrite_config
+
 	# - Load the model
 	#   NB: See https://github.com/LLaVA-VL/LLaVA-NeXT/blob/main/docs/LLaVA_OneVision_Tutorials.ipynb
 	logger.info("Loading model %s (name=%s) ..." % (model_name_or_path, model_name))
-	tokenizer, model, image_processor, max_length = load_pretrained_model(
-		model_name_or_path, 
-		None, 
-		model_name, 
-		device_map=device_map
-	)
+	if is_multimodal_interleaved:
+		tokenizer, model, image_processor, max_length = load_pretrained_model(
+			model_name_or_path, 
+			None, 
+			model_name, 
+			device_map=device_map,
+			**llava_model_args
+		)
+	else:
+		tokenizer, model, image_processor, max_length = load_pretrained_model(
+			model_name_or_path, 
+			None, 
+			model_name, 
+			device_map=device_map
+		)
+		
 	#model.generation_config.pad_token_id = model.generation_config.eos_token_id
 	model.eval()
 
@@ -94,7 +112,7 @@ def run_llavaov_model_query(
 	query,
 	do_sample=False,
 	temperature=0.2,
-	conv_template="qwen_1_5", 
+	conv_template="qwen_2", 
 	verbose=False
 ):
 	""" Run llava one vision model inference """  
@@ -170,17 +188,84 @@ def run_llavaov_model_context_query(
 	conversations_context,
 	do_sample=False,
 	temperature=0.2,
-	conv_template="qwen_1_5",
+	conv_template="qwen_2",
 	verbose=False
 ):
 	""" Run llava one vision model inference """  
 
-	# IMPLEMENT ME
-	# ...
+	# - Check context info
+	if not images_context or not conversations_context:
+		logger.error("Empty list given for either context images, queries or responses!")
+		return None
+		
+	# - Process images
+	images= images_context.copy()
+	images.append(image)
+	image_tensors = process_images(images, image_processor, model.config)
+	image_tensors = [_image.to(dtype=torch.float16, device=device) for _image in image_tensors]
+	image_sizes = [image.size for image in images]
 	
-	return None
-	
+	# - Create context prompts
+	prompts= []
+	for item in conversations_context:
+		conv = copy.deepcopy(conv_templates[conv_template])
+		query_context= item['question']
+		response_context= item['response']
+		question_context= DEFAULT_IMAGE_TOKEN + "\n" + query_context
+		conv.append_message(conv.roles[0], question_context)
+		conv.append_message(conv.roles[1], response_context)
+		prompt_context = conv.get_prompt()
+		prompts.append(prompt_context)
+		
+	# - Create question prompts	
+	question = DEFAULT_IMAGE_TOKEN + "\n" + query
 
+	conv = copy.deepcopy(conv_templates[conv_template])
+	conv.append_message(conv.roles[0], question)
+	conv.append_message(conv.roles[1], None)	
+	prompt = conv.get_prompt()
+	prompts.append(prompt)
+	
+	print("--> prompts")
+	print(prompts)
+	
+	# - Create inputs
+	input_ids = tokenizer_image_token(prompts tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt").unsqueeze(0).to(model.device)
+	
+	print("--> inputs")
+	print(inputs)
+
+	# - Generate model response
+	logger.debug("Generate model response ...")
+	num_beams= 1
+	top_p= None
+	max_new_tokens= 4096
+	
+	output = model.generate(
+		input_ids,
+		images=image_tensor,
+		image_sizes=image_sizes,
+		do_sample=do_sample,
+		temperature=temperature if do_sample else None,
+		top_p=top_p,
+		num_beams=num_beams,
+		max_new_tokens=max_new_tokens,
+		#use_cache=True,
+	)
+	
+	print("--> output")
+	print(output)
+	
+	output_parsed= tokenizer.batch_decode(output, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+	output_parsed= tokenizer.batch_decode(output[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+	
+	print("--> output_parsed")
+	print(output_parsed)
+	
+	return output_parsed
+	
+	
+	
 
 def run_llavaov_model_inference(
 	datalist, 
@@ -268,21 +353,26 @@ def run_llavaov_model_inference(
 			#response= label
 			
 			# - Create conversation
-			conversation = [
-				{
-					"role": "user",
-					"content": [
-						{"type": "image"},
-						{"type": "text", "text": question},
-					],
-    		},
-    		{
-					"role": "assistant",
-					"content": [
-						{"type": "text", "text": response},
-					],
-				},
-			]
+			conversation= {
+				"question": question,
+				"response": response
+			}
+			
+			#conversation = [
+			#	{
+			#		"role": "user",
+			#		"content": [
+			#			{"type": "image"},
+			#			{"type": "text", "text": question},
+			#		],
+    	#	},
+    	#	{
+			#		"role": "assistant",
+			#		"content": [
+			#			{"type": "text", "text": response},
+			#		],
+			#	},
+			#]
 			conversations_context.extend(conversation)
 
 	#===========================
