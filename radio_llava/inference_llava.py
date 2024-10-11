@@ -240,7 +240,7 @@ def run_llavaov_model_context_query(
 	
 	output = model.generate(
 		input_ids,
-		images=image_tensor,
+		images=image_tensors,
 		image_sizes=image_sizes,
 		do_sample=do_sample,
 		temperature=temperature if do_sample else None,
