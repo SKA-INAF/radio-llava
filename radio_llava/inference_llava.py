@@ -206,6 +206,9 @@ def run_llavaov_model_context_query(
 	image_sizes = [image.size for image in images]
 	
 	# - Create context prompts
+	print("conversations_context")
+	print(conversations_context)
+	
 	prompts= []
 	for item in conversations_context:
 		conv = copy.deepcopy(conv_templates[conv_template])
