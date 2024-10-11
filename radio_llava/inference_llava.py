@@ -224,15 +224,17 @@ def run_llavaov_model_context_query(
 
 	prompt = conv.get_prompt()
 	
-	print("--> prompt")
-	print(prompt)
+	if verbose:
+		print("--> prompt")
+		print(prompt)
 	
 	# - Create inputs
 	input_ids = tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt").unsqueeze(0).to(model.device)
 	
-	print("--> inputs")
-	print(input_ids)
-	print(input_ids.shape)
+	if verbose:
+		print("--> inputs")
+		print(input_ids)
+		print(input_ids.shape)
 
 	# - Generate model response
 	logger.debug("Generate model response ...")
@@ -252,19 +254,20 @@ def run_llavaov_model_context_query(
 		#use_cache=True,
 	)
 	
-	print("--> output")
-	print(output)
-	
-	#output_parsed= tokenizer.batch_decode(output, skip_special_tokens=True, clean_up_tokenization_spaces=False)
 	output_parsed= tokenizer.decode(output[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+	response= output_parsed.strip("\n").strip()
 	
-	print("--> output_parsed")
-	print(output_parsed)
+	if verbose:
+		print("--> output")
+		print(output)
 	
-	return output_parsed
+		print("--> output_parsed")
+		print(output_parsed)
 	
 	
+	return response
 	
+
 
 def run_llavaov_model_inference(
 	datalist, 
