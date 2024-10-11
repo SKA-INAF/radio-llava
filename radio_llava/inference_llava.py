@@ -202,7 +202,7 @@ def run_llavaov_model_context_query(
 	images= images_context.copy()
 	images.append(image)
 	image_tensors = process_images(images, image_processor, model.config)
-	image_tensors = [_image.to(dtype=torch.float16, device=device) for _image in image_tensors]
+	image_tensors = [_image.to(dtype=torch.float16, device=model.device) for _image in image_tensors]
 	image_sizes = [image.size for image in images]
 	
 	# - Create context prompts
