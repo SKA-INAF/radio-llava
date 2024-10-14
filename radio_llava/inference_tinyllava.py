@@ -630,7 +630,8 @@ def run_tinyllava_model_galaxy_inference(
 		reset_imgnorm=reset_imgnorm, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
-		conv_mode=conv_mode, 
+		conv_mode=conv_mode,
+		add_options=False, shuffle_options=False,
 		nmax=nmax, 
 		verbose=verbose
 	)	
@@ -686,6 +687,7 @@ def run_tinyllava_model_artefact_inference(
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
 		conv_mode=conv_mode, 
+		add_options=False, shuffle_options=False,
 		nmax=nmax, 
 		verbose=verbose
 	)	
