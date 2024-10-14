@@ -216,7 +216,7 @@ def main():
 		)
 		
 	elif args.benchmark=="smorph-radioimg":
-		logger.info("Running smorph-radioimg benchmark inference")
+		logger.info("Running smorph-radioimg benchmark inference ...")
 		run_llavaov_model_smorph_inference(
 			datalist=datalist,
 			model=model,
@@ -232,7 +232,26 @@ def main():
 			add_task_description=args.add_task_description,
 			conv_template=args.conv_template,
 			verbose=args.verbose
-		)	
+		)
+	
+	elif args.benchmark=="galaxydet-radioimg":
+		logger.info("Running galaxydet-radioimg benchmark inference")
+		run_llava_model_galaxy_inference(
+			datalist=datalist,
+			model=model,
+			tokenizer=tokenizer,
+			image_processor=image_processor,
+			datalist_context=datalist_context,
+			device=device,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			shuffle_options=args.shuffle_options,
+			nmax=args.nmax,
+			nmax_context=args.nmax_context,
+			add_task_description=args.add_task_description,
+			conv_template=args.conv_template,
+			verbose=args.verbose
+		)
 		
 	else:
 		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))

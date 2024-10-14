@@ -280,7 +280,7 @@ def run_llavaov_model_inference(
 	add_options=False, shuffle_options=False,
 	nmax=-1,
 	nmax_context=-1,
-	conv_template="qwen_1_5",
+	conv_template="qwen_2",
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on radio image dataset """
@@ -516,7 +516,7 @@ def run_llavaov_model_rgz_inference(
 	nmax=-1,
 	nmax_context=-1,
 	add_task_description=False,
-	conv_template="qwen_1_5",
+	conv_template="qwen_2",
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on RGZ dataset """
@@ -582,7 +582,7 @@ def run_llavaov_model_smorph_inference(
 	nmax=-1, 
 	nmax_context=-1,
 	add_task_description=False,
-	conv_template="qwen_1_5",
+	conv_template="qwen_2",
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on radio image dataset """
@@ -637,5 +637,62 @@ def run_llavaov_model_smorph_inference(
 	)	
 	
 
-
+def run_llava_model_galaxy_inference(
+	datalist, 
+	model, tokenizer, image_processor, 
+	datalist_context=None, 
+	device="cuda:0", 
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25, 
+	shuffle_options=False, 
+	nmax=-1, 
+	nmax_context=-1,
+	add_task_description=False,
+	conv_template="qwen_2",
+	verbose=False
+):
+	""" Run LLaVA inference on radio image dataset (galaxy detection) """
+	
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	description= ""
+	question_prefix= "Do you see any likely radio galaxy with an extended morphology in the image? "
+	question_subfix= "Answer concisely: Yes or No."
+	
+	label2id= {
+		"NO": 0,
+		"YES": 1,
+	}
+	
+	class_options= None
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": filter_galaxy_label,
+		"label2id": label2id,
+		"class_options": class_options,
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_llavaov_model_inference(
+		datalist, 
+		model, tokenizer, image_processor, 
+		task_info, 
+		datalist_context=datalist_context, 
+		device=device, 
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast, 
+		add_options=False, shuffle_options=False, 
+		nmax=nmax, 
+		nmax_context=nmax_context,
+		conv_template=conv_template,
+		verbose=verbose
+	)	
 
