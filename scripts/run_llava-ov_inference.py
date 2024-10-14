@@ -235,7 +235,7 @@ def main():
 		)
 	
 	elif args.benchmark=="galaxydet-radioimg":
-		logger.info("Running galaxydet-radioimg benchmark inference")
+		logger.info("Running galaxydet-radioimg benchmark inference ...")
 		run_llavaov_model_galaxy_inference(
 			datalist=datalist,
 			model=model,
