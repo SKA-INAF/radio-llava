@@ -637,7 +637,7 @@ def run_llavaov_model_smorph_inference(
 	)	
 	
 
-def run_llava_model_galaxy_inference(
+def run_llavaov_model_galaxy_inference(
 	datalist, 
 	model, tokenizer, image_processor, 
 	datalist_context=None, 
