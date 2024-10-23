@@ -402,23 +402,23 @@ def transform_img(data, nchans=1, norm_range=(0.,1.), resize=False, resize_size=
     
   # - For 3D data, check number of channels, eventually copying last channel in new ones
   if ndim==3:  	
-  	nchan_curr= data_transf.shape[-1]
+    nchan_curr= data_transf.shape[-1]
 
-  	if nchan_curr!=nchan:
-  		data_resized= np.zeros((data_transf.shape[0], data_transf.shape[1], nchans))
+    if nchan_curr!=nchan:
+      data_resized= np.zeros((data_transf.shape[0], data_transf.shape[1], nchans))
 
-  		expanding= (nchans>nchans_curr)
-  		if expanding:
-				for i in range(nchans):
-					if i<nchans_curr:
-						data_resized[:,:,i]= data_transf[:,:,i]
-					else:
-						data_resized[:,:,i]= data_transf[:,:,nchans_curr-1]	
-			else:
-				for i in range(nchans):
-					data_resized[:,:,i]= data_transf[:,:,i]
+      expanding= (nchans>nchans_curr)
+      if expanding:
+        for i in range(nchans):
+          if i<nchans_curr:
+            data_resized[:,:,i]= data_transf[:,:,i]
+          else:
+            data_resized[:,:,i]= data_transf[:,:,nchans_curr-1]	
+      else:
+        for i in range(nchans):
+          data_resized[:,:,i]= data_transf[:,:,i]
 			
-			data_transf= data_resized
+      data_transf= data_resized
 
   # - Convert to uint8
   if to_uint8:
