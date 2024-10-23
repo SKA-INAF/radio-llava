@@ -25,6 +25,7 @@ print("PY VERSION: maj=%s, min=%s" % (PY_MAJOR_VERSION,PY_MINOR_VERSION))
 
 reqs= []
 #reqs.append('numpy')
+#reqs.append('shortuuid')
 #reqs.append('ipython')
 #reqs.append('astropy')
 #reqs.append('matplotlib')
@@ -54,7 +55,7 @@ setup(
 	#download_url="https://github.com/SKA-INAF/sclassifier/archive/refs/tags/v1.0.7.tar.gz",
 	packages=['radio_llava'],
 	install_requires=reqs,
-	scripts=['scripts/run_llava-ov_inference_hf.py','scripts/run_llava-ov_inference.py','scripts/run_tinyllava_inference.py','scripts/run_tinyllava_finetuning.py','scripts/create_dataset_from_radioyolo.py','scripts/create_dataset_from_radioimg.py'],
+	scripts=['scripts/run_llava-ov_inference_hf.py','scripts/run_llava-ov_inference.py','scripts/run_tinyllava_inference.py','scripts/run_tinyllava_finetuning.py','scripts/create_dataset_from_radioyolo.py','scripts/create_dataset_from_radioimg.py','scripts/create_dataset_from_rgzsmorph.py','scripts/create_dataset_from_smgpsextcat.py'],
 	classifiers=[
 		'Development Status :: 5 - Production/Stable',
 		'Intended Audience :: Science/Research',
