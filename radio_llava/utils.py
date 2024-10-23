@@ -83,6 +83,94 @@ def write_ascii(data, filename, header=''):
 ##########################
 ##   IMAGE PROC UTILS
 ##########################
+def strip_deg_axis_from_header(header):
+	""" Remove references to 3rd & 4th axis from FITS header """
+	
+	# - Remove 3rd axis
+	if 'NAXIS3' in header:
+		del header['NAXIS3']
+	if 'CTYPE3' in header:
+		del header['CTYPE3']
+	if 'CRVAL3' in header:
+		del header['CRVAL3']
+	if 'CDELT3' in header:
+		del header['CDELT3']
+	if 'CRPIX3' in header:
+		del header['CRPIX3']
+	if 'CUNIT3' in header:
+		del header['CUNIT3']
+	if 'CROTA3' in header:
+		del header['CROTA3']
+	if 'PC1_3' in header:
+		del header['PC1_3']
+	if 'PC01_03' in header:
+		del header['PC01_03']
+	if 'PC2_3' in header:
+		del header['PC2_3']
+	if 'PC02_03' in header:
+		del header['PC02_03']
+	if 'PC3_1' in header:
+		del header['PC3_1']
+	if 'PC03_01' in header:
+		del header['PC03_01']
+	if 'PC3_2' in header:
+		del header['PC3_2']
+	if 'PC03_02' in header:
+		del header['PC03_02']
+	if 'PC3_3' in header:
+		del header['PC3_3']
+	if 'PC03_03' in header:
+		del header['PC03_03']
+
+	# - Remove 4th axis
+	if 'NAXIS4' in header:
+		del header['NAXIS4']
+	if 'CTYPE4' in header:
+		del header['CTYPE4']
+	if 'CRVAL4' in header:
+		del header['CRVAL4']
+	if 'CDELT4' in header:
+		del header['CDELT4']
+	if 'CRPIX4' in header:
+		del header['CRPIX4']
+	if 'CUNIT4' in header:
+		del header['CUNIT4']
+	if 'CROTA4' in header:
+		del header['CROTA4']
+	if 'PC1_4' in header:
+		del header['PC1_4']
+	if 'PC01_04' in header:
+		del header['PC01_04']
+	if 'PC2_4' in header:
+		del header['PC2_4']
+	if 'PC02_04' in header:
+		del header['PC02_04']
+	if 'PC3_4' in header:
+		del header['PC3_4']
+	if 'PC03_04' in header:
+		del header['PC03_04']
+	if 'PC4_1' in header:
+		del header['PC4_1']
+	if 'PC04_01' in header:
+		del header['PC04_01']
+	if 'PC4_2' in header:
+		del header['PC4_2']
+	if 'PC04_02' in header:
+		del header['PC04_02']
+	if 'PC4_3' in header:
+		del header['PC4_3']
+	if 'PC04_03' in header:
+		del header['PC04_03']
+	if 'PC4_4' in header:
+		del header['PC4_4']
+	if 'PC04_04' in header:
+		del header['PC04_04']
+
+	# - Set naxis to 2
+	header['NAXIS']= 2
+	
+	return header	
+	
 def resize_img(
   image,
   min_dim=None, max_dim=None, min_scale=None,
