@@ -254,6 +254,7 @@ def main():
 		)
 		
 	elif args.benchmark=="artefactdet-radioimg":
+		logger.info("Running artefactdet-radioimg benchmark inference ...")
 		run_llavaov_model_artefact_inference(
 			datalist=datalist,
 			model=model,
