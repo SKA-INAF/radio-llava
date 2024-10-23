@@ -402,9 +402,9 @@ def transform_img(data, nchans=1, norm_range=(0.,1.), resize=False, resize_size=
     
   # - For 3D data, check number of channels, eventually copying last channel in new ones
   if ndim==3:  	
-    nchan_curr= data_transf.shape[-1]
+    nchans_curr= data_transf.shape[-1]
 
-    if nchan_curr!=nchan:
+    if nchans_curr!=nchans:
       data_resized= np.zeros((data_transf.shape[0], data_transf.shape[1], nchans))
 
       expanding= (nchans>nchans_curr)
