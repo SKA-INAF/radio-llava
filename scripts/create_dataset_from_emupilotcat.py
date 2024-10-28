@@ -211,7 +211,7 @@ def main():
 				"bboxes": [],
 				"description": "unclassified source"
 			},
-			"ARTEFACT": {
+			"SPURIOUS": {
 				"count": 0, 
 				"bboxes": [],
 				"description": "artefacts introduced in the radio image by the imaging process, having a ring-like or elongated compact morphology"
