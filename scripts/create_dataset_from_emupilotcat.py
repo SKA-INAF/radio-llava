@@ -668,7 +668,7 @@ def main():
 		abbox_frii_ext= {"from": "gpt", "value": response}
 		
 		# - FR-x
-		qbbox_fri= {"from": "human", "value": "Please provide the bounding box coordinates of all radio galaxies of FR-x type present in the image."}
+		qbbox_frx= {"from": "human", "value": "Please provide the bounding box coordinates of all radio galaxies of FR-x type present in the image."}
 	
 		coords= ''
 		for i in range(n_frx):
