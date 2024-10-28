@@ -728,10 +728,10 @@ def main():
 		if has_extended:
 			response= "The image contains radio sources with an extended morphology that could be relevant or interesting for the user, depending on the analysis case or field of study."
 			if has_peculiar:
-				response+= " " + n_pec + " of these radio sources have a peculiar morphology."
+				response+= " " + str(n_pec) + " of these radio sources have a peculiar morphology."
 		else:
 			if has_peculiar:
-				response= "The image contains " + n_pec + " radio sources with a peculiar morphology."			
+				response= "The image contains " + str(n_pec) + " radio sources with a peculiar morphology."			
 			else:
 				response= "The image is ordinary and does not contain radio sources with a particular morphological structure. "
 	
