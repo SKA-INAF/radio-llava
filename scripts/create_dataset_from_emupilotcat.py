@@ -289,9 +289,9 @@ def main():
 		print(obj_info_caesar)
 		
 		has_fr= (has_fri or has_frii or has_frx)
-		n_fri= obj_info_caesar["FR-I"]["count"]
-		n_frii= obj_info_caesar["FR-II"]["count"]
-		n_frx= obj_info_caesar["FR-x"]["count"]
+		n_fri= obj_info["FR-I"]["count"]
+		n_frii= obj_info["FR-II"]["count"]
+		n_frx= obj_info["FR-x"]["count"]
 		
 		n_compact= obj_info_caesar["COMPACT"]["count"]
 		n_ext= obj_info_caesar["EXTENDED"]["count"]
