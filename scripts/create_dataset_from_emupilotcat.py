@@ -260,7 +260,7 @@ def main():
 				has_extended= True
 			if label_caesar=="EXTENDED-MULTISLAND":
 				has_extended_multi= True
-			if label_caesar=="EXTENDED" or class_label=="EXTENDED-MULTISLAND" or class_label=="ARTEFACT":
+			if label_caesar=="EXTENDED" or label_caesar=="EXTENDED-MULTISLAND" or label_caesar=="ARTEFACT":
 				only_compact= False
 			if label_caesar=="ARTEFACT":
 				has_artefact= True
