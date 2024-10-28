@@ -111,7 +111,6 @@ def main():
 	anndata= json.load(fp)
 	logger.info("#%d images in dataset ..." % (len(anndata)))
 	
-	return 0
 	
 	#===========================
 	#==   LOAD LLAMA MODEL
