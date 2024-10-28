@@ -111,7 +111,6 @@ def main():
 	anndata= json.load(fp)
 	logger.info("#%d images in dataset ..." % (len(anndata)))
 	
-	
 	#===========================
 	#==   LOAD LLAMA MODEL
 	#===========================
@@ -146,6 +145,12 @@ def main():
 		"Render a clear and concise summary of the image.",
 		"Write a terse but informative summary of the image.",
 		"Create a compact narrative representing the image presented."
+	]
+	
+	anomaly_msg_list= [
+		"Is the image content ordinary or peculiar in terms of contained objects? ",
+		"Do you see any radio source with peculiar morphology in the presented image? ",
+		"Please report if the given image contains any radio source with an anomalous or peculiar morphology. "
 	]
 	
 	for idx, item in enumerate(anndata):
@@ -191,6 +196,12 @@ def main():
 				"bboxes": [],
 				"smorph": [],
 				"description": "radio galaxies with single-peak resolved morphology"
+			},
+			"Pec": {
+				"count": 0, 
+				"bboxes": [],
+				"smorph": [],
+				"description": "radio sources with a peculiar morphology"
 			}	
 		}
 		
@@ -242,6 +253,7 @@ def main():
 		has_frii= False
 		has_frx= False
 		has_fr= False
+		has_peculiar= False
 		
 		for item in objs:
 			
@@ -280,6 +292,8 @@ def main():
 				has_frii= True
 			if label=="FR-x":
 				has_frx= True
+			if label=="Pec":
+				has_peculiar= True
 			
 				
 		print("--> obj_info")
@@ -292,6 +306,7 @@ def main():
 		n_fri= obj_info["FR-I"]["count"]
 		n_frii= obj_info["FR-II"]["count"]
 		n_frx= obj_info["FR-x"]["count"]
+		n_pec= obj_info["Pec"]["count"]
 		
 		n_compact= obj_info_caesar["COMPACT"]["count"]
 		n_ext= obj_info_caesar["EXTENDED"]["count"]
@@ -299,6 +314,7 @@ def main():
 		n_ext_tot= n_ext + n_extmulti
 		n_artefact= obj_info_caesar["ARTEFACT"]["count"]
 		n_flagged= obj_info_caesar["FLAGGED"]["count"]
+		has_extended= (n_ext_tot>0)
 
 		# - Initialize outdict
 		outdict = dict()
@@ -703,6 +719,25 @@ def main():
 					
 		abbox_frx_ext= {"from": "gpt", "value": response}
 		
+		# ---------------------------------------
+		# - Anomaly question
+		# .......................................
+		qanomaly= {"from": "human", "value": random.choice(anomaly_msg_list)} 
+	
+		response= ""
+		if has_extended:
+			response= "The image contains radio sources with an extended morphology that could be relevant or interesting for the user, depending on the analysis case or field of study."
+			if has_peculiar:
+				response+= " " + n_pec + " of these radio sources have a peculiar morphology."
+		else:
+			if has_peculiar:
+				response= "The image contains " + n_pec + " radio sources with a peculiar morphology."			
+			else:
+				response= "The image is ordinary and does not contain radio sources with a particular morphological structure. "
+	
+		response_final= response
+		aanomaly= {"from": "gpt", "value": response_final}
+		
 		#########################################
 		# - Add all messages to collection
 		#########################################
@@ -719,6 +754,7 @@ def main():
 			qbbox_frii_ext, abbox_frii_ext,
 			qbbox_frx, abbox_frx,
 			qbbox_frx_ext, abbox_frx_ext,
+			qanomaly, aanomaly,
 		]
 		outdict["conversations"]= conversations
 	
