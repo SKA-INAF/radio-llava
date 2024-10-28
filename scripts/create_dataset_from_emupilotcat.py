@@ -729,8 +729,10 @@ def main():
 	#===========================
 	#==   SAVE OUTPUT
 	#===========================
-	# ...
-	# ...
+	# - Convert and write JSON object to file
+	logger.info("Convert and write JSON object to file %s ..." % (outfile))
+	with open(outfile, "w") as fw: 
+		json.dump(outdata, fw, indent=2)	
 	
 	return 0	
 	
