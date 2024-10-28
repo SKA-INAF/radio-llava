@@ -248,7 +248,7 @@ def main():
 			# - Count caesar labels
 			label_caesar= "UNKNOWN"
 			bbox_caesar= []
-			if "label_caesar" in objs:
+			if "label_caesar" in item:
 				label_caesar= item["label_caesar"]
 				bbox_caesar= item["bbox_norm_caesar"]
 			
