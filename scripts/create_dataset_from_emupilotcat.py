@@ -272,9 +272,9 @@ def main():
 				has_extended= True
 			if label_caesar=="EXTENDED-MULTISLAND":
 				has_extended_multi= True
-			if label_caesar=="EXTENDED" or label_caesar=="EXTENDED-MULTISLAND" or label_caesar=="ARTEFACT":
+			if label_caesar=="EXTENDED" or label_caesar=="EXTENDED-MULTISLAND" or label_caesar=="SPURIOUS":
 				only_compact= False
-			if label_caesar=="ARTEFACT":
+			if label_caesar=="SPURIOUS":
 				has_artefact= True
 			if label_caesar=="FLAGGED":
 				has_flagged= True
@@ -312,7 +312,7 @@ def main():
 		n_ext= obj_info_caesar["EXTENDED"]["count"]
 		n_extmulti= obj_info_caesar["EXTENDED-MULTISLAND"]["count"]
 		n_ext_tot= n_ext + n_extmulti
-		n_artefact= obj_info_caesar["ARTEFACT"]["count"]
+		n_artefact= obj_info_caesar["SPURIOUS"]["count"]
 		n_flagged= obj_info_caesar["FLAGGED"]["count"]
 		has_extended= (n_ext_tot>0)
 
@@ -383,7 +383,7 @@ def main():
 		text= str(n_artefact) + " spurious radio sources located at these normalized bounding box pixel coordinates (x,y,w,h): "
 		coords= ''
 		for i in range(n_artefact):
-			bbox= obj_info_caesar["ARTEFACT"]["bboxes"][i]
+			bbox= obj_info_caesar["SPURIOUS"]["bboxes"][i]
 			bbox_str= (str(bbox)[1:-1])
 			coords+= "[" + bbox_str + "]"
 			if i!=n_artefact-1:
@@ -392,7 +392,7 @@ def main():
 				coords+= '. '
 		
 		text+= coords
-		text+= "Spurious sources are " + obj_info_caesar["ARTEFACT"]["description"] + ".\n"
+		text+= "Spurious sources are " + obj_info_caesar["SPURIOUS"]["description"] + ".\n"
 		if n_artefact>0:
 			query+= text
 		
@@ -578,7 +578,7 @@ def main():
 	
 		coords= ''
 		for i in range(n_artefact):
-			bbox= obj_info_caesar["ARTEFACT"]["bboxes"][i]
+			bbox= obj_info_caesar["SPURIOUS"]["bboxes"][i]
 			bbox_str= (str(bbox)[1:-1])
 			coords+= "[" + bbox_str + "]"
 			if i!=n_artefact-1:
