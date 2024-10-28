@@ -186,7 +186,7 @@ def main():
 				"bboxes": [],
 				"smorph": [],
 				"description": "radio galaxies with mixed or hybrid morphology, showing characteristics of both FR-I and FR-II galaxy classes"
-			}	
+			},
 			"R": {
 				"count": 0, 
 				"bboxes": [],
