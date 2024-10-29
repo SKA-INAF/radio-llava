@@ -517,7 +517,7 @@ def main():
 		abbox_artefact= {"from": "gpt", "value": response}
 		
 		# - Flagged 
-		qbbox_flagged= {"from": "human", "value": "Does the image contain spurious sources or any imaging artefact around bright sources? Please provide their bounding box coordinates."}
+		qbbox_flagged= {"from": "human", "value": "Does the image contain radio sources that are severely contaminated or overlapping with imaging artefacts? Please provide their bounding box coordinates."}
 	
 		coords= ''
 		for i in range(n_flagged):
