@@ -384,6 +384,7 @@ def run_llavaov_model_inference(
 	ninferences_failed= 0
 	class_ids= []
 	class_ids_pred= []
+	n_max_retries= 1
 	
 	for idx, item in enumerate(datalist):
 		
@@ -426,45 +427,72 @@ def run_llavaov_model_inference(
 			else:
 				question= description + ' \n' + question_prefix + ' \n ' + question_subfix
 
-		# - Run inference with or without context
-		if conversations_context:
-			output= run_llavaov_model_context_query(
-				model, tokenizer, image_processor, 
-				image, 
-				question,
-				images_context,
-				conversations_context,
-				do_sample=False,
-				temperature=None,
-				conv_template=conv_template,
-				verbose=verbose
-			)
-		else:
-			output= run_llavaov_model_query(
-				model, tokenizer, image_processor, 
-				image, 
-				question,
-				do_sample=False,
-				temperature=None,
-				conv_template=conv_template,
-				verbose=verbose
-			)
+		question_retry= "The format of your response does not comply with the requested instructions, please answer again to the following request and strictly follow the given instructions. \n" + question
+		skip_inference= False
+		
+		for k in range(n_max_retries):
+			#########################
+			##   RUN INFERENCE
+			#########################
+			# - Run inference with or without context
+			if k==0:
+				question_curr= question
+			else:
+				question_curr= question_retry
+			
+			if conversations_context:
+				output= run_llavaov_model_context_query(
+					model, tokenizer, image_processor, 
+					image, 
+					question_curr,
+					images_context,
+					conversations_context,
+					do_sample=False,
+					temperature=None,
+					conv_template=conv_template,
+					verbose=verbose
+				)
+			else:
+				output= run_llavaov_model_query(
+					model, tokenizer, image_processor, 
+					image, 
+					question_curr,
+					do_sample=False,
+					temperature=None,
+					conv_template=conv_template,
+					verbose=verbose
+				)
 
-		if output is None:
-			logger.warn("Failed inference for image %s, skipping ..." % (filename))
+			if output is None:
+				logger.warn("Failed inference for image %s, skipping ..." % (filename))
+				skip_inference= True
+				break
+				#ninferences_failed+= 1
+				#continue
+
+			#########################
+			##   PROCESS OUTPUT
+			#########################
+			# - Extract class ids
+			res= process_model_output(output, label, label2id, classification_mode, label_modifier_fcn)
+			if res is None:
+				if k>=n_max_retries:
+					logger.warn("Unexpected label prediction obtained for image %s, giving up and skipping image ..." % (filename))
+					skip_inference= True
+					break
+				else:
+					logger.warn("Unexpected label prediction obtained for image %s, trying again (#nretry=%d) ..." % (filename, k+1))
+					#ninferences_unexpected+= 1
+					continue
+			else:
+				break
+							
+		# - Check if inference has to be skipped for this image
+		if skip_inference:
 			ninferences_failed+= 1
 			continue
 
-		#########################
-		##   PROCESS OUTPUT
-		#########################
-		# - Extract class ids
-		res= process_model_output(output, label, label2id, classification_mode, label_modifier_fcn)
-		if res is None:
-			logger.warn("Unexpected label prediction found, skip this image ...")
-			ninferences_unexpected+= 1
-			continue
-
+		# - Post process results
 		classid= res[0]
 		classid_pred= res[1]
 		label= res[2]
@@ -524,7 +552,6 @@ def run_llavaov_model_rgz_inference(
 	#===========================
 	#==   INIT TASK
 	#===========================
-	
 	# - Define message
 	if add_task_description:
 		description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. \n An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
