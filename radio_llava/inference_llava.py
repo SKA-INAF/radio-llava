@@ -481,7 +481,7 @@ def run_llavaov_model_inference(
 			print("res: ", res)
 			print("type(res)", type(res))
 			
-			if res is None:
+			if res is None or type(res)==NoneType:
 				if k>=n_max_retries:
 					logger.warn("Unexpected label prediction obtained for image %s, giving up and skipping image ..." % (filename))
 					skip_inference= True
