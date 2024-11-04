@@ -263,6 +263,7 @@ def main():
 			conv_mode=args.conv_mode,
 			shuffle_options=args.shuffle_options, 
 			nmax=args.nmax,
+			add_task_description=args.add_task_description,
 			verbose=args.verbose
 		)
 		

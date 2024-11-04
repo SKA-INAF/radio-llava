@@ -701,17 +701,21 @@ def run_tinyllava_model_anomaly_inference(
 	zscale=False, contrast=0.25,
 	conv_mode='phi', 
 	shuffle_options=False,
-	nmax=-1, 
+	nmax=-1,
+	add_task_description=False,
 	verbose=False
 ):
-	""" Run TinyLLaVA inference on radio image dataset (artefact detection) """
+	""" Run TinyLLaVA inference on radio image dataset (anomaly detection) """
 	
 	#===========================
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	description= ""
-	question_prefix= "Can you identify which of these peculiarity class the presented image belongs to? \n ORDINARY \n COMPLEX \n PECULIAR "
+	if add_task_description:
+		description= "Consider this radio image peculiarity classes, defined as follows: \n ORDINARY: image containing only point-like or slightly-resolved compact radio sources superimposed over the sky background or imaging artefact patterns; \n COMPLEX: image containing one or more radio sources with extended or diffuse morphology; \n PECULIAR: image containing one or more radio sources with anomalous or peculiar extended morphology, often having diffuse edges, complex irregular shapes, covering a large portion of the image.\n"
+	else:
+		description= ""
+	question_prefix= "Can you identify which peculiarity class the presented image belongs to? "
 	question_subfix= "Please report only the identified class label, without any additional explanation text."
 	
 	label2id= {
