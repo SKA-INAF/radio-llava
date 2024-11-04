@@ -429,13 +429,15 @@ def run_llavaov_model_inference(
 
 		question_retry= "The format of your response does not comply with the requested instructions, please answer again to the following request and strictly follow the given instructions. \n" + question
 		skip_inference= False
+		n_retries= 0
 		
-		for k in range(n_max_retries):
+		#for k in range(n_max_retries):
+		while n_retries<n_max_retries:
 			#########################
 			##   RUN INFERENCE
 			#########################
 			# - Run inference with or without context
-			if k==0:
+			if n_retries==0:
 				question_curr= question
 			else:
 				question_curr= question_retry
@@ -483,14 +485,15 @@ def run_llavaov_model_inference(
 			
 			if res is None or type(res)==NoneType:
 				print("res is None!")
-				if k>=n_max_retries:
+				if n_retries>=n_max_retries:
 					print("Unexpected label prediction obtained for image, giving up and skipping image")
 					logger.warn("Unexpected label prediction obtained for image %s, giving up and skipping image ..." % (filename))
 					skip_inference= True
 					break
 				else:
 					print("Unexpected label prediction obtained for image, trying again ...")
-					logger.warn("Unexpected label prediction obtained for image %s, trying again (#nretry=%d) ..." % (filename, k+1))
+					logger.warn("Unexpected label prediction obtained for image %s, trying again (#nretry=%d) ..." % (filename, n_retries))
+					n_retries+= 1
 					#ninferences_unexpected+= 1
 					continue
 			else:
