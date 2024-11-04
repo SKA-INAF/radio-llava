@@ -567,12 +567,13 @@ def run_llavaov_model_rgz_inference(
 	question_subfix= "Please report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
 	
 	label2id= {
-		"1C-1P": 0,
-		"1C-2P": 1,
-		"1C-3P": 2,
-		"2C-2P": 3,
-		"2C-3P": 4,
-		"3C-3P": 5,
+		"NONE": 0,
+		"1C-1P": 1,
+		"1C-2P": 2,
+		"1C-3P": 3,
+		"2C-2P": 4,
+		"2C-3P": 5,
+		"3C-3P": 6,
 	}
 	
 	task_info= {
