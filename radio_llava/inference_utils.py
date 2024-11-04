@@ -65,6 +65,9 @@ def process_model_output_multiclass_singlelabel(model_output, label, label2id, l
 		logger.warn("Unexpected label (%s) returned!" % (label_pred))
 		return None
 	
+	print("label",label)
+	print("label_pred",label_pred)
+	
 	# - Extract class ids
 	classid= label2id[label]
 	classid_pred= label2id[label_pred]
