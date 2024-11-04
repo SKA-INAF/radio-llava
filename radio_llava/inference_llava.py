@@ -795,3 +795,64 @@ def run_llavaov_model_artefact_inference(
 		verbose=verbose
 	)	
 
+def run_llavaov_model_anomaly_inference(
+	datalist, 
+	model, tokenizer, image_processor, 
+	datalist_context=None, 
+	device="cuda:0", 
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25, 
+	shuffle_options=False, 
+	nmax=-1, 
+	nmax_context=-1,
+	add_task_description=False,
+	conv_template="qwen_2",
+	verbose=False
+):
+	""" Run LLaVA inference on radio image dataset (anomaly detection) """
+	
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	description= ""
+	question_prefix= "Can you identify which of these peculiarity class the presented image belongs to? \n ORDINARY \n COMPLEX \n PECULIAR "
+	question_subfix= "Please report only the identified class label, without any additional explanation text."
+	
+	label2id= {
+		"ORDINARY": 0,
+		"COMPLEX": 1,
+		"PECULIAR": 2,
+	}
+	
+	class_options= ["ORDINARY","COMPLEX","PECULIAR"]
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": filter_anomaly_label,
+		"label2id": label2id,
+		"class_options": class_options,
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_llavaov_model_inference(
+		datalist, 
+		model, tokenizer, image_processor, 
+		task_info, 
+		datalist_context=datalist_context, 
+		device=device, 
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast, 
+		add_options=False, shuffle_options=False, 
+		nmax=nmax, 
+		nmax_context=nmax_context,
+		conv_template=conv_template,
+		verbose=verbose
+	)	
+	
+

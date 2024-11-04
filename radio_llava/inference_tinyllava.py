@@ -711,9 +711,8 @@ def run_tinyllava_model_anomaly_inference(
 	#===========================
 	# - Define message
 	description= ""
-	question_prefix= "Can you identify which of these peculiarity class the presented image belongs to? \n ORDINARY \n COMPLEX \n PECULIAR. Please report only one class. "
-	question_subfix= "Answer concisely: Yes or No."
-	
+	question_prefix= "Can you identify which of these peculiarity class the presented image belongs to? \n ORDINARY \n COMPLEX \n PECULIAR "
+	question_subfix= "Please report only the identified class label, without any additional explanation text."
 	
 	label2id= {
 		"ORDINARY": 0,
