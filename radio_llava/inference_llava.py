@@ -477,6 +477,8 @@ def run_llavaov_model_inference(
 			#########################
 			# - Extract class ids
 			res= process_model_output(output, label, label2id, classification_mode, label_modifier_fcn)
+			print("res: ", res)
+			
 			if res is None:
 				if k>=n_max_retries:
 					logger.warn("Unexpected label prediction obtained for image %s, giving up and skipping image ..." % (filename))
@@ -487,6 +489,7 @@ def run_llavaov_model_inference(
 					#ninferences_unexpected+= 1
 					continue
 			else:
+				logger.info("Correct label prediction obtained for image %s, computing class ids ..." % (filename))	
 				break
 							
 		# - Check if inference has to be skipped for this image
@@ -495,8 +498,6 @@ def run_llavaov_model_inference(
 			continue
 
 		# - Post process results
-		print("res: ", res)
-		
 		classid= res[0]
 		classid_pred= res[1]
 		label= res[2]
