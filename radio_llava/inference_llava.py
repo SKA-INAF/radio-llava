@@ -347,7 +347,7 @@ def run_llavaov_model_inference(
 				else:
 					question= question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
 			else:
-				question= description + ' \n' + question_prefix + ' \n ' + ' \n ' + question_subfix
+				question= description + ' \n' + question_prefix + ' \n ' + question_subfix
 		
 			
 			# - Set assistant response to true label
@@ -418,9 +418,9 @@ def run_llavaov_model_inference(
 		
 			question_labels= ' \n '.join(option_choices)
 			if conversations_context:
-				question= question_prefix + ' \n ' + question_labels + question_subfix
+				question= question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
 			else:
-				question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+				question= description + ' \n' + question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
 		else:
 			if conversations_context:
 				question= question_prefix + ' \n ' + question_subfix
