@@ -478,6 +478,7 @@ def run_llavaov_model_inference(
 			# - Extract class ids
 			res= process_model_output(output, label, label2id, classification_mode, label_modifier_fcn)
 			print("res: ", res)
+			print("type(res)", type(res))
 			
 			if res is None:
 				if k>=n_max_retries:
