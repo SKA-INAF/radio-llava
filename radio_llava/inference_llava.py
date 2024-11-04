@@ -439,7 +439,9 @@ def run_llavaov_model_inference(
 				question_curr= question
 			else:
 				question_curr= question_retry
-			
+				
+			print("question: ", question_curr)
+						
 			if conversations_context:
 				output= run_llavaov_model_context_query(
 					model, tokenizer, image_processor, 
@@ -493,6 +495,8 @@ def run_llavaov_model_inference(
 			continue
 
 		# - Post process results
+		print("res: ", res)
+		
 		classid= res[0]
 		classid_pred= res[1]
 		label= res[2]
