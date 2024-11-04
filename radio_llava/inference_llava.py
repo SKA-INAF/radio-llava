@@ -432,7 +432,7 @@ def run_llavaov_model_inference(
 		n_retries= 0
 		
 		#for k in range(n_max_retries):
-		while n_retries<n_max_retries:
+		while n_retries<=n_max_retries:
 			#########################
 			##   RUN INFERENCE
 			#########################
@@ -491,9 +491,9 @@ def run_llavaov_model_inference(
 					skip_inference= True
 					break
 				else:
+					n_retries+= 1
 					print("Unexpected label prediction obtained for image, trying again ...")
 					logger.warn("Unexpected label prediction obtained for image %s, trying again (#nretry=%d) ..." % (filename, n_retries))
-					n_retries+= 1
 					#ninferences_unexpected+= 1
 					continue
 			else:
@@ -501,7 +501,7 @@ def run_llavaov_model_inference(
 				break
 							
 		# - Check if inference has to be skipped for this image
-		if skip_inference:
+		if skip_inference or res is None:
 			ninferences_failed+= 1
 			continue
 
