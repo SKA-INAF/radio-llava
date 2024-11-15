@@ -417,21 +417,23 @@ def run_llavaov_model_inference(
 				random.shuffle(option_choices)
 		
 			question_labels= ' \n '.join(option_choices)
-			if conversations_context:
-				question= question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
-			else:
-				question= description + ' \n' + question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
+			
+			question= description + ' \n' + question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
+			#if conversations_context:
+			#	question= question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
+			#else:
+			#	question= description + ' \n' + question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
 		else:
-			if conversations_context:
-				question= question_prefix + ' \n ' + question_subfix
-			else:
-				question= description + ' \n' + question_prefix + ' \n ' + question_subfix
+			question= description + ' \n' + question_prefix + ' \n ' + question_subfix
+			#if conversations_context:
+			#	question= question_prefix + ' \n ' + question_subfix
+			#else:
+			#	question= description + ' \n' + question_prefix + ' \n ' + question_subfix
 
 		question_retry= "The format of your response does not comply with the requested instructions, please answer again to the following request and strictly follow the given instructions. \n" + question
 		skip_inference= False
 		n_retries= 0
 		
-		#for k in range(n_max_retries):
 		while n_retries<=n_max_retries:
 			#########################
 			##   RUN INFERENCE
