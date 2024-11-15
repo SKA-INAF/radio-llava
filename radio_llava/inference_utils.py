@@ -226,7 +226,7 @@ def format_context_model_response(response, classification_mode, modifier_fcn):
 	if classification_mode=="multiclass_multilabel":
 		res= format_context_model_response_multiclass_multilabel(response, modifier_fcn)
 	elif classification_mode=="multiclass_singlelabel":
-		res= format_context_model_response_singlelabel(response, modifier_fcn)
+		res= format_context_model_response_multiclass_singlelabel(response, modifier_fcn)
 	else:
 		logger.error("Invalid/unknown classification mode specified!" % (classification_mode))
 		res= None
