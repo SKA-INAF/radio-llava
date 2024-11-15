@@ -14,4 +14,5 @@ bitsandbytes
 accelerate
 flash-attn --install-option='--no-build-isolation'
 qwen-vl-utils
+optimum
 auto-gptq
