@@ -292,6 +292,7 @@ def run_llavaov_model_inference(
 	description= task_info["description"]
 	question_prefix= task_info["question_prefix"]
 	question_subfix= task_info["question_subfix"]
+	question_options= task_info["question_options"]
 	
 	# - Get class info
 	classification_mode= task_info["classification_mode"]
@@ -323,7 +324,6 @@ def run_llavaov_model_inference(
 			sname= item["sname"]
 			filename= item["filepaths"][0]
 			label= item["label"]
-			
 			
 			# - Read image into PIL
 			image= load_img_as_pil_rgb(
@@ -584,12 +584,11 @@ def run_llavaov_model_rgz_inference(
 	question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
 	
 	if add_task_description:
-		question_subfix= "Use the above context to answer the question, and follow these guidelines: \n"
+		question_subfix= "Answer the question using the given context, following these guidelines: \n"
 	else:
 		question_subfix= "Answer the question following these guidelines: \n"
-	question_subfix+= "1. Report just the identified class label taken from these possible choices: 1C-1P, 1C-2P, 1C-3P, 2C-2P, 2C-3P, 3C-3P \n"
-	question_subfix+= "2. Answer NONE if you cannot recognize any of the above classes in the image. \n"
-	question_subfix+= "3. Do not add explanation or description texts to the response. \n"
+	question_subfix+= "1. Answer NONE if you cannot recognize any of the above classes in the image, otherwise report just the identified class label. \n"
+	question_subfix+= "2. Do not add explanation or description texts to the response. \n"
 	
 	# - Define message
 	#if add_task_description:
@@ -599,6 +598,8 @@ def run_llavaov_model_rgz_inference(
 
 	#question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
 	#question_subfix= "Please report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+	
+	class_options= ["1C-1P", "1C-2P", "1C-3P", "2C-2P", "2C-3P", "3C-3P"]
 	
 	label2id= {
 		"NONE": 0,
@@ -616,7 +617,8 @@ def run_llavaov_model_rgz_inference(
 		"question_subfix": question_subfix,
 		"classification_mode": "multiclass_singlelabel",
 		"label_modifier_fcn": None,
-		"label2id": label2id
+		"label2id": label2id,
+		"class_options": class_options
 	}
 	
 	#=============================
