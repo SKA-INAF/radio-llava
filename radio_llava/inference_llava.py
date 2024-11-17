@@ -567,20 +567,23 @@ def run_llavaov_model_rgz_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	context= "### Context: Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. \n An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	context= "### Context: Consider these morphological classes of radio astronomical sources: \n 1C-1P: single-island sources having only one flux intensity peak; \n 1C-2C: single-island sources having two flux intensity peaks; \n 1C-3P: single-island sources having three flux intensity peaks; \n 2C-2P: sources consisting of two separated islands, each hosting a single flux intensity peak; \n 2C-3P: sources consisting of two separated islands, one containing a single peak of flux intensity and the other exhibiting two distinct intensity peaks; 3C-3P: sources consisting of three separated islands, each hosting a single flux intensity peak. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
 	context+= "\n"
-	context+= "Use the above context to answer the question below. Follow these guidelines: \n"
-	context+= "\n"
-	context+= "1. Answer directly from the given context. \n"
-	context+= "2. Your response must be just the identified class label taken from these possible choices: 1C-1P, 1C-2P, 1C-3P, 2C-2P, 2C-3P, 3C-3P \n"
-	context+= "3. Answer NONE if you cannot recognize any of the above classes in the image. \n"
-	context+= "4. If the context doesn't contain relevant information, respond with: \"I don't have enough information to answer this question.\" \n"
-	context+= "5. Do not add explanation or description texts to the response. \n"
-	context+= "\n"
+	#context+= "Use the above context to answer the question below. Follow these guidelines: \n"
+	#context+= "\n"
+	#context+= "1. Answer directly from the given context. \n"
+	#context+= "2. Your response must be just the identified class label taken from these possible choices: 1C-1P, 1C-2P, 1C-3P, 2C-2P, 2C-3P, 3C-3P \n"
+	#context+= "3. Answer NONE if you cannot recognize any of the above classes in the image. \n"
+	#context+= "4. If the context doesn't contain relevant information, respond with: \"I don't have enough information to answer this question.\" \n"
+	#context+= "5. Do not add explanation or description texts to the response. \n"
+	#context+= "\n"
 	
 	description= context
 	question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
-	question_subfix= ""
+	question_subfix= "Use the above context to answer the question, and follow these guidelines: \n"
+	question_subfix+= "1. Report just the identified class label taken from these possible choices: 1C-1P, 1C-2P, 1C-3P, 2C-2P, 2C-3P, 3C-3P \n"
+	question_subfix+= "2. Answer NONE if you cannot recognize any of the above classes in the image. \n"
+	question_subfix+= "3. Do not add explanation or description texts to the response. \n"
 	
 	# - Define message
 	#if add_task_description:
