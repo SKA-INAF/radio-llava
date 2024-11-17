@@ -580,8 +580,8 @@ def run_llavaov_model_rgz_inference(
 	description= ""
 	if add_task_description: 
 		description= context
+		
 	question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
-	
 	if add_task_description:
 		if datalist_context is None:
 			question_subfix= "Answer the question using the provided context. "
@@ -593,7 +593,8 @@ def run_llavaov_model_rgz_inference(
 		else:
 			question_subfix= "Answer the question using the provided examples. "
 			
-	question_subfix+= "Report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+	#question_subfix+= "Report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+	question_subfix+= "Answer the question reporting only the identified class label, without any additional explanation text."
 	
 	# - Define message
 	#if add_task_description:
