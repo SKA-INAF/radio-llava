@@ -292,7 +292,6 @@ def run_llavaov_model_inference(
 	description= task_info["description"]
 	question_prefix= task_info["question_prefix"]
 	question_subfix= task_info["question_subfix"]
-	question_options= task_info["question_options"]
 	
 	# - Get class info
 	classification_mode= task_info["classification_mode"]
