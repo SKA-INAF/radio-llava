@@ -586,8 +586,8 @@ def run_llavaov_model_rgz_inference(
 		question_subfix= "Answer the question using the given context, following these guidelines: \n"
 	else:
 		question_subfix= "Answer the question following these guidelines: \n"
-	question_subfix+= "1. Answer NONE if you cannot recognize any of the above classes in the image, otherwise report just the identified class label. \n"
-	question_subfix+= "2. Do not add explanation or description texts to the response. \n"
+	question_subfix+= "1) Answer NONE if you cannot recognize any of the above classes in the image, otherwise report just the identified class label from the provided choices: 1C-1P, 1C-2P, 1C-3P, 2C-2P, 2C-3P, 3C-3P \n"
+	question_subfix+= "2) Do not add explanation or description texts to the response. \n"
 	
 	# - Define message
 	#if add_task_description:
