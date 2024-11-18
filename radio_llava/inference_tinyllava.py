@@ -476,22 +476,42 @@ def run_tinyllava_model_rgz_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	if add_task_description:
-		description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
-	else:
-		description= ""
+	context= "### Context: Consider these morphological classes of radio astronomical sources: \n 1C-1P: single-island sources having only one flux intensity peak; \n 1C-2C: single-island sources having two flux intensity peaks; \n 1C-3P: single-island sources having three flux intensity peaks; \n 2C-2P: sources consisting of two separated islands, each hosting a single flux intensity peak; \n 2C-3P: sources consisting of two separated islands, one containing a single peak of flux intensity and the other exhibiting two distinct intensity peaks; 3C-3P: sources consisting of three separated islands, each hosting a single flux intensity peak. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	context+= "\n"
+	
+	description= ""
+	if add_task_description: 
+		description= context
 		
-	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
-	question_subfix= "Please report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+	question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
+	if add_task_description:
+		question_subfix= "Answer the question using the provided context. "
+	else:
+		question_subfix= ""
+	
+	question_subfix+= "Answer the question reporting only the identified class label, without any additional explanation text."
+	
+	#if add_task_description:
+	#	description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	#else:
+	#	description= ""
+		
+	#question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
+	#question_subfix= "Please report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+	
+	
+	class_options= ["1C-1P", "1C-2P", "1C-3P", "2C-2P", "2C-3P", "3C-3P"]
 	
 	label2id= {
-		"1C-1P": 0,
-		"1C-2P": 1,
-		"1C-3P": 2,
-		"2C-2P": 3,
-		"2C-3P": 4,
-		"3C-3P": 5,
+		"NONE": 0,
+		"1C-1P": 1,
+		"1C-2P": 2,
+		"1C-3P": 3,
+		"2C-2P": 4,
+		"2C-3P": 5,
+		"3C-3P": 6,
 	}
+	
 	
 	task_info= {
 		"description": description,
@@ -499,7 +519,8 @@ def run_tinyllava_model_rgz_inference(
 		"question_subfix": question_subfix,
 		"classification_mode": "multiclass_singlelabel",
 		"label_modifier_fcn": None,
-		"label2id": label2id
+		"label2id": label2id,
+		"class_options": class_options
 	}
 	
 	#=============================
