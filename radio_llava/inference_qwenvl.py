@@ -154,7 +154,7 @@ def run_qwen2vl_model_query(
 
 	# - Decode outputs
 	logger.debug("Decode outputs ...")
-	output_parsed = processor.batch_decode(output_trimmed[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+	output_parsed = processor.batch_decode(output_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)
 	
 	if verbose:
 		print("output")
@@ -167,9 +167,7 @@ def run_qwen2vl_model_query(
 		print(output_parsed)
 			
 	# - Extract predicted label
-	#response= output_parsed_list[-1].strip("\n").strip()
-	#response= output_parsed
-	response= output_parsed.strip("\n").strip()
+	response= output_parsed[0].strip("\n").strip()
 	
 	return response
 
@@ -261,8 +259,8 @@ def run_qwen2vl_model_context_query(
 
 	# - Decode outputs
 	logger.debug("Decode outputs ...")
-	output_parsed= processor.batch_decode(output_trimmed[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
-
+	output_parsed= processor.batch_decode(output_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+	
 	if verbose:
 		print("output")
 		print(output)
@@ -274,9 +272,7 @@ def run_qwen2vl_model_context_query(
 		print(output_parsed)
 			
 	# - Extract predicted label
-	#response= output_parsed_list[-1].strip("\n").strip()
-	#response= output_parsed
-	response= output_parsed.strip("\n").strip()
+	response= output_parsed[0].strip("\n").strip()
 	
 	return response
 	
