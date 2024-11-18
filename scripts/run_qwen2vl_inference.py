@@ -116,6 +116,7 @@ def get_args():
 	
 	# - Run options
 	parser.add_argument('-device','--device', dest='device', required=False, type=str, default="cuda", help='Device where to run inference. Default is cuda, if not found use cpu.') 
+	parser.add_argument('-device_map','--device_map', dest='device_map', required=False, type=str, default="auto", help='Device map where to run inference. Default is auto.') 
 	parser.add_argument('--verbose', dest='verbose', action='store_true',help='Enable verbose printout (default=false)')	
 	parser.set_defaults(verbose=False)
 	
@@ -159,7 +160,9 @@ def main():
 			logger.warn("cuda not available, using cpu...")
 			device= "cpu"
 	
+	device_map= args.device_map
 	logger.info("device: %s" % (device))
+	logger.info("device_map: %s" % (device_map))
 	
 	#===========================
 	#==   READ DATALIST
