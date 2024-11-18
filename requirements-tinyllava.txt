@@ -1,15 +1,1 @@
-wheel
-numpy
-ipython
-shortuuid
-astropy
-matplotlib
-scikit-image
-scikit-learn
-transformers
-torch
-torchvision
-bitsandbytes
-accelerate
 git+https://github.com/TinyLLaVA/TinyLLaVA_Factory.git
-flash-attn --install-option='--no-build-isolation'

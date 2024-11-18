@@ -11,4 +11,4 @@ torch
 torchvision
 bitsandbytes
 accelerate
-flash-attn --config-settings='--no-build-isolation'
+flash-attn --install-option='--no-build-isolation'
