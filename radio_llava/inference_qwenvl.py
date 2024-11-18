@@ -154,7 +154,7 @@ def run_qwen2vl_model_query(
 
 	# - Decode outputs
 	logger.debug("Decode outputs ...")
-	output_parsed = processor.batch_decode(output_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+	output_parsed = processor.batch_decode(output_trimmed[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
 	
 	if verbose:
 		print("output")
@@ -261,7 +261,7 @@ def run_qwen2vl_model_context_query(
 
 	# - Decode outputs
 	logger.debug("Decode outputs ...")
-	output_parsed= processor.batch_decode(output_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+	output_parsed= processor.batch_decode(output_trimmed[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
 
 	if verbose:
 		print("output")
