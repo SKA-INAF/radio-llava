@@ -223,8 +223,7 @@ def main():
 		run_qwen2vl_model_smorph_inference(
 			datalist=datalist,
 			model=model,
-			tokenizer=tokenizer,
-			image_processor=image_processor,
+			processor=processor,
 			datalist_context=datalist_context,
 			device=device,
 			resize=args.resize, resize_size=args.imgsize, 
@@ -241,8 +240,7 @@ def main():
 		run_qwen2vl_model_galaxy_inference(
 			datalist=datalist,
 			model=model,
-			tokenizer=tokenizer,
-			image_processor=image_processor,
+			processor=processor,
 			datalist_context=datalist_context,
 			device=device,
 			resize=args.resize, resize_size=args.imgsize, 
@@ -259,8 +257,7 @@ def main():
 		run_qwen2vl_model_artefact_inference(
 			datalist=datalist,
 			model=model,
-			tokenizer=tokenizer,
-			image_processor=image_processor,
+			processor=processor,
 			datalist_context=datalist_context,
 			device=device,
 			resize=args.resize, resize_size=args.imgsize, 
@@ -277,8 +274,7 @@ def main():
 		run_qwen2vl_model_anomaly_inference(
 			datalist=datalist,
 			model=model,
-			tokenizer=tokenizer,
-			image_processor=image_processor,
+			processor=processor,
 			datalist_context=datalist_context,
 			device=device,
 			resize=args.resize, resize_size=args.imgsize, 

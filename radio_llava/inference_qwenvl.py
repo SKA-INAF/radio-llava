@@ -724,7 +724,7 @@ def run_qwen2vl_model_galaxy_inference(
 	#=============================
 	return run_qwen2vl_model_inference(
 		datalist, 
-		model, tokenizer, image_processor, 
+		model, processor, 
 		task_info, 
 		datalist_context=datalist_context, 
 		device=device, 
@@ -738,7 +738,7 @@ def run_qwen2vl_model_galaxy_inference(
 	
 def run_qwen2vl_model_artefact_inference(
 	datalist, 
-	model, tokenizer, image_processor, 
+	model, processor, 
 	datalist_context=None, 
 	device="cuda:0", 
 	resize=False, resize_size=384, 
@@ -781,7 +781,7 @@ def run_qwen2vl_model_artefact_inference(
 	#=============================
 	return run_qwen2vl_model_inference(
 		datalist, 
-		model, tokenizer, image_processor, 
+		model, processor, 
 		task_info, 
 		datalist_context=datalist_context, 
 		device=device, 
@@ -796,7 +796,7 @@ def run_qwen2vl_model_artefact_inference(
 
 def run_qwen2vl_model_anomaly_inference(
 	datalist, 
-	model, tokenizer, image_processor, 
+	model, processor, 
 	datalist_context=None, 
 	device="cuda:0", 
 	resize=False, resize_size=384, 
@@ -844,7 +844,7 @@ def run_qwen2vl_model_anomaly_inference(
 	#=============================
 	return run_qwen2vl_model_inference(
 		datalist, 
-		model, tokenizer, image_processor, 
+		model, processor, 
 		task_info, 
 		datalist_context=datalist_context, 
 		device=device, 
