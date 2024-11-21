@@ -790,7 +790,6 @@ def run_qwen2vl_model_artefact_inference(
 		add_options=False, shuffle_options=False, 
 		nmax=nmax, 
 		nmax_context=nmax_context,
-		conv_template=conv_template,
 		verbose=verbose
 	)	
 
@@ -805,7 +804,6 @@ def run_qwen2vl_model_anomaly_inference(
 	nmax=-1, 
 	nmax_context=-1,
 	add_task_description=False,
-	conv_template="qwen_2",
 	verbose=False
 ):
 	""" Run Qwen2VL inference on radio image dataset (anomaly detection) """
@@ -853,7 +851,6 @@ def run_qwen2vl_model_anomaly_inference(
 		add_options=False, shuffle_options=False, 
 		nmax=nmax, 
 		nmax_context=nmax_context,
-		conv_template=conv_template,
 		verbose=verbose
 	)	
 	
