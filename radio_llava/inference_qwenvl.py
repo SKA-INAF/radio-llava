@@ -812,12 +812,26 @@ def run_qwen2vl_model_anomaly_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
+	context= "### Context: Consider this radio image peculiarity classes, defined as follows: \n ORDINARY: image containing only point-like or slightly-resolved compact radio sources superimposed over the sky background or imaging artefact patterns; \n COMPLEX: image containing one or more radio sources with extended or diffuse morphology; \n PECULIAR: image containing one or more radio sources with anomalous or peculiar extended morphology, often having diffuse edges, complex irregular shapes, covering a large portion of the image.\n"
+	
+	description= ""
 	if add_task_description:
-		description= "Consider this radio image peculiarity classes, defined as follows: \n ORDINARY: image containing only point-like or slightly-resolved compact radio sources superimposed over the sky background or imaging artefact patterns; \n COMPLEX: image containing one or more radio sources with extended or diffuse morphology; \n PECULIAR: image containing one or more radio sources with anomalous or peculiar extended morphology, often having diffuse edges, complex irregular shapes, covering a large portion of the image.\n"
+		description= context
+		
+	question_prefix= "### Question: Can you identify which peculiarity class the presented image belongs to? "
+	
+	if add_task_description:
+		if datalist_context is None:
+			question_subfix= "Answer the question using the provided context. "
+		else:
+			question_subfix= "Answer the question using the provided context and examples. "
 	else:
-		description= ""
-	question_prefix= "Can you identify which peculiarity class the presented image belongs to? "
-	question_subfix= "Please report only the identified class label, without any additional explanation text."
+		if datalist_context is None:
+			question_subfix= ""
+		else:
+			question_subfix= "Answer the question using the provided examples. "
+			
+	question_subfix+= "Report only the identified class label, without any additional explanation text."
 	
 	label2id= {
 		"ORDINARY": 0,
