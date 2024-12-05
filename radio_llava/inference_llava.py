@@ -566,7 +566,7 @@ def run_llavaov_model_rgz_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	context= "### Context: Consider these morphological classes of radio astronomical sources: \n 1C-1P: single-island sources having only one flux intensity peak; \n 1C-2C: single-island sources having two flux intensity peaks; \n 1C-3P: single-island sources having three flux intensity peaks; \n 2C-2P: sources consisting of two separated islands, each hosting a single flux intensity peak; \n 2C-3P: sources consisting of two separated islands, one containing a single peak of flux intensity and the other exhibiting two distinct intensity peaks; 3C-3P: sources consisting of three separated islands, each hosting a single flux intensity peak. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	context= "### Context: Consider these morphological classes of radio astronomical sources: \n 1C-1P: single-island sources having only one flux intensity peak; \n 1C-2C: single-island sources having two flux intensity peaks; \n 1C-3P: single-island sources having three flux intensity peaks; \n 2C-2P: sources consisting of two separated islands, each hosting a single flux intensity peak; \n 2C-3P: sources consisting of two separated islands, one containing a single peak of flux intensity and the other exhibiting two distinct intensity peaks; \n 3C-3P: sources consisting of three separated islands, each hosting a single flux intensity peak. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
 	context+= "\n"
 	#context+= "Use the above context to answer the question below. Follow these guidelines: \n"
 	#context+= "\n"
@@ -594,7 +594,8 @@ def run_llavaov_model_rgz_inference(
 			question_subfix= "Answer the question using the provided examples. "
 			
 	#question_subfix+= "Report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
-	question_subfix+= "Answer the question reporting only the identified class label, without any additional explanation text."
+	#question_subfix+= "Answer the question reporting only the identified class label, without any additional explanation text."
+	question_subfix+= "Report only the identified class label, without any additional explanation text."
 	
 	# - Define message
 	#if add_task_description:
@@ -921,4 +922,83 @@ def run_llavaov_model_anomaly_inference(
 		verbose=verbose
 	)	
 	
+
+
+def run_llavaov_model_mirabest_inference(
+	datalist, 
+	model, tokenizer, image_processor, 
+	datalist_context=None, 
+	device="cuda:0", 
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25, 
+	shuffle_options=False, 
+	nmax=-1,
+	nmax_context=-1,
+	add_task_description=False,
+	conv_template="qwen_2",
+	verbose=False
+):
+	""" Run LLaVA One Vision inference on Mirabest dataset """
+
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	context= "### Context: Consider these morphological classes of radio galaxies: \n FR-I: radio-loud galaxies characterized by a jet-dominated structure where the radio emissions are strongest close to the galaxy's center and diminish with distance from the core; \n FR-II: radio-loud galaxies characterized by a edge-brightened radio structure, where the radio emissions are more prominent in lobes located far from the galaxy's core, with hotspots at the ends of powerful, well-collimated jets. "
+	context+= "\n"
+	
+	description= ""
+	if add_task_description: 
+		description= context
+		
+	question_prefix= "### Question: Which of these morphological classes of radio galaxy do you see in the image? "
+	if add_task_description:
+		if datalist_context is None:
+			question_subfix= "Answer the question using the provided context. "
+		else:
+			question_subfix= "Answer the question using the provided context and examples. "
+	else:
+		if datalist_context is None:
+			question_subfix= ""
+		else:
+			question_subfix= "Answer the question using the provided examples. "
+			
+	question_subfix+= "Report only the identified class label, without any additional explanation text."
+	
+	
+	class_options= ["FR-I", "FR-II"]
+	
+	label2id= {
+		"NONE": 0,
+		"FR-I": 1,
+		"FR-II": 2
+	}
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": None,
+		"label2id": label2id,
+		"class_options": class_options
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_llavaov_model_inference(
+		datalist, 
+		model, tokenizer, image_processor, 
+		task_info, 
+		datalist_context=datalist_context, 
+		device=device, 
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast, 
+		add_options=True, shuffle_options=shuffle_options, 
+		nmax=nmax, 
+		nmax_context=nmax_context,
+		conv_template=conv_template,
+		verbose=verbose
+	)
 

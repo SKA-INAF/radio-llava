@@ -476,7 +476,7 @@ def run_tinyllava_model_rgz_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	context= "### Context: Consider these morphological classes of radio astronomical sources: \n 1C-1P: single-island sources having only one flux intensity peak; \n 1C-2C: single-island sources having two flux intensity peaks; \n 1C-3P: single-island sources having three flux intensity peaks; \n 2C-2P: sources consisting of two separated islands, each hosting a single flux intensity peak; \n 2C-3P: sources consisting of two separated islands, one containing a single peak of flux intensity and the other exhibiting two distinct intensity peaks; 3C-3P: sources consisting of three separated islands, each hosting a single flux intensity peak. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	context= "### Context: Consider these morphological classes of radio astronomical sources: \n 1C-1P: single-island sources having only one flux intensity peak; \n 1C-2C: single-island sources having two flux intensity peaks; \n 1C-3P: single-island sources having three flux intensity peaks; \n 2C-2P: sources consisting of two separated islands, each hosting a single flux intensity peak; \n 2C-3P: sources consisting of two separated islands, one containing a single peak of flux intensity and the other exhibiting two distinct intensity peaks; \n 3C-3P: sources consisting of three separated islands, each hosting a single flux intensity peak. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
 	context+= "\n"
 	
 	description= ""
@@ -489,7 +489,8 @@ def run_tinyllava_model_rgz_inference(
 	else:
 		question_subfix= ""
 	
-	question_subfix+= "Answer the question reporting only the identified class label, without any additional explanation text."
+	#question_subfix+= "Answer the question reporting only the identified class label, without any additional explanation text."
+	question_subfix+= "Report only the identified class label, without any additional explanation text."
 	
 	#if add_task_description:
 	#	description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
@@ -789,3 +790,75 @@ def run_tinyllava_model_anomaly_inference(
 		verbose=verbose
 	)	
 	
+
+
+
+
+def run_tinyllava_model_mirabest_inference(
+	datalist, 
+	model,
+	device="cuda:0",
+	reset_imgnorm=False,
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25,
+	conv_mode='phi', 
+	shuffle_options=False, nmax=-1, 
+	add_task_description=False,
+	verbose=False
+):
+	""" Run inference on Mirabest dataset """
+
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	context= "### Context: Consider these morphological classes of radio galaxies: \n FR-I: radio-loud galaxies characterized by a jet-dominated structure where the radio emissions are strongest close to the galaxy's center and diminish with distance from the core; \n FR-II: radio-loud galaxies characterized by a edge-brightened radio structure, where the radio emissions are more prominent in lobes located far from the galaxy's core, with hotspots at the ends of powerful, well-collimated jets. "
+	context+= "\n"
+	
+	description= ""
+	if add_task_description: 
+		description= context
+		
+	question_prefix= "### Question: Which of these morphological classes of radio galaxy do you see in the image? "
+	if add_task_description:
+		question_subfix= "Answer the question using the provided context. "
+	else:
+		question_subfix= ""
+	
+	question_subfix+= "Report only the identified class label, without any additional explanation text."
+	
+	class_options= ["FR-I", "FR-II"]
+	
+	label2id= {
+		"NONE": 0,
+		"FR-I": 1,
+		"FR-II": 2
+	}
+	
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": None,
+		"label2id": label2id,
+		"class_options": class_options
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_tinyllava_model_inference(
+		datalist, 
+		model, 
+		task_info, 
+		device=device,
+		reset_imgnorm=reset_imgnorm, 
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast,
+		conv_mode=conv_mode, 
+		add_options=True, shuffle_options=shuffle_options, nmax=nmax, 
+		verbose=verbose
+	)
+

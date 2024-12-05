@@ -291,6 +291,25 @@ def main():
 			verbose=args.verbose
 		)
 		
+	elif args.benchmark=="galaxymorphclass-mirabest":
+		logger.info("Running galaxymorphclass-mirabest benchmark inference ...")
+		run_llavaov_model_mirabest_inference(
+			datalist=datalist,
+			model=model,
+			tokenizer=tokenizer,
+			image_processor=image_processor,
+			datalist_context=datalist_context,
+			device=device,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			shuffle_options=args.shuffle_options,
+			nmax=args.nmax,
+			nmax_context=args.nmax_context,
+			add_task_description=args.add_task_description,
+			conv_template=args.conv_template,
+			verbose=args.verbose
+		)
+		
 	else:
 		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))
 		return 1

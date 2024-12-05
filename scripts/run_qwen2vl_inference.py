@@ -286,6 +286,23 @@ def main():
 			verbose=args.verbose
 		)
 		
+		elif args.benchmark=="galaxymorphclass-mirabest":
+		logger.info("Running galaxymorphclass-mirabest benchmark inference ...")
+		run_qwen2vl_model_anomaly_inference(
+			datalist=datalist,
+			model=model,
+			processor=processor,
+			datalist_context=datalist_context,
+			device=device,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			shuffle_options=args.shuffle_options,
+			nmax=args.nmax,
+			nmax_context=args.nmax_context,
+			add_task_description=args.add_task_description,
+			verbose=args.verbose
+		)
+		
 	else:
 		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))
 		return 1
