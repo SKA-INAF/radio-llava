@@ -288,7 +288,7 @@ def main():
 		
 	elif args.benchmark=="galaxymorphclass-mirabest":
 		logger.info("Running galaxymorphclass-mirabest benchmark inference ...")
-		run_qwen2vl_model_anomaly_inference(
+		run_qwen2vl_model_mirabest_inference(
 			datalist=datalist,
 			model=model,
 			processor=processor,
