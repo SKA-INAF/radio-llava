@@ -286,7 +286,7 @@ def main():
 			verbose=args.verbose
 		)
 		
-		elif args.benchmark=="galaxymorphclass-mirabest":
+	elif args.benchmark=="galaxymorphclass-mirabest":
 		logger.info("Running galaxymorphclass-mirabest benchmark inference ...")
 		run_qwen2vl_model_anomaly_inference(
 			datalist=datalist,
