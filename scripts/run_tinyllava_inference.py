@@ -127,7 +127,7 @@ def get_args():
 	parser.add_argument('--verbose', dest='verbose', action='store_true',help='Enable verbose printout (default=false)')	
 	parser.set_defaults(verbose=False)
 	parser.add_argument('--set_float16', dest='set_float16', action='store_true',help='Set float16 datatype when loading model (default=false)')	
-	parser.set_defaults(set_float16=True)
+	parser.set_defaults(set_float16=False)
 	
 	# - Outfile option
 	parser.add_argument('-outfile','--outfile', dest='outfile', required=False, type=str, default='featdata.dat', help='Output filename (.dat) of feature data') 
