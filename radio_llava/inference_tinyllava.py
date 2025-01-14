@@ -64,7 +64,7 @@ logger = logging.getLogger(__name__)
 ######################
 ##   LOAD MODEL
 ######################
-def load_tinyllava_model_lora(model_name_or_path, device="cuda"):
+def load_tinyllava_model_lora(model_name_or_path, device="cuda", set_float16=False):
 	""" Create LORA model from config and load weights """
 
 	# - Check if adapter file exists
@@ -92,8 +92,12 @@ def load_tinyllava_model_lora(model_name_or_path, device="cuda"):
 	connector_ckp = load_base_ckp_for_lora(connector_ckp_path)
 	model.connector.load_state_dict(connector_ckp)
 	
-	# - Set model float16	
-	model.to(device, torch.float16)
+	# - Set model float16
+	if set_float16:
+		logger.info("Loading model to device with float16 type ...")
+		model.to(device, torch.float16)
+	else:
+		model.to(device)
 	
 	# - Merge LORA weights into model
 	logger.debug("Loading LoRA weights...")
@@ -105,7 +109,7 @@ def load_tinyllava_model_lora(model_name_or_path, device="cuda"):
 	return model
 		
 
-def load_tinyllava_model_standard(model_name_or_path, device="cuda"):
+def load_tinyllava_model_standard(model_name_or_path, device="cuda", set_float16=False):
 	""" Create model from config and load weights """
 	
 	# - Load config & model
@@ -135,16 +139,21 @@ def load_tinyllava_model_standard(model_name_or_path, device="cuda"):
 	# - Load vision weights
 	model.load_vision_tower(model_name_or_path=vision_tower_path)
        
-	# - Set model float16	     
-	model.to(device, torch.float16)
-
+	# - Set model float16	
+	if set_float16:
+		logger.info("Loading model to device with float16 type ...")
+		model.to(device, torch.float16)
+	else:
+		model.to(device)
+	
 	return model
 
 
 def load_tinyllava_model(
 	model_name_or_path,
 	load_lora_model=False,
-	device="cuda"
+	device="cuda",
+	set_float16=False
 ):
 	""" Load TinyLLaVA model """
     
@@ -161,18 +170,25 @@ def load_tinyllava_model(
 	disable_torch_init()
 	
 	if load_lora_model:
-		model= load_tinyllava_model_lora(model_name_or_path, device)
+		model= load_tinyllava_model_lora(model_name_or_path, device, set_float16)
 	else:
 		try:
-			model = TinyLlavaForConditionalGeneration.from_pretrained(
-				model_name_or_path,
-				low_cpu_mem_usage=True,
-				torch_dtype=torch.float16,
-				device_map="auto"
-		)
+			if set_float16:
+				model = TinyLlavaForConditionalGeneration.from_pretrained(
+					model_name_or_path,
+					low_cpu_mem_usage=True,
+					torch_dtype=torch.float16,
+					device_map="auto"
+				)
+			else:
+				model = TinyLlavaForConditionalGeneration.from_pretrained(
+					model_name_or_path,
+					low_cpu_mem_usage=True,
+					device_map="auto"
+				)
 		except Exception as e:
 			logger.warn("Failed to load pre-trained model (err=%s), trying with another method ..." % (str(e)))
-			model= load_tinyllava_model_standard(model_name_or_path, device)
+			model= load_tinyllava_model_standard(model_name_or_path, device, set_float16)
  	
 	# - Check model
 	if model is None:
@@ -331,8 +347,7 @@ def run_tinyllava_model_query(
 def run_tinyllava_model_inference(
 	datalist, 
 	model, 
-	task_info, 
-	device="cuda:0", 
+	task_info,
 	reset_imgnorm=False,
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
@@ -461,7 +476,6 @@ def run_tinyllava_model_inference(
 def run_tinyllava_model_rgz_inference(
 	datalist, 
 	model,
-	device="cuda:0",
 	reset_imgnorm=False,
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
@@ -531,7 +545,6 @@ def run_tinyllava_model_rgz_inference(
 		datalist, 
 		model, 
 		task_info, 
-		device=device,
 		reset_imgnorm=reset_imgnorm, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
@@ -544,7 +557,6 @@ def run_tinyllava_model_rgz_inference(
 def run_tinyllava_model_smorph_inference(
 	datalist, 
 	model,
-	device="cuda:0",
 	reset_imgnorm=False,
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
@@ -600,7 +612,6 @@ def run_tinyllava_model_smorph_inference(
 		datalist, 
 		model, 
 		task_info, 
-		device=device,
 		reset_imgnorm=reset_imgnorm, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
@@ -613,7 +624,6 @@ def run_tinyllava_model_smorph_inference(
 def run_tinyllava_model_galaxy_inference(
 	datalist, 
 	model,
-	device="cuda:0",
 	reset_imgnorm=False,
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
@@ -655,7 +665,6 @@ def run_tinyllava_model_galaxy_inference(
 		datalist, 
 		model, 
 		task_info, 
-		device=device,
 		reset_imgnorm=reset_imgnorm, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
@@ -669,7 +678,6 @@ def run_tinyllava_model_galaxy_inference(
 def run_tinyllava_model_artefact_inference(
 	datalist, 
 	model,
-	device="cuda:0",
 	reset_imgnorm=False,
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
@@ -711,7 +719,6 @@ def run_tinyllava_model_artefact_inference(
 		datalist, 
 		model, 
 		task_info, 
-		device=device,
 		reset_imgnorm=reset_imgnorm, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
@@ -724,7 +731,6 @@ def run_tinyllava_model_artefact_inference(
 def run_tinyllava_model_anomaly_inference(
 	datalist, 
 	model,
-	device="cuda:0",
 	reset_imgnorm=False,
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
@@ -780,7 +786,6 @@ def run_tinyllava_model_anomaly_inference(
 		datalist, 
 		model, 
 		task_info, 
-		device=device,
 		reset_imgnorm=reset_imgnorm, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
@@ -797,7 +802,6 @@ def run_tinyllava_model_anomaly_inference(
 def run_tinyllava_model_mirabest_inference(
 	datalist, 
 	model,
-	device="cuda:0",
 	reset_imgnorm=False,
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25,
@@ -853,7 +857,6 @@ def run_tinyllava_model_mirabest_inference(
 		datalist, 
 		model, 
 		task_info, 
-		device=device,
 		reset_imgnorm=reset_imgnorm, 
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,

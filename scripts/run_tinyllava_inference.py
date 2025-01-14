@@ -126,6 +126,8 @@ def get_args():
 	parser.add_argument('-device','--device', dest='device', required=False, type=str, default="cuda", help='Device where to run inference. Default is cuda, if not found use cpu.') 
 	parser.add_argument('--verbose', dest='verbose', action='store_true',help='Enable verbose printout (default=false)')	
 	parser.set_defaults(verbose=False)
+	parser.add_argument('--set_float16', dest='set_float16', action='store_true',help='Set float16 datatype when loading model (default=false)')	
+	parser.set_defaults(set_float16=True)
 	
 	# - Outfile option
 	parser.add_argument('-outfile','--outfile', dest='outfile', required=False, type=str, default='featdata.dat', help='Output filename (.dat) of feature data') 
@@ -186,7 +188,7 @@ def main():
 	#==   LOAD MODEL
 	#===========================
 	logger.info("Loading model %s ..." % (model_id))
-	model= load_tinyllava_model(model_id, args.load_lora_model, device)
+	model= load_tinyllava_model(model_id, args.load_lora_model, device, args.set_float16)
 	if model is None:
 		logger.error("Failed to load model %s ..." % (model_id))
 		return 1
@@ -200,7 +202,6 @@ def main():
 		run_tinyllava_model_rgz_inference(
 			datalist=datalist,
 			model=model,
-			device=device,
 			reset_imgnorm=args.reset_imgnorm,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
@@ -215,7 +216,6 @@ def main():
 		run_tinyllava_model_smorph_inference(
 			datalist=datalist,
 			model=model,
-			device=device,
 			reset_imgnorm=args.reset_imgnorm,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
@@ -230,7 +230,6 @@ def main():
 		run_tinyllava_model_galaxy_inference(
 			datalist=datalist,
 			model=model,
-			device=device,
 			reset_imgnorm=args.reset_imgnorm,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
@@ -243,7 +242,6 @@ def main():
 		run_tinyllava_model_artefact_inference(
 			datalist=datalist,
 			model=model,
-			device=device,
 			reset_imgnorm=args.reset_imgnorm,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
@@ -256,7 +254,6 @@ def main():
 		run_tinyllava_model_anomaly_inference(
 			datalist=datalist,
 			model=model,
-			device=device,
 			reset_imgnorm=args.reset_imgnorm,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
@@ -271,7 +268,6 @@ def main():
 		run_tinyllava_model_mirabest_inference(
 			datalist=datalist,
 			model=model,
-			device=device,
 			reset_imgnorm=args.reset_imgnorm,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
