@@ -67,6 +67,7 @@ def main():
 	
 	# - Model parameter configuration
 	st.sidebar.title("Model Parameters")
+	do_sample= st.sidebar.checkbox("do sample?", value=False)
 	temperature = st.sidebar.slider("temperature", min_value=0.0, max_value=1.0, value=0.2, step=0.1)
 
 	if uploaded_file is not None:
@@ -94,14 +95,13 @@ def main():
 				image_processor, 
 				image, 
 				query,
-				do_sample=False,
+				do_sample=do_sample,
 				temperature=temperature,
 				conv_template="qwen_2", 
 				verbose=False
 			)
 
 			# - Display the model's response
-			response = processor.decode(outputs[0], skip_special_tokens=True)
 			st.subheader("Model's Response:")
 			st.write(response)
 
