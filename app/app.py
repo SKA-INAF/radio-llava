@@ -137,9 +137,22 @@ def main():
 			st.session_state.conversation_history.append((query, response))
 
 			st.subheader("Conversation History")
+			#for i, (q, r) in enumerate(st.session_state.conversation_history):
+			#	st.write(f"**User:** {q}")
+			#	st.write(f"**Assistant:** {r}")
+				
 			for i, (q, r) in enumerate(st.session_state.conversation_history):
-				st.write(f"**User:** {q}")
-				st.write(f"**Assistant:** {r}")
+				with st.container():
+					st.markdown(
+						f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>"
+						f"<strong>User:</strong> {q}</div>",
+						unsafe_allow_html=True,
+					)
+					st.markdown(
+						f"<div style='background-color: #d4edda; padding: 10px; border-radius: 10px;'>"
+						f"<strong>Assistant:</strong> {r}</div>",
+						unsafe_allow_html=True,
+					)
 
 if __name__ == "__main__":
 	main()
