@@ -199,7 +199,10 @@ def main():
 		# Clear history button
 		if st.button("Clear History"):
 			st.session_state.conversation_history = []
-			st.markdown("<div style='height:300px; overflow-y:auto;'></div>", unsafe_allow_html=True)
+			# Re-render the container to reflect the cleared state
+			with st.container():
+				st.markdown("<div style='height:300px; overflow-y:auto;'></div>", unsafe_allow_html=True)
+        
 
 if __name__ == "__main__":
 	main()
