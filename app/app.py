@@ -110,12 +110,23 @@ def main():
 			st.sidebar.error(f"Failed to load image!")
 			return
 			
-		st.image(image, caption="Uploaded Image", use_column_width=True)
+		#st.image(image, caption="Uploaded Image", use_column_width=True)
+		st.image(image, caption="Uploaded Image", width=300)
+		
+		# - Text query input form and button
+		#query = st.text_input("Enter your query (e.g., 'What is in the image?' or 'Describe the scene.'):")
 
-		# - Text query input
-		query = st.text_input("Enter your query (e.g., 'What is in the image?' or 'Describe the scene.'):")
+		col1, col2 = st.columns([10, 1])
+		with col1:
+			query = st.text_input("Enter your query (e.g., 'What is in the image?' or 'Describe the image content.'):")
+		with col2:
+			if st.button("", key="send_query", help="Send query", use_container_width=True, label_visibility="collapsed"):
+				st.session_state.query_to_process = query
 
-		if query:
+		#if query:
+		if "query_to_process" in st.session_state and st.session_state.query_to_process:
+			query = st.session_state.query_to_process
+			
 			# - Run query and get response
 			response= run_llavaov_model_query(
 				st.session_state.model,
