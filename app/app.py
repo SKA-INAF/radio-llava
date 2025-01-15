@@ -99,6 +99,9 @@ def main():
 	#	st.session_state.conversation_history = []
         
 	if uploaded_file is not None:
+		##################################
+		##     LOAD IMAGE
+		##################################
 		# - Load the uploaded image as PIL
 		image= load_img_as_pil_rgb(
 			uploaded_file,
@@ -112,7 +115,10 @@ def main():
 			
 		#st.image(image, caption="Uploaded Image", use_column_width=True)
 		st.image(image, caption="Uploaded Image", width=300)
-		
+
+		##################################
+		##     RUN QUERY
+		##################################		
 		# - Text query input form and button
 		#query = st.text_input("Enter your query (e.g., 'What is in the image?' or 'Describe the scene.'):")
 
@@ -130,6 +136,7 @@ def main():
 			#if st.button("", key="send_query", help="Send query", use_container_width=True, label_visibility="collapsed"):
 			#	st.session_state.query_to_process = query
 
+	
 		#if query:
 		if st.session_state.query_to_process:
 		#if "query_to_process" in st.session_state and st.session_state.query_to_process:
@@ -156,40 +163,43 @@ def main():
 			st.session_state.conversation_history.append((query, response))
 			st.session_state.query_to_process = ""  # Clear the query after processing
 
-			st.subheader("Conversation History")
-			#for i, (q, r) in enumerate(st.session_state.conversation_history):
-			#	st.write(f"**User:** {q}")
-			#	st.write(f"**Assistant:** {r}")
+		##################################
+		##     DISPLAY CONVERSATIONS
+		##################################
+		st.subheader("Conversation History")
+		#for i, (q, r) in enumerate(st.session_state.conversation_history):
+		#	st.write(f"**User:** {q}")
+		#	st.write(f"**Assistant:** {r}")
 				
-			with st.container():
-				history_html = "<div style='height:300px; overflow-y:auto;'>"
-				for i, (q, r) in enumerate(st.session_state.conversation_history):
-					history_html += (
-						f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>"
-						f"<strong>User:</strong> {q}</div>"
-						f"<div style='background-color: #d4edda; padding: 10px; border-radius: 10px;'>"
-						f"<strong>Assistant:</strong> {r}</div>"
-					)
-				history_html += "</div>"
-				st.markdown(history_html, unsafe_allow_html=True)	
+		with st.container():
+			history_html = "<div style='height:300px; overflow-y:auto;'>"
+			for i, (q, r) in enumerate(st.session_state.conversation_history):
+				history_html += (
+					f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>"
+					f"<strong>User:</strong> {q}</div>"
+					f"<div style='background-color: #d4edda; padding: 10px; border-radius: 10px;'>"
+					f"<strong>Assistant:</strong> {r}</div>"
+				)
+			history_html += "</div>"
+			st.markdown(history_html, unsafe_allow_html=True)	
 				
-			#for i, (q, r) in enumerate(st.session_state.conversation_history):
-			#	with st.container():
-			#		st.markdown(
-			#			f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>"
-			#			f"<strong>User:</strong> {q}</div>",
-			#			unsafe_allow_html=True,
-			#		)
-			#		st.markdown(
-			#			f"<div style='background-color: #d4edda; padding: 10px; border-radius: 10px;'>"
-			#			f"<strong>Assistant:</strong> {r}</div>",
-			#			unsafe_allow_html=True,
-			#		)
+		#for i, (q, r) in enumerate(st.session_state.conversation_history):
+		#	with st.container():
+		#		st.markdown(
+		#			f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>"
+		#			f"<strong>User:</strong> {q}</div>",
+		#			unsafe_allow_html=True,
+		#		)
+		#		st.markdown(
+		#			f"<div style='background-color: #d4edda; padding: 10px; border-radius: 10px;'>"
+		#			f"<strong>Assistant:</strong> {r}</div>",
+		#			unsafe_allow_html=True,
+		#		)
 					
-			# Clear history button
-			if st.button("Clear History"):
-				st.session_state.conversation_history = []
-				st.markdown("<div style='height:300px; overflow-y:auto;'></div>", unsafe_allow_html=True)
+		# Clear history button
+		if st.button("Clear History"):
+			st.session_state.conversation_history = []
+			st.markdown("<div style='height:300px; overflow-y:auto;'></div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
 	main()
