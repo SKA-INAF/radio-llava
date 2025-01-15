@@ -95,8 +95,8 @@ def main():
 		st.session_state.conversation_history = []
 		
 	# Clear history button
-	if st.button("Clear History"):
-		st.session_state.conversation_history = []
+	#if st.button("Clear History"):
+	#	st.session_state.conversation_history = []
         
 	if uploaded_file is not None:
 		# - Load the uploaded image as PIL
@@ -119,6 +119,7 @@ def main():
 		if "query_to_process" not in st.session_state:
 			st.session_state.query_to_process = ""
             
+		st.subheader("Prompt")
 		col1, col2 = st.columns([10, 1])
 		with col1:
 			query = st.text_input("Enter your query (e.g., 'What is in the image?' or 'Describe the image content.'):")
@@ -171,6 +172,10 @@ def main():
 						f"<strong>Assistant:</strong> {r}</div>",
 						unsafe_allow_html=True,
 					)
+					
+			# Clear history button
+			if st.button("Clear History"):
+				st.session_state.conversation_history = []
 
 if __name__ == "__main__":
 	main()
