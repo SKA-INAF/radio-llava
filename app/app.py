@@ -17,6 +17,7 @@ import io
 
 # - Import custom modules
 import streamlit as st
+import torch
 
 # - Import radio-llava modules
 from radio_llava.utils import load_img_as_pil_rgb
@@ -29,13 +30,19 @@ from radio_llava.inference_llava import load_llavaov_model, run_llavaov_model_qu
 @st.cache_resource
 def load_model(model_id, model_name="llava_qwen"):
 	""" Load model """
+	
+	device= 'cuda' is torch.cuda.is_available() else 'cpu'
+	
 	model, tokenizer, image_processor= load_llavaov_model(
 		model_id,
-		model_name=model_name, 
-		device_map="auto"
+		model_name=model_name,
+		device_map=device 
+		#device_map="auto"
 	)
 	
 	return model, tokenizer, image_processor
+
+
 
 ########################
 ##     APP
