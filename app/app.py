@@ -70,6 +70,10 @@ def main():
 	do_sample= st.sidebar.checkbox("do sample?", value=False)
 	temperature = st.sidebar.slider("temperature", min_value=0.0, max_value=1.0, value=0.2, step=0.1)
 
+	# Conversation history
+	if "conversation_history" not in st.session_state:
+		st.session_state.conversation_history = []
+
 	if uploaded_file is not None:
 		# - Load the uploaded image as PIL
 		image= load_img_as_pil_rgb(
@@ -102,8 +106,16 @@ def main():
 			)
 
 			# - Display the model's response
-			st.subheader("Model's Response:")
-			st.write(response)
+			#st.subheader("Model's Response:")
+			#st.write(response)
+
+			# Update and display conversation history
+			st.session_state.conversation_history.append((query, response))
+
+			st.subheader("Conversation History")
+			for i, (q, r) in enumerate(st.session_state.conversation_history):
+				st.write(f"**User:** {q}")
+				st.write(f"**Assistant:** {r}")
 
 if __name__ == "__main__":
 	main()
