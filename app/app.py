@@ -166,10 +166,10 @@ def main():
 		##################################
 		##     DISPLAY CONVERSATIONS
 		##################################
-		st.subheader("Conversation History")
+		st.subheader("Conversations")
 				
 		# - Clear history button
-		if st.button("Clear History"):
+		if st.button("Clear"):
 			st.session_state.conversation_history = []
 			#history_html = "<div style='height:300px; overflow-y:auto;'></div>"
 			#with history_container:
