@@ -435,46 +435,46 @@ def transform_img(data, nchans=1, norm_range=(0.,1.), resize=False, resize_size=
 def read_img(filename, nchans=1, norm_range=(0.,1.), resize=False, resize_size=224, apply_zscale=True, contrast=0.25, to_uint8=False, set_nans_to_min=False, verbose=False):
   """ Read fits image and returns a numpy array """
 
-	# - Check if filename is str, otherwise try to load it as Bytes.io with pillow
-	if isinstance(filename, str):
-  	# - Check filename
-  	if filename=="":
-    	return None
+  # - Check if filename is str, otherwise try to load it as Bytes.io with pillow
+  if isinstance(filename, str):
+    # - Check filename
+    if filename=="":
+      return None
 
-  	file_ext= os.path.splitext(filename)[1]
-		
-  	# - Read fits image?
-  	if file_ext=='.fits':
-    	data= fits.open(filename)[0].data
-  	else:
-    	image= Image.open(filename)
-    	data= np.asarray(image)
-	
-	else:
-		try:
-			image= Image.open(filename)
-    	data= np.asarray(image)
-		except Exception as e:
-			logger.error("Failed to read input image as Bytes.io with PIL!")
-    	return None
-	
+    file_ext= os.path.splitext(filename)[1]
+
+    # - Read fits image?
+    if file_ext=='.fits':
+      data= fits.open(filename)[0].data
+    else:
+      image= Image.open(filename)
+      data= np.asarray(image)
+
+  else:
+    try:
+      image= Image.open(filename)
+      data= np.asarray(image)
+    except Exception as e:
+      logger.error("Failed to read input image as Bytes.io with PIL (err=%s)!" % (str(e)))
+      return None
+
   if data is None:
     return None
 
-	# - Apply transform
+  # - Apply transform
   data_transf= transform_img(
     data,
     nchans=nchans,
-		norm_range=norm_range,
+    norm_range=norm_range,
     resize=resize, resize_size=resize_size,
-		apply_zscale=apply_zscale, contrast=contrast,
-		to_uint8=to_uint8,
-		set_nans_to_min=set_nans_to_min,
+    apply_zscale=apply_zscale, contrast=contrast,
+    to_uint8=to_uint8,
+    set_nans_to_min=set_nans_to_min,
     verbose=verbose
   )
 
   return data_transf
-	
+
 def load_img_as_npy_float(filename, add_chan_axis=True, add_batch_axis=True, resize=False, resize_size=224, apply_zscale=True, contrast=0.25, set_nans_to_min=False, verbose=False):
   """ Return numpy float image array norm to [0,1] """
 
