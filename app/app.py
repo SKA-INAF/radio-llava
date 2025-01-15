@@ -116,15 +116,22 @@ def main():
 		# - Text query input form and button
 		#query = st.text_input("Enter your query (e.g., 'What is in the image?' or 'Describe the scene.'):")
 
+		if "query_to_process" not in st.session_state:
+			st.session_state.query_to_process = ""
+            
 		col1, col2 = st.columns([10, 1])
 		with col1:
 			query = st.text_input("Enter your query (e.g., 'What is in the image?' or 'Describe the image content.'):")
 		with col2:
-			if st.button("", key="send_query", help="Send query", use_container_width=True, label_visibility="collapsed"):
+			if st.button("▶", key="send_query", help="Send query"):
 				st.session_state.query_to_process = query
+                
+			#if st.button("", key="send_query", help="Send query", use_container_width=True, label_visibility="collapsed"):
+			#	st.session_state.query_to_process = query
 
 		#if query:
-		if "query_to_process" in st.session_state and st.session_state.query_to_process:
+		if st.session_state.query_to_process:
+		#if "query_to_process" in st.session_state and st.session_state.query_to_process:
 			query = st.session_state.query_to_process
 			
 			# - Run query and get response
