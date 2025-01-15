@@ -172,38 +172,35 @@ def main():
 		#	st.write(f"**Assistant:** {r}")
 				
 		history_container = st.container()
+		
+		history_html = "<div style='height:300px; overflow-y:auto;'>"
+		for i, (q, r) in enumerate(st.session_state.conversation_history):
+			history_html += (
+				f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>"
+				f"<strong>User:</strong> {q}</div>"
+				f"<div style='background-color: #d4edda; padding: 10px; border-radius: 10px;'>"
+				f"<strong>Assistant:</strong> {r}</div>"
+			)
+		history_html += "</div>"
+			
+		# Display the conversation history
 		with history_container:
-			history_html = "<div style='height:300px; overflow-y:auto;'>"
-			for i, (q, r) in enumerate(st.session_state.conversation_history):
-				history_html += (
-					f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>"
-					f"<strong>User:</strong> {q}</div>"
-					f"<div style='background-color: #d4edda; padding: 10px; border-radius: 10px;'>"
-					f"<strong>Assistant:</strong> {r}</div>"
-				)
-			history_html += "</div>"
-			st.markdown(history_html, unsafe_allow_html=True)	
+			st.markdown(history_html, unsafe_allow_html=True)
 				
-		#for i, (q, r) in enumerate(st.session_state.conversation_history):
-		#	with st.container():
-		#		st.markdown(
-		#			f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>"
-		#			f"<strong>User:</strong> {q}</div>",
-		#			unsafe_allow_html=True,
-		#		)
-		#		st.markdown(
-		#			f"<div style='background-color: #d4edda; padding: 10px; border-radius: 10px;'>"
-		#			f"<strong>Assistant:</strong> {r}</div>",
-		#			unsafe_allow_html=True,
-		#		)
-					
-		# Clear history button
+		# Clear history button outside of the container
 		if st.button("Clear History"):
 			st.session_state.conversation_history = []
-			# Clear the displayed history immediately
-			history_container.empty()
+			history_html = "<div style='height:300px; overflow-y:auto;'></div>"
 			with history_container:
-				st.markdown("<div style='height:300px; overflow-y:auto;'></div>", unsafe_allow_html=True)
+				st.markdown(history_html, unsafe_allow_html=True)
+                
+		# Clear history button
+		#if st.button("Clear History"):
+		#	st.session_state.conversation_history = []
+		#	# Clear the displayed history immediately
+		#	history_container.empty()
+		#	with history_container:
+		#		st.markdown("<div style='height:300px; overflow-y:auto;'></div>", unsafe_allow_html=True)
         
 
 if __name__ == "__main__":
