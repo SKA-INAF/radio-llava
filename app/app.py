@@ -167,33 +167,28 @@ def main():
 		##     DISPLAY CONVERSATIONS
 		##################################
 		st.subheader("Conversation History")
-		#for i, (q, r) in enumerate(st.session_state.conversation_history):
-		#	st.write(f"**User:** {q}")
-		#	st.write(f"**Assistant:** {r}")
 				
-		history_container = st.container()
-		
-		history_html = "<div style='height:300px; overflow-y:auto;'>"
-		for i, (q, r) in enumerate(st.session_state.conversation_history):
-			history_html += (
-				f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>"
-				f"<strong>User:</strong> {q}</div>"
-				f"<div style='background-color: #d4edda; padding: 10px; border-radius: 10px;'>"
-				f"<strong>Assistant:</strong> {r}</div>"
-			)
-		history_html += "</div>"
-			
-		# Display the conversation history
-		with history_container:
-			st.markdown(history_html, unsafe_allow_html=True)
-				
-		# Clear history button outside of the container
+		# - Clear history button
 		if st.button("Clear History"):
 			st.session_state.conversation_history = []
-			history_html = "<div style='height:300px; overflow-y:auto;'></div>"
-			with history_container:
-				st.markdown(history_html, unsafe_allow_html=True)
+			#history_html = "<div style='height:300px; overflow-y:auto;'></div>"
+			#with history_container:
+			#	st.markdown(history_html, unsafe_allow_html=True)
                 
+		# - Display history
+		history_container = st.container()
+		with history_container:
+			history_html = "<div style='height:300px; overflow-y:auto;'>"
+			for i, (q, r) in enumerate(st.session_state.conversation_history):
+				history_html += (
+					f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>"
+					f"<strong>User:</strong> {q}</div>"
+					f"<div style='background-color: #d4edda; padding: 10px; border-radius: 10px;'>"
+					f"<strong>Assistant:</strong> {r}</div>"
+				)
+			history_html += "</div>"
+			st.markdown(history_html, unsafe_allow_html=True)
+				
 		# Clear history button
 		#if st.button("Clear History"):
 		#	st.session_state.conversation_history = []
