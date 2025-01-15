@@ -62,12 +62,12 @@ def main():
 
 	# - Image processing parameter configuration
 	st.sidebar.title("Image Processing Parameters")
-	zscale= st.checkbox("apply zscale transform?", value=True)
+	zscale= st.sidebar.checkbox("apply zscale transform?", value=True)
 	zscale_contrast= st.sidebar.slider("zscale contrast", min_value=0.1, max_value=1.0, value=0.25, step=0.1)
 	
 	# - Model parameter configuration
 	st.sidebar.title("Model Parameters")
-	temperature = st.sidebar.slider("temperature", min_value=0.0, max_value=1.0, value=0.7, step=0.1)
+	temperature = st.sidebar.slider("temperature", min_value=0.0, max_value=1.0, value=0.2, step=0.1)
 
 	if uploaded_file is not None:
 		# - Load the uploaded image as PIL
