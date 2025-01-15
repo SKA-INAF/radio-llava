@@ -56,13 +56,26 @@ def main():
 	st.sidebar.title("Model Configuration")
 	model_id = st.sidebar.text_input("Enter model name or path", "lmms-lab/llava-onevision-qwen2-7b-ov")
 
+	# Button to load the model
+	#if "model_loaded" not in st.session_state:
+	#	st.session_state.model_loaded = False
+
 	# - Load the model dynamically based on the input
-	try:
-		model, tokenizer, image_processor= load_model(model_id)
-		st.sidebar.success(f"Loaded model: {model_id}")
-	except Exception as e:
-		st.sidebar.error(f"Failed to load model: {e}")
-		return
+	if st.button("Load Model"):
+		try:
+			model, tokenizer, image_processor= load_model(model_id)
+			st.session_state.model = model
+			st.session_state.tokenizer = tokenizer
+			st.session_state.image_processor = image_processor
+			st.session_state.model_loaded = True
+			st.sidebar.success(f"Loaded model: {model_id}")
+		except Exception as e:
+			st.sidebar.error(f"Failed to load model: {e}")
+			return
+
+	if "model_loaded" not in st.session_state or not st.session_state.model_loaded:
+		st.write("Please load the model to proceed.")
+		return     
 
 	# - Image upload
 	uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
@@ -105,9 +118,9 @@ def main():
 		if query:
 			# - Run query and get response
 			response= run_llavaov_model_query(
-				model,
-				tokenizer,
-				image_processor, 
+				st.session_state.model,
+				st.session_state.tokenizer,
+				st.session_state.image_processor, 
 				image, 
 				query,
 				do_sample=do_sample,
