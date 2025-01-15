@@ -200,7 +200,8 @@ def main():
 		# Clear history button
 		if st.button("Clear History"):
 			st.session_state.conversation_history = []
-			# Re-render the container to reflect the cleared state
+			# Clear the displayed history immediately
+			history_container.empty()
 			with history_container:
 				st.markdown("<div style='height:300px; overflow-y:auto;'></div>", unsafe_allow_html=True)
         
