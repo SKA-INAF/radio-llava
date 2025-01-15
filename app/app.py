@@ -73,7 +73,11 @@ def main():
 	# Conversation history
 	if "conversation_history" not in st.session_state:
 		st.session_state.conversation_history = []
-
+		
+	# Clear history button
+	if st.button("Clear History"):
+		st.session_state.conversation_history = []
+        
 	if uploaded_file is not None:
 		# - Load the uploaded image as PIL
 		image= load_img_as_pil_rgb(
