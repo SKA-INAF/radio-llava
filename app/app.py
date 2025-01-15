@@ -171,7 +171,8 @@ def main():
 		#	st.write(f"**User:** {q}")
 		#	st.write(f"**Assistant:** {r}")
 				
-		with st.container():
+		history_container = st.container()
+		with history_container:
 			history_html = "<div style='height:300px; overflow-y:auto;'>"
 			for i, (q, r) in enumerate(st.session_state.conversation_history):
 				history_html += (
@@ -200,7 +201,7 @@ def main():
 		if st.button("Clear History"):
 			st.session_state.conversation_history = []
 			# Re-render the container to reflect the cleared state
-			with st.container():
+			with history_container:
 				st.markdown("<div style='height:300px; overflow-y:auto;'></div>", unsafe_allow_html=True)
         
 
