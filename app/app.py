@@ -31,7 +31,7 @@ from radio_llava.inference_llava import load_llavaov_model, run_llavaov_model_qu
 def load_model(model_id, model_name="llava_qwen"):
 	""" Load model """
 	
-	device= 'cuda' is torch.cuda.is_available() else 'cpu'
+	device= 'cuda' if torch.cuda.is_available() else 'cpu'
 	
 	model, tokenizer, image_processor= load_llavaov_model(
 		model_id,
