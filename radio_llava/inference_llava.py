@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 ######################
 ##   LOAD MODEL
 ######################
-def load_llavaov_model(model_name_or_path, is_multimodal_interleaved=False, model_name="llava_qwen", device_map="auto"):
+def load_llavaov_model(model_name_or_path, is_multimodal_interleaved=False, model_name="llava_qwen", model_base=None, device_map="auto"):
 	""" Load LLaVA One Vision model """
 
 	# - Retrieve model name
@@ -83,7 +83,7 @@ def load_llavaov_model(model_name_or_path, is_multimodal_interleaved=False, mode
 	if is_multimodal_interleaved:
 		tokenizer, model, image_processor, max_length = load_pretrained_model(
 			model_name_or_path, 
-			None, 
+			model_base, 
 			model_name, 
 			device_map=device_map,
 			**llava_model_args
@@ -91,7 +91,7 @@ def load_llavaov_model(model_name_or_path, is_multimodal_interleaved=False, mode
 	else:
 		tokenizer, model, image_processor, max_length = load_pretrained_model(
 			model_name_or_path, 
-			None, 
+			model_base, 
 			model_name, 
 			device_map=device_map
 		)
