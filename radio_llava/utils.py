@@ -640,7 +640,7 @@ def dynamic_preprocess(image, min_num=1, max_num=12, image_size=448, use_thumbna
 	
 
 def load_img_as_internvl(filename, resize=False, resize_size=448, apply_zscale=True, contrast=0.25, set_nans_to_min=False, verbose=False):
-  """ Load image as shown in InternVL demo """
+	""" Load image as shown in InternVL demo """
 
 	# - Load image as PIL
 	image= load_img_as_pil_rgb(
@@ -652,11 +652,11 @@ def load_img_as_internvl(filename, resize=False, resize_size=448, apply_zscale=T
 		verbose=verbose
 	)
 	if image is None:
-    logger.warn("Read image is None!")
-    return None
+		logger.warn("Read image is None!")
+		return None
 
-  # - Apply dynamic preprocess
-  max_num=12
+	# - Apply dynamic preprocess
+	max_num=12
 	images = dynamic_preprocess(
 		image, 
 		image_size=resize_size, 
@@ -665,7 +665,7 @@ def load_img_as_internvl(filename, resize=False, resize_size=448, apply_zscale=T
 	)
 	
 	# - Apply transform to image and return pixels
-  IMAGENET_MEAN = (0.485, 0.456, 0.406)
+	IMAGENET_MEAN = (0.485, 0.456, 0.406)
 	IMAGENET_STD = (0.229, 0.224, 0.225)
 	MEAN, STD = IMAGENET_MEAN, IMAGENET_STD
 	transform = T.Compose([
