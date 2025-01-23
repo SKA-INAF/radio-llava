@@ -865,3 +865,77 @@ def run_tinyllava_model_mirabest_inference(
 		verbose=verbose
 	)
 
+def run_tinyllava_model_gmnist_inference(
+	datalist, 
+	model,
+	reset_imgnorm=False,
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25,
+	conv_mode='phi', 
+	shuffle_options=False, nmax=-1, 
+	add_task_description=False,
+	verbose=False
+):
+	""" Run TinyLLaVA inference on Galaxy MNIST dataset """
+
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	context= "### Context: Consider these morphological classes of optical galaxies: \n SMOOTH_ROUND: smooth and round galaxy. Should not have signs of spires; \n SMOOTH_CIGAR: smooth and cigar-shaped galaxy, looks like being seen edge on. This should not have signs of spires of a spiral galaxy; \n EDGE_ON_DISK: edge-on-disk/spiral galaxy. This disk galaxy should have signs of spires, as seen from an edge-on perspective; \n UNBARRED_SPIRAL: unbarred spiral galaxy. Has signs of a disk and/or spires. \n Note that categories SMOOTH_CIGAR and EDGE_ON_DISK classes tend to be very similar to each other. To categorize them, ask yourself the following question: Is this galaxy very smooth, maybe with a small bulge? Then it belongs to class SMOOTH_CIGAR. Does it have irregularities/signs of structure? Then it belongs to class EDGE_ON_DISK."
+	context+= "\n"
+	
+	description= ""
+	if add_task_description: 
+		description= context
+		
+	question_prefix= "### Question: Which of these morphological classes of optical galaxy do you see in the image? "
+	if add_task_description:
+		if datalist_context is None:
+			question_subfix= "Answer the question using the provided context. "
+		else:
+			question_subfix= "Answer the question using the provided context and examples. "
+	else:
+		if datalist_context is None:
+			question_subfix= ""
+		else:
+			question_subfix= "Answer the question using the provided examples. "
+			
+	question_subfix+= "Report only the identified class label, without any additional explanation text."
+	
+	
+	class_options= ["SMOOTH_ROUND", "SMOOTH_CIGAR","EDGE_ON_DISK","UNBARRED_SPIRAL"]
+	
+	label2id= {
+		"NONE": 0,
+		"SMOOTH_ROUND": 1,
+		"SMOOTH_CIGAR": 2,
+		"EDGE_ON_DISK": 3,
+		"UNBARRED_SPIRAL": 4
+	}
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": None,
+		"label2id": label2id,
+		"class_options": class_options
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_tinyllava_model_inference(
+		datalist, 
+		model, 
+		task_info, 
+		reset_imgnorm=reset_imgnorm, 
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast,
+		conv_mode=conv_mode, 
+		add_options=True, shuffle_options=shuffle_options, nmax=nmax, 
+		verbose=verbose
+	)
+	
