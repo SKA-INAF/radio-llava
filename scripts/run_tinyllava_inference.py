@@ -278,6 +278,20 @@ def main():
 			verbose=args.verbose
 		)
 		
+	elif args.benchmark=="galaxymorphclass-gmnist":
+		run_tinyllava_model_gmnist_inference(
+			datalist=datalist,
+			model=model,
+			reset_imgnorm=args.reset_imgnorm,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			conv_mode=args.conv_mode,
+			shuffle_options=args.shuffle_options, 
+			nmax=args.nmax,
+			add_task_description=args.add_task_description,
+			verbose=args.verbose
+		)
+		
 	else:
 		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))
 		return 1
