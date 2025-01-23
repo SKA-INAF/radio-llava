@@ -100,7 +100,7 @@ def get_args():
 	parser.add_argument('-model','--model', dest='model', required=False, type=str, default="lmms-lab/llava-onevision-qwen2-0.5b-ov", help='LLaVA pretrained model') 
 	parser.add_argument('-conv_template','--conv_template', dest='conv_template', required=False, type=str, default="qwen_1_5", help='LLaVA conversation template') 
 	parser.add_argument('-model_name','--model_name', dest='model_name', required=False, type=str, default="llava_qwen", help='LLaVA model name') 
-	parser.add_argument('-model_base','--model_base', dest='model_base', required=False, type=str, default=None, help='Base model name (needed for only projector fine-tuning)') 
+	parser.add_argument('-model_base','--model_base', dest='model_base', required=False, type=str, default=None, help='Base model name (needed for LORA & for adapter-only fine-tuning)') 
 	
 	# - Inference options
 	parser.add_argument('--do_sample', dest='do_sample', action='store_true',help='Sample model response using temperature option (default=false)')	
