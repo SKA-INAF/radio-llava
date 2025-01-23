@@ -443,7 +443,7 @@ def run_llavaov_model_inference(
 			else:
 				question_curr= question_retry
 				
-			print("question: ", question_curr)
+			#print("question: ", question_curr)
 						
 			if conversations_context:
 				output= run_llavaov_model_context_query(
@@ -480,9 +480,9 @@ def run_llavaov_model_inference(
 			#########################
 			# - Extract class ids
 			res= process_model_output(output, label, label2id, classification_mode, label_modifier_fcn)
-			print("output:", output)
-			print("res: ", res)
-			print("type(res)", type(res))
+			#print("output:", output)
+			#print("res: ", res)
+			#print("type(res)", type(res))
 			
 			if res is None:
 				#print("res is None!")
