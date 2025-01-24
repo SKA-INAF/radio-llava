@@ -140,7 +140,12 @@ def run_internvl_model_query(
 		apply_zscale=zscale, contrast=contrast, 
 		set_nans_to_min=False, 
 		verbose=False
-	).to(torch.bfloat16).cuda()
+	)
+	if pixel_values is None:
+		logger.warn("Failed to load image, returning None!")
+		return None
+	
+	pixel_values= pixel_values.to(torch.bfloat16).cuda()
 	
 	# - Set generation config
 	num_beams= 1
