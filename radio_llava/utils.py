@@ -38,6 +38,7 @@ from PIL import Image
 
 ## TORCH MODULES
 import torch
+import torchvision.transforms as T
 
 ## DRAW MODULES
 import matplotlib.pyplot as plt
