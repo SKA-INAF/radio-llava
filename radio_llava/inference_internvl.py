@@ -113,7 +113,7 @@ def load_internvl_model(model_name_or_path, model_name="", device_map="auto"):
    #.cuda()
    
 	# - Load tokenizer
-	tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True, use_fast=False)
+	tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True, use_fast=False)
 
 	return model, tokenizer
 
