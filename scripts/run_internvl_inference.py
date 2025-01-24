@@ -44,7 +44,7 @@ import matplotlib.pyplot as plt
 
 ## MODULE
 from radio_llava.utils import *
-from radio_llava.inference_qwenvl import *
+from radio_llava.inference_internvl import *
 
 ## LOGGER
 logger = logging.getLogger(__name__)
