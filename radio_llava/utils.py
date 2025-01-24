@@ -39,6 +39,7 @@ from PIL import Image
 ## TORCH MODULES
 import torch
 import torchvision.transforms as T
+from torchvision.transforms.functional import InterpolationMode
 
 ## DRAW MODULES
 import matplotlib.pyplot as plt
