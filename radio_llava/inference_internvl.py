@@ -89,7 +89,7 @@ def split_model(model_name):
 	return device_map
 
 
-def load_internvl_model(model_name_or_path, model_name=="", device_map="auto"):
+def load_internvl_model(model_name_or_path, model_name="", device_map="auto"):
 	""" Load InternVL model """
 
 	# - Retrieve device map for given model
