@@ -327,15 +327,9 @@ def run_internvl_model_rgz_inference(
 		
 	question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
 	if add_task_description:
-		if datalist_context is None:
-			question_subfix= "Answer the question using the provided context. "
-		else:
-			question_subfix= "Answer the question using the provided context and examples. "
+		question_subfix= "Answer the question using the provided context. "
 	else:
-		if datalist_context is None:
-			question_subfix= ""
-		else:
-			question_subfix= "Answer the question using the provided examples. "
+		question_subfix= ""
 			
 	question_subfix+= "Report only the identified class label, without any additional explanation text."
 	
@@ -400,15 +394,9 @@ def run_internvl_model_smorph_inference(
 	question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
 	
 	if add_task_description:
-		if datalist_context is None:
-			question_subfix= "Answer the question using the provided context. "
-		else:
-			question_subfix= "Answer the question using the provided context and examples. "
+		question_subfix= "Answer the question using the provided context. "
 	else:
-		if datalist_context is None:
-			question_subfix= ""
-		else:
-			question_subfix= "Answer the question using the provided examples. "
+		question_subfix= ""
 			
 	question_subfix+= "Report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
 	
@@ -574,16 +562,10 @@ def run_internvl_model_anomaly_inference(
 	question_prefix= "### Question: Can you identify which peculiarity class the presented image belongs to? "
 	
 	if add_task_description:
-		if datalist_context is None:
-			question_subfix= "Answer the question using the provided context. "
-		else:
-			question_subfix= "Answer the question using the provided context and examples. "
+		question_subfix= "Answer the question using the provided context. "
 	else:
-		if datalist_context is None:
-			question_subfix= ""
-		else:
-			question_subfix= "Answer the question using the provided examples. "
-			
+		question_subfix= ""
+		
 	question_subfix+= "Report only the identified class label, without any additional explanation text."
 	
 	label2id= {
@@ -643,16 +625,10 @@ def run_internvl_model_mirabest_inference(
 		
 	question_prefix= "### Question: Which of these morphological classes of radio galaxy do you see in the image? "
 	if add_task_description:
-		if datalist_context is None:
-			question_subfix= "Answer the question using the provided context. "
-		else:
-			question_subfix= "Answer the question using the provided context and examples. "
+		question_subfix= "Answer the question using the provided context. "
 	else:
-		if datalist_context is None:
-			question_subfix= ""
-		else:
-			question_subfix= "Answer the question using the provided examples. "
-			
+		question_subfix= ""
+		
 	question_subfix+= "Report only the identified class label, without any additional explanation text."
 	
 	
@@ -713,16 +689,10 @@ def run_internvl_model_gmnist_inference(
 		
 	question_prefix= "### Question: Which of these morphological classes of optical galaxy do you see in the image? "
 	if add_task_description:
-		if datalist_context is None:
-			question_subfix= "Answer the question using the provided context. "
-		else:
-			question_subfix= "Answer the question using the provided context and examples. "
+		question_subfix= "Answer the question using the provided context. "
 	else:
-		if datalist_context is None:
-			question_subfix= ""
-		else:
-			question_subfix= "Answer the question using the provided examples. "
-			
+		question_subfix= ""
+		
 	question_subfix+= "Report only the identified class label, without any additional explanation text."
 	
 	
