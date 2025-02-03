@@ -390,7 +390,7 @@ def main():
 							a_curr= {"from": "gpt", "value": answer}
 						else:
 							q_curr= {"from": "human", "value": question}
-						a_curr= {"from": "gpt", "value": answer}
+							a_curr= {"from": "gpt", "value": answer}
 						
 					# - Add messages to collection
 					conversations.append(q_curr)
