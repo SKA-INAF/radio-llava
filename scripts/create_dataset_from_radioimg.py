@@ -7,6 +7,7 @@ from __future__ import print_function
 ##################################################
 # - STANDARD MODULES
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] ="0"
 import sys
 import json
 import argparse
@@ -21,7 +22,7 @@ from radio_llava.utils import *
 from radio_llava.inference_llama import *
 
 ## LOGGER
-logger = logging.getLogger(__name__)
+from radio_llava import logger
 
 #### GET SCRIPT ARGS ####
 def str2bool(v):
@@ -44,11 +45,18 @@ def get_args():
 	parser.add_argument('-nmax','--nmax', dest='nmax', required=False, default=-1, type=int, help='Max number of processed images') 
 	
 	# - Model options
+	parser.add_argument('--add_image_description', dest='add_image_description', action='store_true', help='Add image description in the dataset (default=false)')	
+	parser.set_defaults(add_image_description=False)
+	parser.add_argument('--add_default_qa', dest='add_default_qa', action='store_true', help='Add default image Q&A (default=false)')	
+	parser.set_defaults(add_default_qa=False)
 	parser.add_argument('--generate_text_variations', dest='generate_text_variations', action='store_true', help='Generate text variations using LLAMA model (default=false)')	
 	parser.set_defaults(generate_text_variations=False)
-	parser.add_argument('-model','--model', dest='model', required=False, default="meta-llama/Meta-Llama-3.1-8B-Instruct", type=str, help='LLAMA model used to generate variations') 
-	parser.add_argument('-model_type','--model_type', dest='model_type', required=False, default="llama", type=str, help='Model to be used {llama, llama-vision}') 
+	parser.add_argument('--generate_qa', dest='generate_qa', action='store_true', help='Add image generated question-answer in the dataset (default=false)')	
+	parser.set_defaults(generate_qa=False)
 	
+	parser.add_argument('-model','--model', dest='model', required=False, default="meta-llama/Meta-Llama-3.1-8B-Instruct", type=str, help='LLAMA model used to generate variations') 
+	parser.add_argument('-model_type','--model_type', dest='model_type', required=False, default="llama", type=str, help='Model to be used {llama, llama-vision, internvl}') 
+	parser.add_argument('-model_name','--model_name', dest='model_name', required=False, type=str, default="", help='InternVL pretrained model name (e.g. InternVL2_5-1B, ...). This is needed for split device_map.') 
 	parser.add_argument('-device_map','--device_map', dest='device_map', required=False, default="auto", type=str, help='Device map used when loading model') 
 	parser.add_argument('-max_new_tokens','--max_new_tokens', dest='max_new_tokens', required=False, default=1024, type=int, help='The max number of tokens to be generated') 
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=1.0, type=float, help='If set to < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation') 
@@ -107,12 +115,14 @@ def main():
 	model= None
 	tokenizer= None
 	processor= None
-	if generate_text_variations:
+	if generate_text_variations or args.generate_qa:
 		logger.info("Loading model %s ..." % (model_id))
 		if args.model_type=="llama":
 			model, tokenizer= load_llama_model(model_id, args.device_map)
 		elif args.model_type=="llama-vision":
 			model, processor= load_llama_vision_model(model_id)
+		elif args.model_type=="internvl":
+			model, tokenizer= load_internvl_model(model_id, model_name=args.model_name, device_map=args.device_map)
 		else:
 			logger.error("Invalid/unknown model_type specified (%s)!" % (args.model_type))
 		
@@ -177,6 +187,35 @@ def main():
 		anomaly_class_msg_header + "Could you determine and report the peculiarity class of the input image?",
 		anomaly_class_msg_header + "Can you identify which peculiarity class the presented image belongs to?"
 	]
+	
+	context= "## Context: You are an AI assistant specialized in radio astronomical topics. You are given an input image from a scientific research paper along with its corresponding text description (Figure caption) provided below: \n"
+	
+	task= "## Task: Create multiple precise and self-contained question-answer pairs about the input image using the provided image, context and caption text description. For the question-answer generation you must precisely follow the task requirements described below: \n"
+	
+	task_requirements= "## Task requirements: Below are requirements for generating the questions and answers in the conversation: \n"
+	task_requirements+= "- Adopt an astronomical scientific style in both question formulation and question answers. \n"
+	task_requirements+= "- Avoid quoting or referring to specific facts, terms, abbreviations, dates, numbers, or names, as these may reveal the conversation is based on the text information, rather than the image itself. Focus on the visual aspects of the image that can be inferred without the text information. \n"
+	task_requirements+= "- Do not use phrases like \"mentioned\", \"caption\", \"context\" in the conversation. Instead, refer to the information as being \"in the image\". \n"
+	task_requirements+= "- Ensure that questions are diverse and cover a range of visual aspects of the image. \n"
+	task_requirements+= "- The conversation should include at least 2-3 turns of questions and answers about the visual aspects of the image. \n"
+	task_requirements+= "- Answer responsibly, without inventing words or sentences that deviate or distort the original figure context and description meaning. \n"
+	task_requirements+= "- Answers should be clear, specific, and provide comprehensive information based on the image and its provided context/description. \n"
+	task_requirements+= "- Ensure that each question-answer pair incorporates all necessary context, allowing them to be fully understood on their own without external references. \n"
+	task_requirements+= "- Return generated question-answer pairs using the following json string output format: \n"
+	task_requirements+= "[" + "\n"
+	task_requirements+= "  " + "{" + "\n"
+	task_requirements+= "    " + "\"question\": \"INSERT QUESTION\"," + "\n"
+	task_requirements+= "    " + "\"answer\": \"INSERT ANSWER\"" + "\n"
+	task_requirements+= "  " + "}," + "\n"
+	task_requirements+= "  " + "..." + "\n"
+	task_requirements+= "  " + "..." + "\n"
+	task_requirements+= "  " + "{" + "\n"
+	task_requirements+= "    " + "\"question\": \"INSERT QUESTION\"," + "\n"
+	task_requirements+= "    " + "\"answer\": \"INSERT ANSWER\"" + "\n"
+	task_requirements+= "  " + "}" + "\n"
+	task_requirements+= "]" + "\n"
+	task_requirements+= "\n"
+	task_requirements+= "DO NOT WRAP THE JSON OUTPUT WITHIN JSON MARKDOWN MARKERS."
 	
 	for idx, item in enumerate(datalist):
 		# - Check stop condition
@@ -359,38 +398,9 @@ def main():
 				else:
 					response= "The image is ordinary and does not contain radio sources with a particular morphological structure. "
 	
-		response_final= response
-		#print("Anomaly description: ", response_final)
-		#if generate_text_variations:
-		#	if args.model_type=="llama":
-		#		response_final= generate_llama_alternative_text(
-		#			response,
-		#			model, 
-		#			tokenizer,
-		#			temperature=args.temperature,
-		#			max_new_tokens=args.max_new_tokens,
-		#			top_p=args.top_p,
-		#			top_k=args.top_k,
-		#			penalty=args.penalty
-		#		)
-		#	elif args.model_type=="llama-vision":
-		#		response_final= generate_llama_vision_alternative_text(
-		#			response,
-		#			filename,
-		#			model, 
-		#			processor,
-		#			temperature=args.temperature,
-		#			max_new_tokens=args.max_new_tokens,
-		#			top_p=args.top_p,
-		#			top_k=args.top_k,
-		#			penalty=args.penalty,
-		#			resize=args.resize, resize_size=args.imgsize,
-		#			zscale=args.zscale, contrast=args.contrast
-		#		)
-		#	response_final= response_final.strip('\n')
-		#	print("Anomaly description (LLAMA generated): ", response_final)
-	
-		a6= {"from": "gpt", "value": response_final}
+		description_anomaly= response
+		
+		a6= {"from": "gpt", "value": description_anomaly}
 		
 		# ---------------------------------------
 		# - Anomaly class question
@@ -406,16 +416,144 @@ def main():
 		
 		a7= {"from": "gpt", "value": response}
 		
+		
+		# ---------------------------------------
+		# - Multi-turn questions-answers
+		# .......................................
+		if args.generate_qa:
+			fig_caption= description_final
+			fig_caption+= description_anomaly
+		
+			query= context + "\n"
+			query+= "Figure caption: " + fig_caption + "\n\n"
+			query+= task + "\n"
+			query+= task_requirements	
+			
+			response= ""
+			if args.model_type=="llama-vision":
+				response= run_llama_vision_model_query(
+					query,
+					filename,
+					model,
+					processor,
+					do_sample=False,
+					temperature=args.temperature,
+					max_new_tokens=1024,
+					top_p=1.0,
+					top_k=20,
+					penalty=1.2,
+					resize=False, resize_size=args.imgsize,
+					zscale=False, contrast=0.25,
+					verbose=False
+				)
+			elif args.model_type=="internvl":
+				response= run_internvl_model_query(
+					model,
+					tokenizer,
+					filename, 
+					query,
+					resize_size=args.imgsize,
+					zscale=False, contrast=0.25,
+					do_sample=False,
+					temperature=args.temperature,
+					verbose=False
+				)
+			else:
+				response= run_internvl_model_query(
+					model,
+					tokenizer,
+					filename, 
+					query,
+					resize_size=args.imgsize,
+					zscale=False, contrast=0.25,
+					do_sample=False,
+					temperature=args.temperature,
+					verbose=False
+				)
+					
+			# - Parse model response
+			logger.info("Generated multi-turn Q&A for image %s: %s" % (filename, response))
+			response_str= clean_json_string(response.rstrip())
+				
+			try:
+				responses = json.loads(response_str)
+			except Exception as e:
+				logger.warning("Failed to convert json string response (%s) for image %s to dict list (err=%s), skip image ..." % (response_str, filename, str(e)))
+				continue
+			
+			# - Extract question-answer pairs
+			parsed_questions= []
+			parsed_answers= []
+			generated_qas= []
+				
+			if not isinstance(responses,list):
+				logger.warning("Converted json string response (%s) for image %s is not a dict list, skip image ..." % (response_str, filename))
+				continue
+					
+			if not responses:
+				logger.warning("Converted json string response (%s) for image %s is an empty dict list, skip image ..." % (response_str, filename))
+				continue
+				
+			for index, qaentry in enumerate(responses):
+				if not isinstance(qaentry, dict):
+					logger.warning("Read item of Q&A list for image %s is not a dict, skip Q&A ..." % (filename))
+					continue
+					
+				if 'question' not in qaentry or 'answer' not in qaentry:
+					logger.warning("Read item of Q&A list for image %s do not have question/answer keys, skip Q&A ..." % (filename))
+					continue
+						
+				question= qaentry["question"]
+				answer= qaentry["answer"]
+				parsed_questions.append(question)
+				parsed_answers.append(answer)
+				
+				if args.add_image_description:
+					q_curr= {"from": "human", "value": question}
+					a_curr= {"from": "gpt", "value": answer}
+				else:
+					if index==0:
+						q_curr= {"from": "human", "value": "<image>\n" + question}
+						a_curr= {"from": "gpt", "value": answer}
+					else:
+						q_curr= {"from": "human", "value": question}
+						a_curr= {"from": "gpt", "value": answer}
+						
+				# - Add messages to collection
+				generated_qas.extend([q_curr,a_curr])
+					
+			logger.info("--> #%d Q&A entries generated and parsed for image %s ..." % (len(parsed_questions), filename))
+							
+		
 		# - Add all messages to collection
-		conversations= [
-			q1, a1,
-			q2, a2,
-			q3, a3,
-			q4, a4,
-			q5, a5,
-			q6, a6,
-			q7, a7
-		]
+		#conversations= [
+		#	q1, a1,
+		#	q2, a2,
+		#	q3, a3,
+		#	q4, a4,
+		#	q5, a5,
+		#	q6, a6,
+		#	q7, a7
+		#]
+		conversations= []
+		if args.add_image_description:
+			conversations.extend([q1,a1])
+			
+		if args.add_default_qa:
+			conversations.extend(
+				[
+					q2, a2, 
+					q3, a3, 
+					q4, a4, 
+					q5, a5,
+					q6, a6,
+					q7, a7
+				]
+			)
+		
+		if args.generate_qa:
+			conversations.extend(generated_qas)
+		
 		outdict["conversations"]= conversations
 	
 		# - Append to outdata
