@@ -19,6 +19,7 @@ import random
 import math
 import logging
 import io
+import re
 
 ## COMMAND-LINE ARG MODULES
 import getopt
