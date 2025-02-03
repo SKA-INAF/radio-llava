@@ -508,7 +508,7 @@ def main():
 			query+= task_requirements
 			
 			logger.info("Generating Q&A from description of image %s: %s" % (filename, fig_caption))
-			logger.info("--> Query: %s" % (query))
+			logger.debug("--> Query: %s" % (query))
 		
 			
 			response= ""
