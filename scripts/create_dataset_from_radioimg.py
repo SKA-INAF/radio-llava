@@ -417,18 +417,18 @@ def main():
 		
 		a7= {"from": "gpt", "value": response}
 		
-		
 		# ---------------------------------------
 		# - Multi-turn questions-answers
 		# .......................................
 		if args.generate_qa:
 			fig_caption= description_final
 			fig_caption+= description_anomaly
+			logger.info("Generating Q&A from description of image %s: %s" % (filename, fig_caption))
 		
 			query= context + "\n"
 			query+= "Figure caption: " + fig_caption + "\n\n"
 			query+= task + "\n"
-			query+= task_requirements	
+			query+= task_requirements
 			
 			response= ""
 			if args.model_type=="llama-vision":
