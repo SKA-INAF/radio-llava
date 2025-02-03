@@ -210,7 +210,7 @@ def main():
 	task_requirements+= "- Avoid quoting or referring to specific facts, terms, abbreviations, dates, numbers, or names, as these may reveal the conversation is based on the text information, rather than the image itself. Focus on the visual aspects of the image that can be inferred without the text information. \n"
 	task_requirements+= "- Do not use phrases like \"mentioned\", \"caption\", \"context\" in the conversation. Instead, refer to the information as being \"in the image\". \n"
 	task_requirements+= "- Ensure that questions are diverse and cover a range of visual aspects of the image. \n"
-	task_requirements+= "- The conversation should include at least 5 turns of questions and answers about the visual aspects of the image. \n"
+	task_requirements+= "- The conversation should include at least 5 turns of questions and answers about the visual aspects of the image and caption description. \n"
 	task_requirements+= "- Answer responsibly, without inventing words or sentences that deviate or distort the original figure context and description meaning. \n"
 	task_requirements+= "- Answers should be clear, specific, and provide comprehensive information based on the image and its provided context/description. \n"
 	task_requirements+= "- Ensure that each question-answer pair incorporates all necessary context, allowing them to be fully understood on their own without external references. \n"
