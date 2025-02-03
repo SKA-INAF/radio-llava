@@ -120,6 +120,37 @@ def load_internvl_model(model_name_or_path, model_name="", device_map="auto"):
 ####################################
 ##   INFERENCE UTILS
 ####################################
+def generate_internvl_alternative_text(
+	input_text,
+	image_path, 
+	model, 
+	tokenizer,
+	temperature=0.2,
+	resize_size=448,
+	zscale=False, contrast=0.25,
+	verbose=False
+):
+	""" Generate text variation """
+
+	# - Create prompt
+	prompt_start= "Generate a text variation of the following description of the input image, keeping the same content, using words that match the original sentence's meaning, and using an astronomical scientific style, without adding additional details: \n"
+	prompt_end= "\n Please report only the best alternative sentence without any prefix, preamble or explanation."
+	prompt= prompt_start + input_text + prompt_end
+
+	# - Generate text
+	return run_internvl_model_query(
+		model, 
+		tokenizer, 
+		image_path, 
+		prompt,
+		resize_size=resize_size,
+		zscale=zscale, contrast=contrast,
+		do_sample=True,
+		temperature=temperature,
+		verbose=verbose
+	)
+						
+
 def run_internvl_model_query(
 	model,
 	tokenizer,
@@ -136,7 +167,7 @@ def run_internvl_model_query(
 	# - Load image
 	pixel_values= load_img_as_internvl(
 		image_path, 
-		resize=False, resize_size=448, 
+		resize=False, resize_size=resize_size, 
 		apply_zscale=zscale, contrast=contrast, 
 		set_nans_to_min=False, 
 		verbose=False

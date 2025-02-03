@@ -681,3 +681,12 @@ def load_img_as_internvl(filename, resize=False, resize_size=448, apply_zscale=T
 	pixel_values = torch.stack(pixel_values)
 	return pixel_values
 
+########################################
+##   CODE UTILS
+########################################
+def clean_json_string(json_string):
+	""" Clean json output returned by model """
+	pattern = r'^```json\s*(.*?)\s*```$'
+	cleaned_string = re.sub(pattern, r'\1', json_string, flags=re.DOTALL)
+	return cleaned_string.strip()
+
