@@ -271,6 +271,16 @@ def main():
 							resize_size=args.imgsize,
 							zscale=False, contrast=args.contrast	
 						)
+					else:
+						description_variant= generate_internvl_alternative_text(
+							description,
+							image_path, 
+							model, 
+							tokenizer,
+							temperature=args.temperature,
+							resize_size=args.imgsize,
+							zscale=False, contrast=args.contrast	
+						)
 				
 					description= description_variant.strip('\n')
 					logger.info("Generated description for fig %s (paper: %s): %s" % (image_path, filename_paper, description))
@@ -290,6 +300,7 @@ def main():
 				query+= task + "\n"
 				query+= task_requirements	
 			
+				response= ""
 				if args.model_type=="llama-vision":
 					response= run_llama_vision_model_query(
 						query,
@@ -318,7 +329,19 @@ def main():
 						temperature=args.temperature,
 						verbose=False
 					)
-			
+				else:
+					response= run_internvl_model_query(
+						model,
+						tokenizer,
+						image_path, 
+						query,
+						resize_size=args.imgsize,
+						zscale=False, contrast=0.25,
+						do_sample=False,
+						temperature=args.temperature,
+						verbose=False
+					)
+					
 				# - Parse model response
 				logger.info("Generated multi-turn Q&A for fig %s (paper: %s): %s" % (image_path, filename_paper, response))
 				response_str= clean_json_string(response.rstrip())
