@@ -191,10 +191,22 @@ def main():
 	
 	context= "## Context: You are an AI assistant specialized in radio astronomical topics. You are given an input image from a scientific research paper along with its corresponding text description (Figure caption) provided below: \n"
 	
+	glossary= "## Glossary:\n"
+	glossary+= "- SOURCE ISLAND: A group of 4-connected pixels in a radio image under analysis with intensity above a detection threshold with respect to the sky background level.\n"
+	glossary+= "- COMPACT SOURCE: single-island isolated point- or slightly resolved compact radio sources, eventually hosting one or more blended components, each with morphology resembling the synthesized beam shape. \n"
+	glossary+= "- EXTENDED SOURCE: This morphological class of radio sources comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. \n"
+	glossary+= "- DIFFUSE SOURCE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology; \n DIFFUSE-LARGE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n"
+	glossary+= "- ARTEFACTS or SIDELOBES: noise patterns with a ring-like or elongated morphology, typically found around bright compact sources in radio images. They are often mistaken for real radio sources but are actually spurious. These patterns arise from imperfections in the imaging processing stage of radio data. \n"
+	glossary+= "- RADIO GALAXY: a type of active galaxy that emits an exceptionally large amount of radio waves, often extending beyond its visible structure. These galaxies host an active galactic nucleus (AGN), powered by a supermassive black hole (SMBH) at their center, which fuels the production of powerful radio jets and lobes. \n"
+	glossary+= "- ORDINARY IMAGE: image containing only point-like or slightly-resolved compact radio sources superimposed over the sky background or imaging artefact patterns. \n"
+	glossary+= "- COMPLEX IMAGE: image containing one or more radio sources with extended or diffuse morphology. \n"
+	glossary+= "- PECULIAR IMAGE: image containing one or more radio sources with anomalous or peculiar extended morphology, often having diffuse edges, complex irregular shapes, covering a large portion of the image. \n"
+	glossary+= "\n"
+	
 	task= "## Task: Create multiple precise and self-contained question-answer pairs about the input image using the provided image, context and caption text description. For the question-answer generation you must precisely follow the task requirements described below: \n"
 	
 	task_requirements= "## Task requirements: Below are requirements for generating the questions and answers in the conversation: \n"
-	task_requirements+= "- Adopt an astronomical scientific style in both question formulation and question answers. \n"
+	task_requirements+= "- Adopt an astronomical scientific style in both question formulation and question answers, following definitions and concepts given in the Glossary. \n"
 	task_requirements+= "- Avoid quoting or referring to specific facts, terms, abbreviations, dates, numbers, or names, as these may reveal the conversation is based on the text information, rather than the image itself. Focus on the visual aspects of the image that can be inferred without the text information. \n"
 	task_requirements+= "- Do not use phrases like \"mentioned\", \"caption\", \"context\" in the conversation. Instead, refer to the information as being \"in the image\". \n"
 	task_requirements+= "- Ensure that questions are diverse and cover a range of visual aspects of the image. \n"
@@ -421,8 +433,70 @@ def main():
 		# - Multi-turn questions-answers
 		# .......................................
 		if args.generate_qa:
-			fig_caption= description_final
-			fig_caption+= description_anomaly
+		
+			# - Define fig caption
+			fig_caption= "The image is a radio astronomical image cutout extracted from a larger radio-continuum Stokes-I map produced by an interferometer telescope. "
+			
+			if 'BACKGROUND' in labels:
+				fig_caption+= "The image contains for a large fraction only sky background noise. "
+			if 'COMPACT' in labels:
+				fig_caption+= "The image contains various point-like or compact radio sources superimposed over the sky background noise. "
+			if 'EXTENDED' in labels:
+				fig_caption+= "The image contains one or more extended radio sources. "
+			else:
+				fig_caption+= "The image does not contain extended radio sources. "
+			
+			if 'RADIO-GALAXY' in labels:
+				fig_caption+= "The image contains candidate radio galaxies with extended morphology. "
+			else:
+				fig_caption+= "The image does not contain candidate radio galaxies with extended morphology. "
+			
+			if 'DIFFUSE' in labels:
+				fig_caption+= "The image contains roundish diffuse radio sources. "
+			else:
+				fig_caption+= "The image does not contain roundish diffuse radio sources. "
+					
+			if 'DIFFUSE-LARGE' in labels:
+				fig_caption+= "A large area of diffuse emission is visible in the image. "
+			else:	
+				fig_caption+= "The image does not present areas of large diffuse emission. "
+				
+			if 'ARTEFACT' in labels:
+				fig_caption+= "The image contains imaging artefacts, e.g. some of the radio sources present in the image are poorly imaged and surrounded by imaging artefacts having a ring pattern. "
+			else:
+				fig_caption+= "The image does not contain imaging artefacts. "
+			
+			if 'FILAMENT' in labels:
+				fig_caption+= "Some filamentary structures are present in the image. "
+			else:
+				fig_caption+= "No filamentary structures are present in the image. "
+				
+			if 'BORDER' in labels:
+				fig_caption+= "The image was likely extracted near to mosaic borders as a fraction of the image is empty (NaN or zero pixels). "
+			else:
+				fig_caption+=	"The image does not contain regions with empty or NaN pixels. "
+				
+			if 'MOSAICING' in labels:
+				fig_caption+= "The image contains residual mosaicking artefact patterns with a diagonal line orientation. "	
+			else:
+				fig_caption+= "The image does not contain mosaicking artefact patterns with a diagonal line orientation. "
+		
+			if is_complex:
+				fig_caption+= "The image can be considered complex, as it contains radio sources with extended or diffuse morphology that may be relevant or interesting to the user, depending on the analysis context or field of study. "
+				if is_wtf:
+					fig_caption+= " Some of these radio sources exhibit highly peculiar morphologies, making the image itself distinctive."
+			else:
+				if is_wtf:
+					fig_caption+= "The image contains radio sources with a very peculiar morphology. "			
+				else:
+					if nlabels==1 and ('BACKGROUND' in labels or 'COMPACT' in labels):
+						fig_caption+= "The image is very ordinary as it does contain only compact or point-like radio sources superimposed over the sky background. "
+					else:
+						fig_caption+= "The image is ordinary and does not contain radio sources with a particular morphological structure. "		
+		
+			# - Define query
+			#fig_caption= description_final
+			#fig_caption+= description_anomaly
 			logger.info("Generating Q&A from description of image %s: %s" % (filename, fig_caption))
 		
 			query= context + "\n"
