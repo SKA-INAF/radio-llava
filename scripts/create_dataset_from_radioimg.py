@@ -20,6 +20,7 @@ from astropy.io import ascii
 ## MODULE
 from radio_llava.utils import *
 from radio_llava.inference_llama import *
+from radio_llava.inference_internvl import *
 
 ## LOGGER
 from radio_llava import logger
