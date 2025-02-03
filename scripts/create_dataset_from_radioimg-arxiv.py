@@ -7,12 +7,14 @@ from __future__ import print_function
 ##################################################
 # - STANDARD MODULES
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] ="0"
 import sys
 import json
 import argparse
 import random
 import logging
 import shortuuid
+import re
 
 from astropy.io import ascii
 
