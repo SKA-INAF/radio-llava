@@ -501,6 +501,7 @@ def main():
 		
 			query= context + "\n"
 			query+= "Figure caption: " + fig_caption + "\n\n"
+			query+= glossary + "\n"
 			query+= task + "\n"
 			query+= task_requirements
 			
