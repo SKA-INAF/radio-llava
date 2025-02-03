@@ -392,8 +392,8 @@ def main():
 						a_curr= {"from": "gpt", "value": answer}
 						
 					# - Add messages to collection
-				conversations.append(q_curr)
-				conversations.append(a_curr)
+					conversations.append(q_curr)
+					conversations.append(a_curr)
 					
 				logger.info("--> #%d Q&A entries generated and parsed for fig %s (paper: %s) ..." % (len(parsed_questions), image_path, filename_paper))
 							
