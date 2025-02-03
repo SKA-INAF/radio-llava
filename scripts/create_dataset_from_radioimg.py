@@ -214,7 +214,7 @@ def main():
 	task_requirements+= "- Answer responsibly, without inventing words or sentences that deviate or distort the original figure context and description meaning. \n"
 	task_requirements+= "- Answers should be clear, specific, and provide comprehensive information based on the image and its provided context/description. \n"
 	task_requirements+= "- Ensure that each question-answer pair incorporates all necessary context, allowing them to be fully understood on their own without external references. \n"
-	task_requirements+= "- Include at least one question to classify or identify the complexity level of the image based on its content. \n"
+	task_requirements+= "- Include at least one question to classify or identify the complexity/peculiarity/anomaly level of the image based on its content. \n"
 	task_requirements+= "- Include at least one question to determine what morphological kind of radio sources are present in the image. \n"
 	task_requirements+= "- Include at least one question to determine whether extended radio galaxies or artifacts are present in the image based on its content. \n"
 	task_requirements+= "- Return generated question-answer pairs using the following json string output format: \n"
