@@ -24,7 +24,8 @@ from radio_llava.inference_llama import *
 from radio_llava.inference_internvl import *
 
 ## LOGGER
-logger = logging.getLogger(__name__)
+from radio_llava import logger
+
 
 #### GET SCRIPT ARGS ####
 def str2bool(v):
