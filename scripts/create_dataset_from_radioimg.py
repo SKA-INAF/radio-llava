@@ -497,13 +497,16 @@ def main():
 			# - Define query
 			#fig_caption= description_final
 			#fig_caption+= description_anomaly
-			logger.info("Generating Q&A from description of image %s: %s" % (filename, fig_caption))
-		
+			
 			query= context + "\n"
 			query+= "Figure caption: " + fig_caption + "\n\n"
 			query+= glossary + "\n"
 			query+= task + "\n"
 			query+= task_requirements
+			
+			logger.info("Generating Q&A from description of image %s: %s" % (filename, fig_caption))
+			logger.info("--> Query: %s" % (query))
+		
 			
 			response= ""
 			if args.model_type=="llama-vision":
