@@ -517,7 +517,7 @@ def main():
 		abbox_artefact= {"from": "gpt", "value": response}
 		
 		# - Flagged 
-		qbbox_flagged= {"from": "human", "value": "Does the image contain radio sources that are severely contaminated or overlapping with imaging artefacts? Please provide their bounding box coordinates."}
+		qbbox_flagged= {"from": "human", "value": "Does the image contain radio sources that are to be flagged as severely contaminated or overlapping with imaging artefacts? Please provide their bounding box coordinates."}
 	
 		coords= ''
 		for i in range(n_flagged):
@@ -533,7 +533,7 @@ def main():
 		if coords=="":
 			response= "The image does not contain radio sources to be flagged."
 		else:
-			response= "The image contains radio sources that are to be flagged as poorly images or significantly overlapping with imaging aretfacts. Their bounding box coordinates are: " + coords
+			response= "The image contains radio sources that are to be flagged as poorly imaged or significantly overlapping with imaging artefacts. Their bounding box coordinates are: " + coords
 		
 		abbox_flagged= {"from": "gpt", "value": response}
 		

@@ -170,7 +170,7 @@ def main():
 		"Please report if the given image contains any radio source with an anomalous or peculiar morphology. "
 	]
 	
-	anomaly_class_msg_header= "Consider this radio image peculiarity classes, defined as follows: \n ORDINARY: image containing only point-like or slighly-resolved compact radio sources superimposed over the sky background or imaging artefact patterns; \n COMPLEX: image containing one or more radio sources with extended or diffuse morphology; \n PECULIAR: image containing one or more radio sources with anomalous or peculiar extended morphology, often having diffuse edges, complex irregular shapes, covering a large portion of the image.\n "
+	anomaly_class_msg_header= "Consider this radio image peculiarity classes, defined as follows: \n ORDINARY: image containing only point-like or slightly-resolved compact radio sources superimposed over the sky background or imaging artefact patterns; \n COMPLEX: image containing one or more radio sources with extended or diffuse morphology; \n PECULIAR: image containing one or more radio sources with anomalous or peculiar extended morphology, often having diffuse edges, complex irregular shapes, covering a large portion of the image.\n "
 
 	anomaly_class_msg_list= [
 		anomaly_class_msg_header + "Identify and report the peculiarity class of the given image.",
