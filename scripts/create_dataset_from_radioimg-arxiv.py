@@ -116,7 +116,7 @@ def main():
 	model= None
 	tokenizer= None
 	processor= None
-	if generate_text_variations:
+	if generate_text_variations or args.generate_qa:
 		logger.info("Loading model %s ..." % (model_id))
 		if args.model_type=="llama":
 			model, tokenizer= load_llama_model(model_id, args.device_map)
