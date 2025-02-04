@@ -45,7 +45,7 @@ def get_args():
 	parser.add_argument('-inputfile','--inputfile', dest='inputfile', required=True, type=str, help='Input data json filelist') 
 	parser.add_argument('-nmax','--nmax', dest='nmax', required=False, default=-1, type=int, help='Max number of processed images') 
 	
-	# - Model options
+	# - Run options
 	parser.add_argument('--add_image_description', dest='add_image_description', action='store_true', help='Add image description in the dataset (default=false)')	
 	parser.set_defaults(add_image_description=False)
 	parser.add_argument('--add_default_qa', dest='add_default_qa', action='store_true', help='Add default image Q&A (default=false)')	
@@ -55,11 +55,14 @@ def get_args():
 	parser.add_argument('--generate_qa', dest='generate_qa', action='store_true', help='Add image generated question-answer in the dataset (default=false)')	
 	parser.set_defaults(generate_qa=False)
 	
+	# - Model options
 	parser.add_argument('-model','--model', dest='model', required=False, default="meta-llama/Meta-Llama-3.1-8B-Instruct", type=str, help='LLAMA model used to generate variations') 
 	parser.add_argument('-model_type','--model_type', dest='model_type', required=False, default="llama", type=str, help='Model to be used {llama, llama-vision, internvl}') 
 	parser.add_argument('-model_name','--model_name', dest='model_name', required=False, type=str, default="", help='InternVL pretrained model name (e.g. InternVL2_5-1B, ...). This is needed for split device_map.') 
-	parser.add_argument('-device_map','--device_map', dest='device_map', required=False, default="auto", type=str, help='Device map used when loading model') 
+	parser.add_argument('-device_map','--device_map', dest='device_map', required=False, default="auto", type=str, help='Device map used when loading model {auto,split}') 
 	parser.add_argument('-max_new_tokens','--max_new_tokens', dest='max_new_tokens', required=False, default=1024, type=int, help='The max number of tokens to be generated') 
+	parser.add_argument('--do_sample', dest='do_sample', action='store_true', help='Sample LLM responses with temperature parameters (default=false)')	
+	parser.set_defaults(do_sample=False)
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=1.0, type=float, help='If set to < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation') 
 	parser.add_argument('-top_k','--top_k', dest='top_k', required=False, default=20, type=int, help='The number of highest probability vocabulary tokens to keep for top-k-filtering') 
 	parser.add_argument('-temperature','--temperature', dest='temperature', required=False, default=0.2, type=float, help='Temperature parameter') 
@@ -335,9 +338,29 @@ def main():
 					resize=args.resize, resize_size=args.imgsize,
 					zscale=args.zscale, contrast=args.contrast
 				)
+			elif args.model_type=="internvl":
+				description_final= generate_internvl_alternative_text(
+					description,
+					filename, 
+					model, 
+					tokenizer,
+					temperature=args.temperature,
+					resize_size=args.imgsize,
+					zscale=args.zscale, contrast=args.contrast	
+				)
+			else:
+				description_final= generate_internvl_alternative_text(
+					description,
+					filename, 
+					model, 
+					tokenizer,
+					temperature=args.temperature,
+					resize_size=args.imgsize,
+					zscale=args.zscale, contrast=args.contrast	
+				)
 				
 			description_final= description_final.strip('\n')
-			print("description (LLAMA generated): ", description_final)
+			logger.info("Generated description for image %s: %s" % (filename, description_final))
 			
 		a1= {"from": "gpt", "value": description_final}
 	
@@ -518,14 +541,14 @@ def main():
 					filename,
 					model,
 					processor,
-					do_sample=False,
+					do_sample=args.do_sample,
 					temperature=args.temperature,
-					max_new_tokens=1024,
-					top_p=1.0,
-					top_k=20,
-					penalty=1.2,
-					resize=False, resize_size=args.imgsize,
-					zscale=False, contrast=0.25,
+					max_new_tokens=args.max_new_tokens,
+					top_p=args.top_p,
+					top_k=args.top_k,
+					penalty=args.penalty,
+					resize=args.resize, resize_size=args.imgsize,
+					zscale=args.zscale, contrast=args.contrast,
 					verbose=False
 				)
 			elif args.model_type=="internvl":
@@ -535,8 +558,8 @@ def main():
 					filename, 
 					query,
 					resize_size=args.imgsize,
-					zscale=False, contrast=0.25,
-					do_sample=False,
+					zscale=args.zscale, contrast=args.contrast,
+					do_sample=args.do_sample,
 					temperature=args.temperature,
 					verbose=False
 				)
@@ -547,8 +570,8 @@ def main():
 					filename, 
 					query,
 					resize_size=args.imgsize,
-					zscale=False, contrast=0.25,
-					do_sample=False,
+					zscale=args.zscale, contrast=args.contrast,
+					do_sample=args.do_sample,
 					temperature=args.temperature,
 					verbose=False
 				)

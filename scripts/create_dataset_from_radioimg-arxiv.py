@@ -63,6 +63,8 @@ def get_args():
 	parser.add_argument('-model_name','--model_name', dest='model_name', required=False, type=str, default="", help='InternVL pretrained model name (e.g. InternVL2_5-1B, ...). This is needed for split device_map.') 
 	parser.add_argument('-device_map','--device_map', dest='device_map', required=False, default="auto", type=str, help='Device map used when loading model {auto,split}') 
 	parser.add_argument('-max_new_tokens','--max_new_tokens', dest='max_new_tokens', required=False, default=1024, type=int, help='The max number of tokens to be generated') 
+	parser.add_argument('--do_sample', dest='do_sample', action='store_true', help='Sample LLM responses with temperature parameters (default=false)')	
+	parser.set_defaults(do_sample=False)
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=1.0, type=float, help='If set to < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation') 
 	parser.add_argument('-top_k','--top_k', dest='top_k', required=False, default=20, type=int, help='The number of highest probability vocabulary tokens to keep for top-k-filtering') 
 	parser.add_argument('-temperature','--temperature', dest='temperature', required=False, default=0.2, type=float, help='Temperature parameter') 
@@ -262,7 +264,7 @@ def main():
 							top_k=args.top_k,
 							penalty=args.penalty,
 							resize=args.resize, resize_size=args.imgsize,
-							zscale=False, contrast=args.contrast
+							zscale=args.zscale, contrast=args.contrast
 						)
 					elif args.model_type=="internvl":
 						description_variant= generate_internvl_alternative_text(
@@ -272,7 +274,7 @@ def main():
 							tokenizer,
 							temperature=args.temperature,
 							resize_size=args.imgsize,
-							zscale=False, contrast=args.contrast	
+							zscale=args.zscale, contrast=args.contrast	
 						)
 					else:
 						description_variant= generate_internvl_alternative_text(
@@ -282,7 +284,7 @@ def main():
 							tokenizer,
 							temperature=args.temperature,
 							resize_size=args.imgsize,
-							zscale=False, contrast=args.contrast	
+							zscale=args.zscale, contrast=args.contrast	
 						)
 				
 					description= description_variant.strip('\n')
@@ -310,14 +312,14 @@ def main():
 						image_path,
 						model,
 						processor,
-						do_sample=False,
+						do_sample=args.do_sample,
 						temperature=args.temperature,
-						max_new_tokens=1024,
-						top_p=1.0,
-						top_k=20,
-						penalty=1.2,
-						resize=False, resize_size=args.imgsize,
-						zscale=False, contrast=0.25,
+						max_new_tokens=args.max_new_tokens,
+						top_p=args.top_p,
+						top_k=args.top_k,
+						penalty=args.penalty,
+						resize=args.resize, resize_size=args.imgsize,
+						zscale=args.zscale, contrast=args.contrast,
 						verbose=False
 					)
 				elif args.model_type=="internvl":
@@ -327,8 +329,8 @@ def main():
 						image_path, 
 						query,
 						resize_size=args.imgsize,
-						zscale=False, contrast=0.25,
-						do_sample=False,
+						zscale=args.zscale, contrast=args.contrast,
+						do_sample=args.do_sample,
 						temperature=args.temperature,
 						verbose=False
 					)
@@ -339,8 +341,8 @@ def main():
 						image_path, 
 						query,
 						resize_size=args.imgsize,
-						zscale=False, contrast=0.25,
-						do_sample=False,
+						zscale=args.zscale, contrast=args.contrast,
+						do_sample=args.do_sample,
 						temperature=args.temperature,
 						verbose=False
 					)
