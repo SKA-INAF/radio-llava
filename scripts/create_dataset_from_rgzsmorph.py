@@ -416,8 +416,9 @@ def main():
 					
 			logger.info("--> #%d Q&A entries generated and parsed for image %s ..." % (len(parsed_questions), filename))
 							
-							
+		#########################################
 		# - Add all messages to collection
+		#########################################
 		#conversations= [
 		#	q1, a1
 		#]

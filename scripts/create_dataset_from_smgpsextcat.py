@@ -112,7 +112,7 @@ def main():
 	datalist= json.load(f)["data"]
 	
 	#===========================
-	#==   LOAD LLAMA MODEL
+	#==   LOAD MODEL
 	#===========================
 	model= None
 	tokenizer= None
@@ -358,8 +358,11 @@ def main():
 	
 		# ---------------------------------------
 		# - Image source morphology classification
-		# .......................................		
-		q2= {"from": "human", "value": random.choice(classification_msg_list)}
+		# .......................................
+		if args.add_image_description:
+			q2= {"from": "human", "value": random.choice(classification_msg_list)}
+		else:
+			q2= {"from": "human", "value": "<image>\n" + random.choice(classification_msg_list)}
 	
 		visible_classes= []
 		if label_smorph=="EXTENDED":
@@ -527,7 +530,7 @@ def main():
 				parsed_questions.append(question)
 				parsed_answers.append(answer)
 				
-				if args.add_image_description:
+				if args.add_image_description or args.add_default_qa:
 					q_curr= {"from": "human", "value": question}
 					a_curr= {"from": "gpt", "value": answer}
 				else:
@@ -543,8 +546,9 @@ def main():
 					
 			logger.info("--> #%d Q&A entries generated and parsed for image %s ..." % (len(parsed_questions), filename))
 							
-	
+		#########################################
 		# - Add all messages to collection
+		#########################################
 		#conversations= [
 		#	q1, a1,
 		#	q2, a2,

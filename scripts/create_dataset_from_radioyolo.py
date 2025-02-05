@@ -122,7 +122,7 @@ def main():
 		datalist.append(line)
 		
 	#===========================
-	#==   LOAD LLAMA MODEL
+	#==   LOAD MODEL
 	#===========================
 	model= None
 	tokenizer= None
@@ -132,6 +132,8 @@ def main():
 		model, tokenizer= load_llama_model(model_id, args.device_map)
 	elif args.model_type=="llama-vision":
 		model, processor= load_llama_vision_model(model_id)
+	elif args.model_type=="internvl":
+		model, tokenizer= load_internvl_model(model_id, model_name=args.model_name, device_map=args.device_map)
 	else:
 		logger.error("Invalid/unknown model_type specified (%s)!" % (args.model_type))
 
@@ -447,7 +449,7 @@ def main():
 				gen_description= run_llama_model_query(
 					query2, 
 					model, tokenizer, 
-					do_sample=True,
+					do_sample=args.do_sample,
 					temperature=args.temperature,
 					max_new_tokens=args.max_new_tokens,
 					top_p=args.top_p,
@@ -460,7 +462,7 @@ def main():
 					query2,
 					filename,
 					model, processor, 
-					do_sample=True,
+					do_sample=args.do_sample,
 					temperature=args.temperature,
 					max_new_tokens=args.max_new_tokens,
 					top_p=args.top_p,
@@ -470,24 +472,28 @@ def main():
 					zscale=args.zscale, contrast=args.contrast
 				)
 			elif args.model_type=="internvl":
-				gen_description= generate_internvl_alternative_text(
-					query2,
-					filename, 
-					model, 
+				gen_description= run_internvl_model_query(
+					model,
 					tokenizer,
-					temperature=args.temperature,
+					filename, 
+					query2,
 					resize_size=args.imgsize,
-					zscale=args.zscale, contrast=args.contrast	
+					zscale=args.zscale, contrast=args.contrast,
+					do_sample=args.do_sample,
+					temperature=args.temperature,
+					verbose=False
 				)
 			else:
-				gen_description= generate_internvl_alternative_text(
-					query2,
-					filename, 
-					model, 
+				gen_description= run_internvl_model_query(
+					model,
 					tokenizer,
-					temperature=args.temperature,
+					filename, 
+					query2,
 					resize_size=args.imgsize,
-					zscale=args.zscale, contrast=args.contrast	
+					zscale=args.zscale, contrast=args.contrast,
+					do_sample=args.do_sample,
+					temperature=args.temperature,
+					verbose=False
 				)
 				
 			gen_description= gen_description.strip('\n')
@@ -795,7 +801,7 @@ def main():
 				parsed_questions.append(question)
 				parsed_answers.append(answer)
 				
-				if args.add_image_description:
+				if args.add_image_description or args.add_default_qa:
 					q_curr= {"from": "human", "value": question}
 					a_curr= {"from": "gpt", "value": answer}
 				else:
