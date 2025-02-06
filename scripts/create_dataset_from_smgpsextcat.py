@@ -197,7 +197,7 @@ def main():
 	task_requirements+= "- Answers should be clear, specific, and provide comprehensive information based on the image and its provided context/description. \n"
 	task_requirements+= "- Ensure that each question-answer pair incorporates all necessary context, allowing them to be fully understood on their own without external references. \n"
 	task_requirements+= "- Include at least one question to describe in brief the image and its content. \n"
-	task_requirements+= "- Include a question to classify the astronomical type class of the object shown in the image based on its content only if astronomical type information is reported in the caption. Do not ask questions if source classification is UNKNOWN. \n"
+	task_requirements+= "- Include a question to classify the astronomical type class of the object shown in the image based on its content, only if astronomical type information is explicitly reported in the figure caption. If source classification is reported as UNKNOWN, do not ask questions, or just reply with 'I do not have enough information to assess the astronomical type of the source.' \n"
 	task_requirements+= "- Include at least one question to determine what morphological kind of radio sources are present in the image. \n"
 	task_requirements+= "- Include at least one question to determine whether extended radio galaxies are present in the image based on its content. \n"
 	task_requirements+= "- Return generated question-answer pairs using the following json string output format: \n"
@@ -439,6 +439,8 @@ def main():
 					fig_caption+= "The visible radio source was classified as a high-mass X-ray binary (LMXB) star. "
 				elif label_sclass=="YSO":
 					fig_caption+= "The visible radio source was classified as a young stellar object (YSO). "
+				elif label_sclass=="UNKNOWN":
+					fig_caption+= "The visible radio source has UNKNOWN classification. "
 			else:
 				labels_str= ','.join(labels_sclass)
 				fig_caption+= "The visible radio source has multiple classification labels (" + labels_str + "), and thus its classification is not unambiguous. "	
