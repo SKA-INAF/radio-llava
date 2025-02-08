@@ -183,7 +183,7 @@ def main():
 	task_requirements+= "- Answer responsibly, without inventing words or sentences that deviate or distort the original figure context and description meaning. \n"
 	task_requirements+= "- Answers should be clear, specific, and provide comprehensive information based on the image and its provided context/description. \n"
 	task_requirements+= "- Ensure that each question-answer pair incorporates all necessary context, allowing them to be fully understood on their own without external references. \n"
-	task_requirements+= "- Include at least one question to describe in brief the image and its content. \n"
+	task_requirements+= "- Include at least one question to describe in brief the image and its content. Include in the description only the objects mentioned in the caption. Use terms like top/bottom, left/right or image width/height fractions or percentages to describe the source object positions, rather than their exact bounding box coordinates. Avoid lengthy explanations or preambles and special unicode or ascii characters.\n"
 	task_requirements+= "- Include at least one question for each source class (SPURIOUS, COMPACT, EXTENDED, EXTENDED-MULTISLAND, FLAGGED) to determine whether that radio source category is present in the image.\n"
 	task_requirements+= "- Include at least one question for each source class (SPURIOUS, COMPACT, EXTENDED, EXTENDED-MULTISLAND, FLAGGED) to determine the bounding box positions of all radio sources of those classes present in the image. Example: 'Please provide the bounding box coordinates of all extended multi-island sources present in the image.'\n"
 	task_requirements+= "- Include at least one question to assess the presence of artifacts or likely spurious sources in the image based on its content. \n"
