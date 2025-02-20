@@ -484,6 +484,7 @@ def main():
 					zscale=args.zscale, contrast=args.contrast,
 					do_sample=args.do_sample,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					verbose=False
 				)
 			else:
@@ -496,6 +497,7 @@ def main():
 					zscale=args.zscale, contrast=args.contrast,
 					do_sample=args.do_sample,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					verbose=False
 				)
 				
@@ -752,6 +754,7 @@ def main():
 					zscale=args.zscale, contrast=args.contrast,
 					do_sample=args.do_sample,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					verbose=False
 				)
 			else:
@@ -764,6 +767,7 @@ def main():
 					zscale=args.zscale, contrast=args.contrast,
 					do_sample=args.do_sample,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					verbose=False
 				)
 					

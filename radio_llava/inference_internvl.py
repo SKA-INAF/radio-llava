@@ -126,6 +126,7 @@ def generate_internvl_alternative_text(
 	model, 
 	tokenizer,
 	temperature=0.2,
+	max_new_tokens=1024,
 	resize_size=448,
 	zscale=False, contrast=0.25,
 	verbose=False
@@ -147,6 +148,7 @@ def generate_internvl_alternative_text(
 		zscale=zscale, contrast=contrast,
 		do_sample=True,
 		temperature=temperature,
+		max_new_tokens=max_new_tokens,
 		verbose=verbose
 	)
 						
@@ -160,6 +162,7 @@ def run_internvl_model_query(
 	zscale=False, contrast=0.25,
 	do_sample=False,
 	temperature=0.2,
+	max_new_tokens=1024,
 	verbose=False
 ):
 	""" Run InternVL model inference """
@@ -181,7 +184,7 @@ def run_internvl_model_query(
 	# - Set generation config
 	num_beams= 1
 	top_p= None
-	max_new_tokens= 1024
+	#max_new_tokens= 1024
 	
 	generation_config = dict(
 		max_new_tokens=max_new_tokens, 
@@ -216,7 +219,8 @@ def run_internvl_model_inference(
 	task_info,
 	resize_size=448, 
 	zscale=False, contrast=0.25,
-	add_options=False, shuffle_options=False, nmax=-1, 
+	add_options=False, shuffle_options=False, nmax=-1,
+	max_new_tokens=1024,
 	verbose=False
 ):
 	""" Run InternVL inference on radio image dataset """
@@ -282,6 +286,7 @@ def run_internvl_model_inference(
 			zscale=zscale, contrast=contrast, 
 			do_sample=False,
 			temperature=None,
+			max_new_tokens=max_new_tokens,
 			verbose=verbose
 		)
 		

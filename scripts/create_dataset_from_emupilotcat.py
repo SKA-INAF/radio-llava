@@ -76,7 +76,7 @@ def get_args():
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=1.0, type=float, help='If set to < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation') 
 	parser.add_argument('-top_k','--top_k', dest='top_k', required=False, default=20, type=int, help='The number of highest probability vocabulary tokens to keep for top-k-filtering') 
 	parser.add_argument('-temperature','--temperature', dest='temperature', required=False, default=0.2, type=float, help='Temperature parameter') 
-	parser.add_argument('-penalty','--penalty', dest='penalty', required=False, default=1.2, type=float, help='The parameter for repetition penalty. 1.0 means no penalty. Above 1.0 rewards prompt tokens. Between 0.0 and 1.0 penalizes prompt tokens') 
+	parser.add_argument('-penalty','--penalty', dest='penalty', required=False, default=1.2, type=float, help='The parameter for repetition penalty. 1.0 means no penalty. Above 1.0 rewards prompt tokens. Between 0.0 and 1.0 penalizes prompt tokens')
 	
 	# - Image options
 	parser.add_argument('--resize', dest='resize', action='store_true',help='Resize input image (default=false)')	
@@ -576,6 +576,7 @@ def main():
 					model, 
 					tokenizer,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					resize_size=args.imgsize,
 					zscale=args.zscale, contrast=args.contrast	
 				)
@@ -586,6 +587,7 @@ def main():
 					model, 
 					tokenizer,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					resize_size=args.imgsize,
 					zscale=args.zscale, contrast=args.contrast	
 				)
@@ -1105,6 +1107,7 @@ def main():
 					zscale=args.zscale, contrast=args.contrast,
 					do_sample=args.do_sample,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					verbose=False
 				)
 			else:
@@ -1117,6 +1120,7 @@ def main():
 					zscale=args.zscale, contrast=args.contrast,
 					do_sample=args.do_sample,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					verbose=False
 				)
 					
