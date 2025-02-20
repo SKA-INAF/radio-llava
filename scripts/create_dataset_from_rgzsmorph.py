@@ -272,6 +272,7 @@ def main():
 					model, 
 					tokenizer,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					resize_size=args.imgsize,
 					zscale=args.zscale, contrast=args.contrast	
 				)
@@ -282,6 +283,7 @@ def main():
 					model, 
 					tokenizer,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					resize_size=args.imgsize,
 					zscale=args.zscale, contrast=args.contrast	
 				)
@@ -348,6 +350,7 @@ def main():
 					zscale=args.zscale, contrast=args.contrast,
 					do_sample=args.do_sample,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					verbose=False
 				)
 			else:
@@ -360,6 +363,7 @@ def main():
 					zscale=args.zscale, contrast=args.contrast,
 					do_sample=args.do_sample,
 					temperature=args.temperature,
+					max_new_tokens=args.max_new_tokens,
 					verbose=False
 				)
 					
