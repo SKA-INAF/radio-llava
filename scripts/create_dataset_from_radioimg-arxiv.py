@@ -78,6 +78,26 @@ def get_args():
 	parser.set_defaults(zscale=False)
 	parser.add_argument('--contrast', default=0.25, type=float, help='zscale contrast (default=0.25)')
 	
+	# - Image selection criteria
+	parser.add_argument('--select_caption_length', dest='select_caption_length', action='store_true',help='Select figure by caption number of words (default=false)')	
+	parser.set_defaults(select_caption_length=False)
+	parser.add_argument('-caption_min_length','--caption_min_length', dest='caption_min_length', required=False, default=-1, type=int, help='Min number of words in caption for selection (-1=no selection)') 
+	parser.add_argument('-caption_max_length','--caption_max_length', dest='caption_max_length', required=False, default=-1, type=int, help='Max number of words in caption for selection (-1=no selection)') 
+	
+	parser.add_argument('--skip_corrupted_captions', dest='skip_corrupted_captions', action='store_true',help='Select figure by caption corrupted flag (default=false)')	
+	parser.set_defaults(skip_corrupted_captions=False)
+	
+	parser.add_argument('--skip_multiplot', dest='skip_multiplot', action='store_true',help='Skip multiplot figures (default=false)')	
+	parser.set_defaults(skip_multiplot=False)
+	
+	parser.add_argument('--skip_nonastroplot', dest='skip_nonastroplot', action='store_true',help='Skip non-astro plot figures (default=false)')	
+	parser.set_defaults(skip_nonastroplot=False)
+
+	parser.add_argument('--select_caption_score', dest='select_caption_score', action='store_true',help='Select figure by caption score (default=false)')	
+	parser.set_defaults(select_caption_score=False)
+	parser.add_argument('-caption_min_score','--caption_min_score', dest='caption_min_score', required=False, default=0, type=int, help='Caption min score for selection (-1=no selection)') 
+	
+	
 	# - Output options
 	parser.add_argument('-outfile','--outfile', dest='outfile', required=False, default="dump.json", type=str, help='Output data file') 
 	
@@ -225,8 +245,55 @@ def main():
 			if fig_caption=="":
 				logger.warn("Skipping fig %s (paper: %s) with empty caption ..." % (image_path, filename_paper))
 				continue
-				
+			
+			# - Get selection cut values
 			nwords= figitem.get("caption_text_nwords", -1)
+			has_multiple_plots= "UNKNOWN"
+			has_astro_content= "UNKNOWN"
+			has_corrupted_caption= "UNKNOWN"
+			caption_score= -1
+			
+			if 'has_multiple_plots' in figitem and 'answer' in figitem["has_multiple_plots"]:
+				has_multiple_plots= figitem["has_multiple_plots"]["answer"]
+			if 'has_astro_content' in figitem and 'answer' in figitem["has_astro_content"]:
+				has_astro_content= figitem["has_astro_content"]["answer"]
+			if 'caption_score' in figitem and 'answer' in figitem["caption_score"]:
+				caption_score= int(figitem["caption_score"]["answer"])
+			if 'corrupted_caption' in figitem and 'answer' in figitem["corrupted_caption"]:
+				has_corrupted_caption= figitem["corrupted_caption"]["answer"]
+				
+			# - Select by caption length?
+			if args.select_caption_length:
+				if args.caption_min_length!=-1 and nwords<args.caption_min_length:
+					logger.info("Skipping fig %s (paper: %s) not passing caption min length cut (length=%d<%d) ..." % (image_path, filename_paper, nwords, args.caption_min_length))
+					continue
+				if args.caption_max_length!=-1 and nwords>args.caption_max_length:
+					logger.info("Skipping fig %s (paper: %s) not passing caption max length cut (length=%d>%d) ..." % (image_path, filename_paper, nwords, args.caption_max_length))
+					continue
+				
+			# - Select by caption corrupted text?
+			if args.skip_corrupted_captions:
+				if has_corrupted_caption=="UNKNOWN" or has_corrupted_caption=="YES":
+					logger.info("Skipping fig %s (paper: %s) not passing caption corrupted cut (iscorr? %s) ..." % (image_path, filename_paper, has_corrupted_caption))
+					continue
+					
+			# - Select by multiple plot flag?
+			if args.skip_multiplot:
+				if has_multiple_plots=="UNKNOWN" or has_multiple_plots=="YES":
+					logger.info("Skipping fig %s (paper: %s) not passing multiplot cut (ismultiplot? %s) ..." % (image_path, filename_paper, has_multiple_plots))
+					continue
+			
+			# - Select by astro content flag?
+			if args.skip_nonastroplot:
+				if has_astro_content=="UNKNOWN" or has_astro_content=="NO":
+					logger.info("Skipping fig %s (paper: %s) not passing astro content cut (isastro? %s) ..." % (image_path, filename_paper, has_astro_content))
+					continue
+			
+			# - Select by caption score?
+			if args.select_caption_score:
+				if caption_score==-1 or caption_score<args.caption_min_score:
+					logger.info("Skipping fig %s (paper: %s) not passing caption score cut (score=%d<%d) ..." % (image_path, filename_paper, caption_score, args.caption_min_score))
+					continue
 				
 			# - Initialize outdict
 			outdict = dict()
