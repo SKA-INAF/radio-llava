@@ -186,8 +186,13 @@ def main():
 	#===========================
 	# - Load the model in half-precision
 	logger.info("Loading model %s ..." % (model_id))
-	model, processor= load_llavaov_model_hf(model_id, device)
-	
+	model, processor= load_llavaov_model_hf(
+		model_id, 
+		device_map="auto",
+		to_float16=False,
+		low_cpu_mem_usage=True
+	)
+		
 	#===========================
 	#==   RUN MODEL INFERENCE
 	#===========================
@@ -198,7 +203,6 @@ def main():
 			model=model,
 			processor=processor,
 			datalist_context=datalist_context,
-			device=device,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
 			shuffle_options=args.shuffle_options,
@@ -215,7 +219,86 @@ def main():
 			model=model,
 			processor=processor,
 			datalist_context=datalist_context,
-			device=device,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			shuffle_options=args.shuffle_options,
+			nmax=args.nmax,
+			nmax_context=args.nmax_context,
+			add_task_description=args.add_task_description,
+			verbose=args.verbose
+		)	
+		
+	elif args.benchmark=="galaxydet-radioimg":
+		logger.info("Running galaxydet-radioimg benchmark inference ...")
+		run_llavaov_model_galaxy_inference_hf(
+			datalist=datalist,
+			model=model,
+			processor=processor,
+			datalist_context=datalist_context,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			shuffle_options=args.shuffle_options,
+			nmax=args.nmax,
+			nmax_context=args.nmax_context,
+			add_task_description=args.add_task_description,
+			verbose=args.verbose
+		)
+		
+	elif args.benchmark=="artefactdet-radioimg":
+		logger.info("Running artefactdet-radioimg benchmark inference ...")
+		run_llavaov_model_artefact_inference_hf(
+			datalist=datalist,
+			model=model,
+			processor=processor,
+			datalist_context=datalist_context,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			shuffle_options=args.shuffle_options,
+			nmax=args.nmax,
+			nmax_context=args.nmax_context,
+			add_task_description=args.add_task_description,
+			verbose=args.verbose
+		)
+		
+	elif args.benchmark=="anomalydet-radioimg":
+		logger.info("Running anomalydet-radioimg benchmark inference ...")
+		run_llavaov_model_anomaly_inference_hf(
+			datalist=datalist,
+			model=model,
+			processor=processor,
+			datalist_context=datalist_context,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			shuffle_options=args.shuffle_options,
+			nmax=args.nmax,
+			nmax_context=args.nmax_context,
+			add_task_description=args.add_task_description,
+			verbose=args.verbose
+		)
+		
+	elif args.benchmark=="galaxymorphclass-mirabest":
+		logger.info("Running galaxymorphclass-mirabest benchmark inference ...")
+		run_llavaov_model_mirabest_inference_hf(
+			datalist=datalist,
+			model=model,
+			processor=processor,
+			datalist_context=datalist_context,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			shuffle_options=args.shuffle_options,
+			nmax=args.nmax,
+			nmax_context=args.nmax_context,
+			add_task_description=args.add_task_description,
+			verbose=args.verbose
+		)
+	
+	elif args.benchmark=="galaxymorphclass-gmnist":
+		logger.info("Running galaxymorphclass-gmnist benchmark inference ...")
+		run_llavaov_model_gmnist_inference_hf(
+			datalist=datalist,
+			model=model,
+			processor=processor,
+			datalist_context=datalist_context,
 			resize=args.resize, resize_size=args.imgsize, 
 			zscale=args.zscale, contrast=args.contrast,
 			shuffle_options=args.shuffle_options,

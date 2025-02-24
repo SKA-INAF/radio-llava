@@ -26,7 +26,8 @@ from sklearn.metrics import confusion_matrix, multilabel_confusion_matrix
 from sklearn.metrics import hamming_loss
 
 ## LOGGER
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
+from radio_llava import logger
 
 ##################################################
 ###         INFERENCE UTILS

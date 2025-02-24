@@ -56,7 +56,7 @@ from radio_llava.metrics import *
 from radio_llava.inference_utils import *
 
 ## LOGGER
-logger = logging.getLogger(__name__)
+from radio_llava import logger
 
 ######################
 ##   LOAD MODEL
@@ -112,11 +112,11 @@ def run_llavaov_model_query(
 	query,
 	do_sample=False,
 	temperature=0.2,
+	max_new_tokens=4096,
 	conv_template="qwen_2", 
 	verbose=False
 ):
 	""" Run llava one vision model inference """  
-	
 	
 	# - Process image
 	image_tensor = process_images([image], image_processor, model.config)
@@ -141,7 +141,6 @@ def run_llavaov_model_query(
 	logger.debug("Generate model response ...")
 	num_beams= 1
 	top_p= None
-	max_new_tokens= 4096
 	
 	output = model.generate(
 		input_ids,
@@ -188,6 +187,7 @@ def run_llavaov_model_context_query(
 	conversations_context,
 	do_sample=False,
 	temperature=0.2,
+	max_new_tokens=4096,
 	conv_template="qwen_2",
 	verbose=False
 ):
@@ -204,7 +204,6 @@ def run_llavaov_model_context_query(
 	image_tensors = process_images(images, image_processor, model.config)
 	image_tensors = [_image.to(dtype=torch.float16, device=model.device) for _image in image_tensors]
 	image_sizes = [image.size for image in images]
-	
 	
 	# - Create prompts (first add context prompt then user question)
 	conv = copy.deepcopy(conv_templates[conv_template])
@@ -240,7 +239,6 @@ def run_llavaov_model_context_query(
 	logger.debug("Generate model response ...")
 	num_beams= 1
 	top_p= None
-	max_new_tokens= 4096
 	
 	output = model.generate(
 		input_ids,
@@ -280,6 +278,9 @@ def run_llavaov_model_inference(
 	add_options=False, shuffle_options=False,
 	nmax=-1,
 	nmax_context=-1,
+	do_sample=False,
+	temperature=0.2,
+	max_new_tokens=4096,
 	conv_template="qwen_2",
 	verbose=False
 ):
@@ -332,7 +333,7 @@ def run_llavaov_model_inference(
 				verbose=verbose
 			)
 			if image is None:
-				logger.warn("Read context image %s is None, skipping inference for this ..." % (filename))
+				logger.warn("Read context image %s is None, skipping inference for this image ..." % (filename))
 				continue
 			
 			images_context.append(image)
@@ -452,8 +453,9 @@ def run_llavaov_model_inference(
 					question_curr,
 					images_context,
 					conversations_context,
-					do_sample=False,
-					temperature=None,
+					do_sample=do_sample,
+					temperature=temperature if do_sample else None,
+					max_new_tokens=max_new_tokens,
 					conv_template=conv_template,
 					verbose=verbose
 				)
@@ -462,12 +464,13 @@ def run_llavaov_model_inference(
 					model, tokenizer, image_processor, 
 					image, 
 					question_curr,
-					do_sample=False,
-					temperature=None,
+					do_sample=do_sample,
+					temperature=temperature if do_sample else None,
+					max_new_tokens=max_new_tokens,
 					conv_template=conv_template,
 					verbose=verbose
 				)
-
+				
 			if output is None:
 				logger.warn("Failed inference for image %s, skipping ..." % (filename))
 				skip_inference= True

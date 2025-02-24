@@ -50,21 +50,29 @@ from radio_llava.metrics import *
 from radio_llava.inference_utils import *
 
 ## LOGGER
-logger = logging.getLogger(__name__)
+from radio_llava import logger
 
 ######################
 ##   LOAD MODEL
 ######################
-def load_llavaov_model_hf(model_name_or_path, device="cuda"):
+def load_llavaov_model_hf(model_name_or_path, device_map="auto", to_float16=False, low_cpu_mem_usage=True):
 	""" Load LLaVA One Vision model """
 
 	# - Load the model in half-precision
 	logger.info("Loading model %s ..." % (model_name_or_path))
-	model = LlavaOnevisionForConditionalGeneration.from_pretrained(
-		model_name_or_path, 
-		torch_dtype=torch.float16, 
-		device_map="auto"
-	)
+	if to_float16:
+		model = LlavaOnevisionForConditionalGeneration.from_pretrained(
+			model_name_or_path, 
+			torch_dtype=torch.float16, 
+			low_cpu_mem_usage=low_cpu_mem_usage,
+			device_map=device_map
+		)
+	else:
+		model = LlavaOnevisionForConditionalGeneration.from_pretrained(
+			model_name_or_path, 
+			low_cpu_mem_usage=low_cpu_mem_usage,
+			device_map=device_map
+		)
 	
 	model.generation_config.pad_token_id = model.generation_config.eos_token_id
 	model.eval()
@@ -85,7 +93,8 @@ def run_llavaov_model_query_hf(
 	image, 
 	query,
 	do_sample=False,
-	temperature=0.2, 
+	temperature=0.2,
+	max_new_tokens=4096, 
 	verbose=False
 ):
 	""" Run llava one vision model inference """  
@@ -105,7 +114,20 @@ def run_llavaov_model_query_hf(
 	prompt= processor.apply_chat_template(conversation, add_generation_prompt=True)
 	
 	# - Create model inputs (eventually combining context and inference prompts)
-	inputs= processor(image, prompt, return_tensors="pt").to(model.device, torch.float16)
+	inputs= processor(
+		image, 
+		prompt, 
+		return_tensors="pt"
+	).to(model.device, model.dtype)
+	
+	#inputs = processor.apply_chat_template(
+	#	conversation, 
+	#	add_generation_prompt=True, 
+	#	tokenize=True, 
+	#	return_dict=True, 
+	#	return_tensors="pt"
+	#).to(model.device, model.dtype)
+	
 	
 	if verbose:
 		print("conversations")
@@ -119,7 +141,6 @@ def run_llavaov_model_query_hf(
 	logger.debug("Generate model response ...")
 	num_beams= 1
 	top_p= None
-	max_new_tokens= 512
 	
 	output = model.generate(
 		**inputs, 
@@ -159,7 +180,8 @@ def run_llavaov_model_context_query_hf(
 	images_context,
 	conversations_context,
 	do_sample=False,
-	temperature=0.2, 
+	temperature=0.2,
+	max_new_tokens=4096, 
 	verbose=False
 ):
 	""" Run llava one vision model inference """  
@@ -189,7 +211,12 @@ def run_llavaov_model_context_query_hf(
 	images= images_context.copy()
 	images.append(image)
 		
-	inputs = processor(images, prompts, padding=True, return_tensors="pt").to(model.device, torch.float16)
+	inputs = processor(
+		images, 
+		prompts, 
+		padding=True, 
+		return_tensors="pt"
+	).to(model.device, model.dtype)
 		
 	if verbose:
 		print("conversations")
@@ -203,7 +230,6 @@ def run_llavaov_model_context_query_hf(
 	logger.debug("Generate model response ...")
 	num_beams= 1
 	top_p= None
-	max_new_tokens= 512
 	
 	output = model.generate(
 		**inputs, 
@@ -240,13 +266,15 @@ def run_llavaov_model_inference_hf(
 	datalist, 
 	model, processor, 
 	task_info, 
-	datalist_context=None, 
-	device="cuda:0", 
+	datalist_context=None,
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
-	shuffle_options=False, 
+	add_options=False, shuffle_options=False, 
 	nmax=-1,
 	nmax_context=-1,
+	do_sample=False,
+	temperature=0.2,
+	max_new_tokens=4096,
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on radio image dataset """
@@ -270,7 +298,6 @@ def run_llavaov_model_inference_hf(
 	class_options= class_names
 	if "class_options" in task_info:
 		class_options= task_info["class_options"]
-
 
 	#====================================
 	#==   CREATE CONTEXT CONVERSATIONS
@@ -299,18 +326,21 @@ def run_llavaov_model_inference_hf(
 				verbose=verbose
 			)
 			if image is None:
-				logger.warn("Read context image %s is None, skipping inference for this ..." % (filename))
+				logger.warn("Read context image %s is None, skipping inference for this image ..." % (filename))
 				continue
 			
 			images_context.append(image)
 			
 			# - Create question
-			option_choices= class_options.copy()
-			question_labels= ' \n '.join(option_choices)
-			if idx==0:
-				question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+			if add_options:
+				option_choices= class_options.copy()
+				question_labels= ' \n '.join(option_choices)
+				if idx==0:
+					question= description + ' \n' + question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
+				else:
+					question= question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
 			else:
-				question= question_prefix + ' \n ' + question_labels + question_subfix
+				question= description + ' \n' + question_prefix + ' \n ' + question_subfix
 		
 			# - Set assistant response to true label
 			response= format_context_model_response(label, classification_mode, label_modifier_fcn)
@@ -341,6 +371,7 @@ def run_llavaov_model_inference_hf(
 	ninferences_failed= 0
 	class_ids= []
 	class_ids_pred= []
+	n_max_retries= 1
 	
 	for idx, item in enumerate(datalist):
 		
@@ -367,53 +398,93 @@ def run_llavaov_model_inference_hf(
 			continue
 
 		# - Create question
-		option_choices= class_options.copy()
-		if shuffle_options:
-			random.shuffle(option_choices)
+		if add_options:
+			option_choices= class_options.copy()
+			if shuffle_options:
+				random.shuffle(option_choices)
 		
-		question_labels= ' \n '.join(option_choices)
-		if conversations_context:
-			question= question_prefix + ' \n ' + question_labels + question_subfix
+			question_labels= ' \n '.join(option_choices)
+			question= description + ' \n' + question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
+			
 		else:
-			question= description + ' \n' + question_prefix + ' \n ' + question_labels + question_subfix
+			question= description + ' \n' + question_prefix + ' \n ' + question_subfix
+			
+		question_retry= "The format of your response does not comply with the requested instructions, please answer again to the following request and strictly follow the given instructions. \n" + question
+		skip_inference= False
+		n_retries= 0
+		
+		while n_retries<=n_max_retries:
+			#########################
+			##   RUN INFERENCE
+			#########################
+			# - Run inference with or without context
+			if n_retries==0:
+				question_curr= question
+			else:
+				question_curr= question_retry
+				
+			#print("question: ", question_curr)
+						
+			if conversations_context:
+				output= run_llavaov_model_context_query_hf(
+					model, processor, 
+					image, 
+					question,
+					images_context,
+					conversations_context,
+					do_sample=do_sample,
+					temperature=temperature if do_sample else None,
+					max_new_tokens=max_new_tokens,
+					verbose=verbose
+				)
+			
+			else:
+				output= run_llavaov_model_query_hf(
+					model, processor, 
+					image, 
+					question,
+					do_sample=do_sample,
+					temperature=temperature if do_sample else None,
+					max_new_tokens=max_new_tokens,
+					verbose=verbose
+				)
+				
+			if output is None:
+				logger.warn("Failed inference for image %s, skipping ..." % (filename))
+				skip_inference= True
+				break
 
-		# - Run inference with or without context
-		if conversations_context:
-			output= run_llavaov_model_context_query_hf(
-				model, processor, 
-				image, 
-				question,
-				images_context,
-				conversations_context,
-				do_sample=False,
-				temperature=None,
-				verbose=verbose
-			)
-		else:
-			output= run_llavaov_model_query_hf(
-				model, processor, 
-				image, 
-				question,
-				do_sample=False,
-				temperature=None,
-				verbose=verbose
-			)
-
-		if output is None:
-			logger.warn("Failed inference for image %s, skipping ..." % (filename))
+			#########################
+			##   PROCESS OUTPUT
+			#########################
+			# - Extract class ids
+			res= process_model_output(output, label, label2id, classification_mode, label_modifier_fcn)
+			#print("output:", output)
+			#print("res: ", res)
+			#print("type(res)", type(res))
+			
+			if res is None:
+				#print("res is None!")
+				if n_retries>=n_max_retries:
+					#print("Unexpected label prediction obtained for image, giving up and skipping image")
+					logger.warn("Unexpected label prediction obtained for image %s, giving up and skipping image ..." % (filename))
+					skip_inference= True
+					break
+				else:
+					n_retries+= 1
+					#print("Unexpected label prediction obtained for image, trying again ...")
+					logger.warn("Unexpected label prediction obtained for image %s, trying again (#nretry=%d) ..." % (filename, n_retries))
+					continue
+			else:
+				logger.info("Correct label prediction obtained for image %s, computing class ids ..." % (filename))	
+				break
+							
+		# - Check if inference has to be skipped for this image
+		if skip_inference or res is None:
 			ninferences_failed+= 1
 			continue
 
-		#########################
-		##   PROCESS OUTPUT
-		#########################
-		# - Extract class ids
-		res= process_model_output(output, label, label2id, classification_mode, label_modifier_fcn)
-		if res is None:
-			logger.warn("Unexpected label prediction found, skip this image ...")
-			ninferences_unexpected+= 1
-			continue
-
+		# - Post process results
 		classid= res[0]
 		classid_pred= res[1]
 		label= res[2]
@@ -457,8 +528,7 @@ def run_llavaov_model_inference_hf(
 def run_llavaov_model_rgz_inference_hf(
 	datalist, 
 	model, processor, 
-	datalist_context=None, 
-	device="cuda:0", 
+	datalist_context=None,
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
 	shuffle_options=False, 
@@ -472,23 +542,38 @@ def run_llavaov_model_rgz_inference_hf(
 	#===========================
 	#==   INIT TASK
 	#===========================
-	
 	# - Define message
-	if add_task_description:
-		description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. \n An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
-	else:
-		description= ""
+	context= "### Context: Consider these morphological classes of radio astronomical sources: \n 1C-1P: single-island sources having only one flux intensity peak; \n 1C-2C: single-island sources having two flux intensity peaks; \n 1C-3P: single-island sources having three flux intensity peaks; \n 2C-2P: sources consisting of two separated islands, each hosting a single flux intensity peak; \n 2C-3P: sources consisting of two separated islands, one containing a single peak of flux intensity and the other exhibiting two distinct intensity peaks; \n 3C-3P: sources consisting of three separated islands, each hosting a single flux intensity peak. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+	context+= "\n"
+	
+	description= ""
+	if add_task_description: 
+		description= context
 		
-	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
-	question_subfix= "Please report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+	question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
+	if add_task_description:
+		if datalist_context is None:
+			question_subfix= "Answer the question using the provided context. "
+		else:
+			question_subfix= "Answer the question using the provided context and examples. "
+	else:
+		if datalist_context is None:
+			question_subfix= ""
+		else:
+			question_subfix= "Answer the question using the provided examples. "
+			
+	question_subfix+= "Report only the identified class label, without any additional explanation text."
+	
+	class_options= ["1C-1P", "1C-2P", "1C-3P", "2C-2P", "2C-3P", "3C-3P"]
 	
 	label2id= {
-		"1C-1P": 0,
-		"1C-2P": 1,
-		"1C-3P": 2,
-		"2C-2P": 3,
-		"2C-3P": 4,
-		"3C-3P": 5,
+		"NONE": 0,
+		"1C-1P": 1,
+		"1C-2P": 2,
+		"1C-3P": 3,
+		"2C-2P": 4,
+		"2C-3P": 5,
+		"3C-3P": 6,
 	}
 	
 	task_info= {
@@ -497,7 +582,8 @@ def run_llavaov_model_rgz_inference_hf(
 		"question_subfix": question_subfix,
 		"classification_mode": "multiclass_singlelabel",
 		"label_modifier_fcn": None,
-		"label2id": label2id
+		"label2id": label2id,
+		"class_options": class_options
 	}
 	
 	#=============================
@@ -507,22 +593,20 @@ def run_llavaov_model_rgz_inference_hf(
 		datalist, 
 		model, processor, 
 		task_info, 
-		datalist_context=datalist_context, 
-		device=device, 
+		datalist_context=datalist_context,
 		resize=resize, resize_size=resize_size, 
-		zscale=zscale, contrast=contrast, 
-		shuffle_options=shuffle_options, 
+		zscale=zscale, contrast=contrast,
+		add_options=True, shuffle_options=shuffle_options, 
 		nmax=nmax, 
 		nmax_context=nmax_context,
-		verbose=verbose
+		verbose=False
 	)
-		
+	
 
 def run_llavaov_model_smorph_inference_hf(
 	datalist, 
 	model, processor, 
 	datalist_context=None, 
-	device="cuda:0", 
 	resize=False, resize_size=384, 
 	zscale=False, contrast=0.25, 
 	shuffle_options=False, 
@@ -537,13 +621,27 @@ def run_llavaov_model_smorph_inference_hf(
 	#==   INIT TASK
 	#===========================
 	# - Define message
+	context= "### Context: Consider these morphological classes of radio astronomical sources, defined as follows: \n EXTENDED: This class comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. Typical examples are extended radio galaxies formed by a single elongated island or by multiple islands, hosting the galaxy core and lobe structures; \n DIFFUSE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology; \n DIFFUSE-LARGE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level."
+	
+	description= ""
 	if add_task_description:
-		description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n EXTENDED: This class comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. Typical examples are extended radio galaxies formed by a single elongated island or by multiple islands, hosting the galaxy core and lobe structures; \n DIFFUSE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology; \n DIFFUSE-LARGE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+		description= context
+	
+	question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
+	
+	if add_task_description:
+		if datalist_context is None:
+			question_subfix= "Answer the question using the provided context. "
+		else:
+			question_subfix= "Answer the question using the provided context and examples. "
 	else:
-		description= ""
-		
-	question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
-	question_subfix= "Please report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+		if datalist_context is None:
+			question_subfix= ""
+		else:
+			question_subfix= "Answer the question using the provided examples. "
+			
+	#question_subfix= "Please report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+	question_subfix+= "Report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
 	
 	label2id= {
 		"NONE": 0,
@@ -571,16 +669,348 @@ def run_llavaov_model_smorph_inference_hf(
 		datalist, 
 		model, processor, 
 		task_info, 
-		datalist_context=datalist_context, 
-		device=device, 
+		datalist_context=datalist_context,
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast, 
-		shuffle_options=shuffle_options, 
+		add_options=True, shuffle_options=shuffle_options, 
 		nmax=nmax, 
 		nmax_context=nmax_context,
 		verbose=verbose
 	)	
 	
 
+def run_llavaov_model_galaxy_inference_hf(
+	datalist, 
+	model, processor, 
+	datalist_context=None, 
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25, 
+	shuffle_options=False, 
+	nmax=-1, 
+	nmax_context=-1,
+	add_task_description=False,
+	verbose=False
+):
+	""" Run LLaVA inference on radio image dataset (galaxy detection) """
+	
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	description= ""
+	question_prefix= "Do you see any likely radio galaxy with an extended morphology in the image? "
+	question_subfix= "Answer concisely: Yes or No."
+	
+	label2id= {
+		"NO": 0,
+		"YES": 1,
+	}
+	
+	class_options= None
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": filter_galaxy_label,
+		"label2id": label2id,
+		"class_options": class_options,
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_llavaov_model_inference_hf(
+		datalist, 
+		model, processor, 
+		task_info, 
+		datalist_context=datalist_context,
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast, 
+		add_options=False, shuffle_options=False, 
+		nmax=nmax, 
+		nmax_context=nmax_context,
+		verbose=verbose
+	)	
 
+
+def run_llavaov_model_artefact_inference_hf(
+	datalist, 
+	model, processor, 
+	datalist_context=None, 
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25, 
+	shuffle_options=False, 
+	nmax=-1, 
+	nmax_context=-1,
+	add_task_description=False,
+	verbose=False
+):
+	""" Run LLaVA inference on radio image dataset (artefact detection) """
+	
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	description= ""
+	question_prefix= "Do you see any imaging artefact with a ring pattern around bright sources in the image? "
+	question_subfix= "Answer concisely: Yes or No."
+	
+	label2id= {
+		"NO": 0,
+		"YES": 1,
+	}
+	
+	class_options= None
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": filter_artefact_label,
+		"label2id": label2id,
+		"class_options": class_options,
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_llavaov_model_inference_hf(
+		datalist, 
+		model, processor, 
+		task_info, 
+		datalist_context=datalist_context,
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast, 
+		add_options=False, shuffle_options=False, 
+		nmax=nmax, 
+		nmax_context=nmax_context,
+		verbose=verbose
+	)	
+
+	
+def run_llavaov_model_anomaly_inference_hf(
+	datalist, 
+	model, processor, 
+	datalist_context=None, 
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25, 
+	shuffle_options=False, 
+	nmax=-1, 
+	nmax_context=-1,
+	add_task_description=False,
+	verbose=False
+):
+	""" Run LLaVA inference on radio image dataset (anomaly detection) """
+	
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	context= "### Context: Consider this radio image peculiarity classes, defined as follows: \n ORDINARY: image containing only point-like or slightly-resolved compact radio sources superimposed over the sky background or imaging artefact patterns; \n COMPLEX: image containing one or more radio sources with extended or diffuse morphology; \n PECULIAR: image containing one or more radio sources with anomalous or peculiar extended morphology, often having diffuse edges, complex irregular shapes, covering a large portion of the image.\n"
+	
+	description= ""
+	if add_task_description:
+		description= context
+		
+	question_prefix= "### Question: Can you identify which peculiarity class the presented image belongs to? "
+	
+	if add_task_description:
+		if datalist_context is None:
+			question_subfix= "Answer the question using the provided context. "
+		else:
+			question_subfix= "Answer the question using the provided context and examples. "
+	else:
+		if datalist_context is None:
+			question_subfix= ""
+		else:
+			question_subfix= "Answer the question using the provided examples. "
+			
+	question_subfix+= "Report only the identified class label, without any additional explanation text."
+	
+	label2id= {
+		"ORDINARY": 0,
+		"COMPLEX": 1,
+		"PECULIAR": 2,
+	}
+	
+	class_options= ["ORDINARY","COMPLEX","PECULIAR"]
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": filter_anomaly_label,
+		"label2id": label2id,
+		"class_options": class_options,
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_llavaov_model_inference_hf(
+		datalist, 
+		model, processor, 
+		task_info, 
+		datalist_context=datalist_context,
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast, 
+		add_options=False, shuffle_options=False, 
+		nmax=nmax, 
+		nmax_context=nmax_context,
+		verbose=verbose
+	)	
+	
+def run_llavaov_model_mirabest_inference_hf(
+	datalist, 
+	model, processor, 
+	datalist_context=None, 
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25, 
+	shuffle_options=False, 
+	nmax=-1, 
+	nmax_context=-1,
+	add_task_description=False,
+	verbose=False
+):
+	""" Run LLaVA One Vision inference on Mirabest dataset """
+
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	context= "### Context: Consider these morphological classes of radio galaxies: \n FR-I: radio-loud galaxies characterized by a jet-dominated structure where the radio emissions are strongest close to the galaxy's center and diminish with distance from the core; \n FR-II: radio-loud galaxies characterized by a edge-brightened radio structure, where the radio emissions are more prominent in lobes located far from the galaxy's core, with hotspots at the ends of powerful, well-collimated jets. "
+	context+= "\n"
+	
+	description= ""
+	if add_task_description: 
+		description= context
+		
+	question_prefix= "### Question: Which of these morphological classes of radio galaxy do you see in the image? "
+	if add_task_description:
+		if datalist_context is None:
+			question_subfix= "Answer the question using the provided context. "
+		else:
+			question_subfix= "Answer the question using the provided context and examples. "
+	else:
+		if datalist_context is None:
+			question_subfix= ""
+		else:
+			question_subfix= "Answer the question using the provided examples. "
+			
+	question_subfix+= "Report only the identified class label, without any additional explanation text."
+	
+	class_options= ["FR-I", "FR-II"]
+	
+	label2id= {
+		"NONE": 0,
+		"FR-I": 1,
+		"FR-II": 2
+	}
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": None,
+		"label2id": label2id,
+		"class_options": class_options
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_llavaov_model_inference_hf(
+		datalist, 
+		model, processor, 
+		task_info, 
+		datalist_context=datalist_context,
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast, 
+		add_options=True, shuffle_options=shuffle_options, 
+		nmax=nmax, 
+		nmax_context=nmax_context,
+		verbose=verbose
+	)	
+	
+
+def run_llavaov_model_gmnist_inference_hf(
+	datalist, 
+	model, processor, 
+	datalist_context=None, 
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25, 
+	shuffle_options=False, 
+	nmax=-1, 
+	nmax_context=-1,
+	add_task_description=False,
+	verbose=False
+):
+	""" Run LLaVA One Vision inference on Galaxy MNIST dataset """
+
+	#===========================
+	#==   INIT TASK
+	#===========================
+	# - Define message
+	context= "### Context: Consider these morphological classes of optical galaxies: \n SMOOTH_ROUND: smooth and round galaxy. Should not have signs of spires; \n SMOOTH_CIGAR: smooth and cigar-shaped galaxy, looks like being seen edge on. This should not have signs of spires of a spiral galaxy; \n EDGE_ON_DISK: edge-on-disk/spiral galaxy. This disk galaxy should have signs of spires, as seen from an edge-on perspective; \n UNBARRED_SPIRAL: unbarred spiral galaxy. Has signs of a disk and/or spires. \n Note that categories SMOOTH_CIGAR and EDGE_ON_DISK classes tend to be very similar to each other. To categorize them, ask yourself the following question: Is this galaxy very smooth, maybe with a small bulge? Then it belongs to class SMOOTH_CIGAR. Does it have irregularities/signs of structure? Then it belongs to class EDGE_ON_DISK."
+	context+= "\n"
+	
+	description= ""
+	if add_task_description: 
+		description= context
+		
+	question_prefix= "### Question: Which of these morphological classes of optical galaxy do you see in the image? "
+	if add_task_description:
+		if datalist_context is None:
+			question_subfix= "Answer the question using the provided context. "
+		else:
+			question_subfix= "Answer the question using the provided context and examples. "
+	else:
+		if datalist_context is None:
+			question_subfix= ""
+		else:
+			question_subfix= "Answer the question using the provided examples. "
+			
+	question_subfix+= "Report only the identified class label, without any additional explanation text."
+	
+	
+	class_options= ["SMOOTH_ROUND", "SMOOTH_CIGAR","EDGE_ON_DISK","UNBARRED_SPIRAL"]
+	
+	label2id= {
+		"NONE": 0,
+		"SMOOTH_ROUND": 1,
+		"SMOOTH_CIGAR": 2,
+		"EDGE_ON_DISK": 3,
+		"UNBARRED_SPIRAL": 4
+	}
+	
+	task_info= {
+		"description": description,
+		"question_prefix": question_prefix,
+		"question_subfix": question_subfix,
+		"classification_mode": "multiclass_singlelabel",
+		"label_modifier_fcn": None,
+		"label2id": label2id,
+		"class_options": class_options
+	}
+	
+	#=============================
+	#==   RUN TASK
+	#=============================
+	return run_llavaov_model_inference_hf(
+		datalist, 
+		model, processor, 
+		task_info, 
+		datalist_context=datalist_context,
+		resize=resize, resize_size=resize_size, 
+		zscale=zscale, contrast=contrast, 
+		add_options=True, shuffle_options=shuffle_options, 
+		nmax=nmax, 
+		nmax_context=nmax_context,
+		verbose=verbose
+	)
 

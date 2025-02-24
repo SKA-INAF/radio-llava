@@ -861,7 +861,8 @@ def run_tinyllava_model_mirabest_inference(
 		resize=resize, resize_size=resize_size, 
 		zscale=zscale, contrast=contrast,
 		conv_mode=conv_mode, 
-		add_options=True, shuffle_options=shuffle_options, nmax=nmax, 
+		add_options=True, shuffle_options=shuffle_options, 
+		nmax=nmax, 
 		verbose=verbose
 	)
 
