@@ -99,6 +99,8 @@ def get_args():
 	
 	# - Model option
 	parser.add_argument('-model','--model', dest='model', required=False, type=str, default="llava-hf/llava-onevision-qwen2-7b-ov-hf", help='LLaVA pretrained model') 
+	parser.add_argument('--to_float16', dest='to_float16', action='store_true',help='Import model as float16 (default=false)')	
+	parser.set_defaults(to_float16=False)
 	
 	# - Inference options
 	parser.add_argument('--do_sample', dest='do_sample', action='store_true',help='Sample model response using temperature option (default=false)')	
@@ -156,8 +158,10 @@ def main():
 		if not torch.cuda.is_available():
 			logger.warn("cuda not available, using cpu...")
 			device= "cpu"
-	
+
 	logger.info("device: %s" % (device))
+
+	to_float16= args.to_float16
 	
 	#===========================
 	#==   READ DATALIST
@@ -189,7 +193,7 @@ def main():
 	model, processor= load_llavaov_model_hf(
 		model_id, 
 		device_map="auto",
-		to_float16=False,
+		to_float16=to_float16,
 		low_cpu_mem_usage=True
 	)
 		
