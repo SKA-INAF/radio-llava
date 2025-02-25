@@ -60,7 +60,8 @@ chat_template = "{% for message in messages %}{{'<|im_start|>' + message['role']
 
 
 def load_original_state_dict(model_id):
-    directory_path = snapshot_download(repo_id=model_id, allow_patterns=["*.safetensors"])
+    #directory_path = snapshot_download(repo_id=model_id, allow_patterns=["*.safetensors"])
+    directory_path= model_id
 
     original_state_dict = {}
     for path in glob.glob(f"{directory_path}/*"):
