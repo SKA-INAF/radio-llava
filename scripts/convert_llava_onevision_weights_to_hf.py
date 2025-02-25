@@ -163,7 +163,8 @@ def convert_llava_to_hf(model_path, model_id, pytorch_dump_folder_path, push_to_
         model = LlavaOnevisionForConditionalGeneration(config)
 
     # load original state dict
-    state_dict = load_original_state_dict(model_id)
+    #state_dict = load_original_state_dict(model_id)
+    state_dict = load_original_state_dict(model_path)
     state_dict = convert_state_dict_to_hf(state_dict)
     model.load_state_dict(state_dict, assign=True)
     model.eval()
