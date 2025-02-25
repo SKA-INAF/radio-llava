@@ -51,6 +51,7 @@ from radio_llava.inference_utils import *
 
 ## LOGGER
 from radio_llava import logger
+#logger = logging.getLogger(__name__)
 
 ######################
 ##   LOAD MODEL
@@ -65,15 +66,18 @@ def load_llavaov_model_hf(model_name_or_path, device_map="auto", to_float16=Fals
 			model_name_or_path, 
 			torch_dtype=torch.float16, 
 			low_cpu_mem_usage=low_cpu_mem_usage,
+			use_flash_attention_2=True,
 			device_map=device_map
 		)
 	else:
 		model = LlavaOnevisionForConditionalGeneration.from_pretrained(
 			model_name_or_path, 
 			low_cpu_mem_usage=low_cpu_mem_usage,
+			use_flash_attention_2=True,
 			device_map=device_map
 		)
 	
+	# - To fix warning: Setting `pad_token_id` to `eos_token_id`:None for open-end generation
 	model.generation_config.pad_token_id = model.generation_config.eos_token_id
 	model.eval()
 
