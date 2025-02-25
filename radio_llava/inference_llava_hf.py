@@ -62,6 +62,7 @@ def load_llavaov_model_hf(model_name_or_path, device_map="auto", to_float16=Fals
 	# - Load the model in half-precision
 	logger.info("Loading model %s ..." % (model_name_or_path))
 	if to_float16:
+		logger.info("Loading model with float16 torch type ...")
 		model = LlavaOnevisionForConditionalGeneration.from_pretrained(
 			model_name_or_path, 
 			torch_dtype=torch.float16, 
@@ -160,9 +161,15 @@ def run_llavaov_model_query_hf(
 	output_parsed= processor.decode(output[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
 	output_parsed_list= output_parsed.split("assistant")
 	
+	# - Extract predicted label
+	response= output_parsed_list[-1].strip("\n").strip()
+		
 	if verbose:
 		print("output")
 		print(output)
+		
+		print("output[0]")
+		print(output[0])
 
 		print("output_parsed")
 		print(output_parsed)
@@ -170,8 +177,8 @@ def run_llavaov_model_query_hf(
 		print("output_parsed (split assistant)")
 		print(output_parsed_list)
 		
-	# - Extract predicted label
-	response= output_parsed_list[-1].strip("\n").strip()
+		print("response")
+		print(response)
 		
 	return response
 
