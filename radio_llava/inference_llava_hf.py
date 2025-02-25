@@ -67,7 +67,7 @@ def load_llavaov_model_hf(model_name_or_path, device_map="auto", to_float16=Fals
 			model_name_or_path, 
 			torch_dtype=torch.float16, 
 			low_cpu_mem_usage=low_cpu_mem_usage,
-			use_flash_attention_2=True,
+			#use_flash_attention_2=True,
 			attn_implementation="flash_attention_2",
 			vision_config={"torch_dtype": torch.float16},
 			device_map=device_map
