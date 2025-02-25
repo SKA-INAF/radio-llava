@@ -56,22 +56,33 @@ from radio_llava import logger
 ######################
 ##   LOAD MODEL
 ######################
-def load_llavaov_model_hf(model_name_or_path, device_map="auto", to_float16=False, low_cpu_mem_usage=True):
+def load_llavaov_model_hf(model_name_or_path, device_map="auto", to_float16=False, low_cpu_mem_usage=True, use_attention=False):
 	""" Load LLaVA One Vision model """
 
 	# - Load the model in half-precision
 	logger.info("Loading model %s ..." % (model_name_or_path))
 	if to_float16:
 		logger.info("Loading model with float16 torch type ...")
-		model = LlavaOnevisionForConditionalGeneration.from_pretrained(
-			model_name_or_path, 
-			torch_dtype=torch.float16, 
-			low_cpu_mem_usage=low_cpu_mem_usage,
-			#use_flash_attention_2=True,
-			attn_implementation="flash_attention_2",
-			vision_config={"torch_dtype": torch.float16},
-			device_map=device_map
+		if use_attention:
+			model = LlavaOnevisionForConditionalGeneration.from_pretrained(
+				model_name_or_path, 
+				torch_dtype=torch.float16, 
+				low_cpu_mem_usage=low_cpu_mem_usage,
+				#use_flash_attention_2=True,
+				attn_implementation="flash_attention_2",
+				vision_config={"torch_dtype": torch.float16},
+				device_map=device_map
 		)
+		
+		else:
+			model = LlavaOnevisionForConditionalGeneration.from_pretrained(
+				model_name_or_path, 
+				torch_dtype=torch.float16, 
+				low_cpu_mem_usage=low_cpu_mem_usage,
+				use_flash_attention_2=False,
+				device_map=device_map
+			)
+
 	else:
 		# Attention 2 works with float16 only
 		model = LlavaOnevisionForConditionalGeneration.from_pretrained(
