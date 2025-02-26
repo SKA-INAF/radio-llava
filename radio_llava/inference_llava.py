@@ -694,7 +694,7 @@ def run_llavaov_model_smorph_inference(
 		if datalist_context is not None:
 			question_subfix+= "- Answer the question taking into account the provided examples. \n"
 			
-	question_subfix+= "- Answer reporting only the identified source class labels separated by commas. DO NOT ADD ANY EXPLANATION TEXT. \n"
+	question_subfix+= "- Answer concisely reporting only the identified source class labels {'EXTENDED','DIFFUSE','DIFFUSE-LARGE'} separated by commas. DO NOT ADD ANY EXPLANATION TEXT. \n"
 	question_subfix+= "- Answer just NONE if you cannot recognize any of the above classes in the image. \n"
 	
 	label2id= {
