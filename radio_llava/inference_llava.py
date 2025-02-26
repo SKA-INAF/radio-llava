@@ -669,20 +669,21 @@ def run_llavaov_model_smorph_inference(
 	#question_subfix+= "Report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
 	
 	
-	context= "You are given a radio astronomical input image. Answer to the question below, strictly following the provided task requirements. \n"
+	description= "You are given a radio astronomical input image. Answer to the question below, strictly following the provided instructions. \n"
 	
 	if add_task_description:
-		context+= "\n ## Context: \n"
+		context= "\n ## Context: \n"
 		context+= "- SOURCE ISLAND: A group of 4-connected pixels in a radio image under analysis with intensity above a detection threshold with respect to the sky background level. \n"
 		context+= "- COMPACT SOURCE: single-island isolated point- or slightly resolved compact radio sources, eventually hosting one or more blended components, each with morphology resembling the synthesized beam shape. \n"
 		context+= "- EXTENDED SOURCE: This morphological class of radio sources comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. \n"
 		context+= "- DIFFUSE SOURCE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology. \n"
 		context+= "- DIFFUSE-LARGE SOURCE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n"
 		context+= "\n"
+		description+= context
 		
 	question_prefix= "\n ## Question: Which of these morphological classes of radio sources do you see in the image? \n"
 	
-	question_subfix= "\n ## Task requirements: \n"
+	question_subfix= "\n ## Instructions: \n"
 	if add_task_description:
 		if datalist_context is None:
 			question_subfix+= "- Answer the question taking into account the provided context. \n"
