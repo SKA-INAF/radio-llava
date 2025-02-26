@@ -115,7 +115,6 @@ def get_args():
 	parser.set_defaults(add_task_description=False)
 	parser.add_argument('-prompt_version','--prompt_version', dest='prompt_version', required=False, type=str, default="v1", help='Prompt version {v1,v2}') 
 	
-	
 	# - Run options
 	parser.add_argument('-device','--device', dest='device', required=False, type=str, default="cuda", help='Device where to run inference. Default is cuda, if not found use cpu.') 
 	parser.add_argument('--verbose', dest='verbose', action='store_true',help='Enable verbose printout (default=false)')	
