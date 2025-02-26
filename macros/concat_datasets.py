@@ -27,12 +27,22 @@ for item in datalist_2:
 	conv_map[image_path]= conversations
 	
 # - Concatenate conversations
+pattern_to_be_removed= "<image>\n"
+
 for idx, item in enumerate(datalist_1):
 	image_path= item["image"]
 	conversations= item["conversations"]
 	
 	if image_path in conv_map:
 		conversations_to_be_added= conv_map[image_path]
+		
+		# - Remove <image>\n field
+		for j, conversation in enumerate(conversations_to_be_added):
+			value= conversation["value"]
+			if pattern_to_be_removed in value:
+				value_mod= value.replace(pattern_to_be_removed, "")
+				conversations_to_be_added[j]["value"]= value_mod
+		
 		datalist_1[idx]["conversations"].extend(conversations_to_be_added)
 	else:
 		print("WARN: No match found for image %s, won't add conversations..." % (image_path))
