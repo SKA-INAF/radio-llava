@@ -1,14 +1,15 @@
 import os
 import json
+import sys
 
 # - Read args
 filename_1= sys.argv[1]
 filename_2= sys.argv[2]
+outfile= "concat.json"
 
 # - Open files
 f1= open(filename_1, "r")
 f2= open(filename_2, "r")
-outfile= "concat.json"
 
 # - Read files
 print("Reading file %s ..." % (filename_1))
