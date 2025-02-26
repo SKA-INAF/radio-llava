@@ -678,7 +678,6 @@ def run_llavaov_model_smorph_inference(
 		context+= "- EXTENDED SOURCE: This morphological class of radio sources comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. \n"
 		context+= "- DIFFUSE SOURCE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology. \n"
 		context+= "- DIFFUSE-LARGE SOURCE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n"
-		context+= "\n"
 		description+= context
 		
 	question_prefix= "\n ## Question: Which of these morphological classes of radio sources do you see in the image? \n"
