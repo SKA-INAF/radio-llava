@@ -125,6 +125,7 @@ def run_llavaov_model_query(
 	# - Create prompt 
 	question = DEFAULT_IMAGE_TOKEN + "\n" + query
 	conv = copy.deepcopy(conv_templates[conv_template])
+	conv.system= '<|im_start|>system\nYou are an AI assistant specialized in radio astronomical topics.'
 	conv.append_message(conv.roles[0], question)
 	conv.append_message(conv.roles[1], None)
 	prompt_question = conv.get_prompt()
@@ -360,21 +361,6 @@ def run_llavaov_model_inference(
 				"response": response
 			}
 			
-			#conversation = [
-			#	{
-			#		"role": "user",
-			#		"content": [
-			#			{"type": "image"},
-			#			{"type": "text", "text": question},
-			#		],
-    	#	},
-    	#	{
-			#		"role": "assistant",
-			#		"content": [
-			#			{"type": "text", "text": response},
-			#		],
-			#	},
-			#]
 			conversations_context.append(conversation)
 
 	#===========================
@@ -384,7 +370,7 @@ def run_llavaov_model_inference(
 	ninferences_failed= 0
 	class_ids= []
 	class_ids_pred= []
-	n_max_retries= 1
+	n_max_retries= 3
 	
 	for idx, item in enumerate(datalist):
 		
@@ -417,19 +403,10 @@ def run_llavaov_model_inference(
 				random.shuffle(option_choices)
 		
 			question_labels= ' \n '.join(option_choices)
-			
 			question= description + ' \n' + question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
-			#if conversations_context:
-			#	question= question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
-			#else:
-			#	question= description + ' \n' + question_prefix + ' \n ' + question_labels + ' \n ' + question_subfix
 		else:
 			question= description + ' \n' + question_prefix + ' \n ' + question_subfix
-			#if conversations_context:
-			#	question= question_prefix + ' \n ' + question_subfix
-			#else:
-			#	question= description + ' \n' + question_prefix + ' \n ' + question_subfix
-
+			
 		question_retry= "The format of your response does not comply with the requested instructions, please answer again to the following request and strictly follow the given instructions. \n" + question
 		skip_inference= False
 		n_retries= 0
@@ -670,27 +647,53 @@ def run_llavaov_model_smorph_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	context= "### Context: Consider these morphological classes of radio astronomical sources, defined as follows: \n EXTENDED: This class comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. Typical examples are extended radio galaxies formed by a single elongated island or by multiple islands, hosting the galaxy core and lobe structures; \n DIFFUSE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology; \n DIFFUSE-LARGE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level."
+	#context= "### Context: Consider these morphological classes of radio astronomical sources, defined as follows: \n EXTENDED: This class comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. Typical examples are extended radio galaxies formed by a single elongated island or by multiple islands, hosting the galaxy core and lobe structures; \n DIFFUSE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology; \n DIFFUSE-LARGE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level."
 	
-	description= ""
-	if add_task_description:
-		description= context
+	#description= ""
+	#if add_task_description:
+	#	description= context
 	
-	question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
+	#question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
 	
-	if add_task_description:
-		if datalist_context is None:
-			question_subfix= "Answer the question using the provided context. "
-		else:
-			question_subfix= "Answer the question using the provided context and examples. "
-	else:
-		if datalist_context is None:
-			question_subfix= ""
-		else:
-			question_subfix= "Answer the question using the provided examples. "
+	#if add_task_description:
+	#	if datalist_context is None:
+	#		question_subfix= "Answer the question using the provided context. "
+	#	else:
+	#		question_subfix= "Answer the question using the provided context and examples. "
+	#else:
+	#	if datalist_context is None:
+	#		question_subfix= ""
+	#	else:
+	#		question_subfix= "Answer the question using the provided examples. "
 			
-	#question_subfix= "Please report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
-	question_subfix+= "Report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+	#question_subfix+= "Report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+	
+	
+	context= "You are given a radio astronomical input image. Answer to the question below, strictly following the provided task requirements. \n"
+	
+	if add_task_description:
+		context+= "\n ## Context: \n"
+		context+= "- SOURCE ISLAND: A group of 4-connected pixels in a radio image under analysis with intensity above a detection threshold with respect to the sky background level. \n"
+		context+= "- COMPACT SOURCE: single-island isolated point- or slightly resolved compact radio sources, eventually hosting one or more blended components, each with morphology resembling the synthesized beam shape. \n"
+		context+= "- EXTENDED SOURCE: This morphological class of radio sources comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. \n"
+		context+= "- DIFFUSE SOURCE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology. \n"
+		context+= "- DIFFUSE-LARGE SOURCE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n"
+		context+= "\n"
+		
+	question_prefix= "\n ## Question: Which of these morphological classes of radio sources do you see in the image? \n"
+	
+	question_subfix= "\n ## Task requirements: \n"
+	if add_task_description:
+		if datalist_context is None:
+			question_subfix+= "- Answer the question taking into account the provided context. \n"
+		else:
+			question_subfix+= "- Answer the question taking into account the provided context and examples. \n"
+	else:
+		if datalist_context is not None:
+			question_subfix+= "- Answer the question taking into account the provided examples. \n"
+			
+	question_subfix+= "- Answer reporting only the identified source class labels separated by commas. DO NOT ADD ANY EXPLANATION TEXT. \n"
+	question_subfix+= "- Answer just NONE if you cannot recognize any of the above classes in the image. \n"
 	
 	label2id= {
 		"NONE": 0,
