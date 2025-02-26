@@ -407,7 +407,9 @@ def run_llavaov_model_inference(
 		else:
 			question= description + ' \n' + question_prefix + ' \n ' + question_subfix
 			
-		question_retry= "The format of your response does not comply with the requested instructions, please answer again to the following request and strictly follow the given instructions. \n" + question
+		#question_retry= "The format of your response does not comply with the requested instructions, please answer again to the following request and strictly follow the given instructions. \n" + question
+		question_retry= "The format of your response does not comply with the requested instructions, please answer again to the question and strictly follow the instructions: \n" + question_subfix
+		
 		skip_inference= False
 		n_retries= 0
 		
