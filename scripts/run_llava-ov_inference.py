@@ -113,6 +113,8 @@ def get_args():
 	parser.set_defaults(shuffle_options=False)
 	parser.add_argument('--add_task_description', dest='add_task_description', action='store_true',help='Add task description (default=false)')	
 	parser.set_defaults(add_task_description=False)
+	parser.add_argument('-prompt_version','--prompt_version', dest='prompt_version', required=False, type=str, default="v1", help='Prompt version {v1,v2}') 
+	
 	
 	# - Run options
 	parser.add_argument('-device','--device', dest='device', required=False, type=str, default="cuda", help='Device where to run inference. Default is cuda, if not found use cpu.') 
@@ -214,6 +216,7 @@ def main():
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
 			conv_template=args.conv_template,
+			prompt_version=args.prompt_version,
 			verbose=args.verbose
 		)
 		
@@ -233,6 +236,7 @@ def main():
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
 			conv_template=args.conv_template,
+			prompt_version=args.prompt_version,
 			verbose=args.verbose
 		)
 	
@@ -252,6 +256,7 @@ def main():
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
 			conv_template=args.conv_template,
+			prompt_version=args.prompt_version,
 			verbose=args.verbose
 		)
 		
@@ -271,6 +276,7 @@ def main():
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
 			conv_template=args.conv_template,
+			prompt_version=args.prompt_version,
 			verbose=args.verbose
 		)
 		
@@ -290,6 +296,7 @@ def main():
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
 			conv_template=args.conv_template,
+			prompt_version=args.prompt_version,
 			verbose=args.verbose
 		)
 		
@@ -309,6 +316,7 @@ def main():
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
 			conv_template=args.conv_template,
+			prompt_version=args.prompt_version,
 			verbose=args.verbose
 		)
 	
@@ -328,6 +336,7 @@ def main():
 			nmax_context=args.nmax_context,
 			add_task_description=args.add_task_description,
 			conv_template=args.conv_template,
+			prompt_version=args.prompt_version,
 			verbose=args.verbose
 		)
 		

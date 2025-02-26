@@ -540,6 +540,7 @@ def run_llavaov_model_rgz_inference(
 	nmax_context=-1,
 	add_task_description=False,
 	conv_template="qwen_2",
+	prompt_version="v1",
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on RGZ dataset """
@@ -548,46 +549,71 @@ def run_llavaov_model_rgz_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	context= "### Context: Consider these morphological classes of radio astronomical sources: \n 1C-1P: single-island sources having only one flux intensity peak; \n 1C-2C: single-island sources having two flux intensity peaks; \n 1C-3P: single-island sources having three flux intensity peaks; \n 2C-2P: sources consisting of two separated islands, each hosting a single flux intensity peak; \n 2C-3P: sources consisting of two separated islands, one containing a single peak of flux intensity and the other exhibiting two distinct intensity peaks; \n 3C-3P: sources consisting of three separated islands, each hosting a single flux intensity peak. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
-	context+= "\n"
-	#context+= "Use the above context to answer the question below. Follow these guidelines: \n"
-	#context+= "\n"
-	#context+= "1. Answer directly from the given context. \n"
-	#context+= "2. Your response must be just the identified class label taken from these possible choices: 1C-1P, 1C-2P, 1C-3P, 2C-2P, 2C-3P, 3C-3P \n"
-	#context+= "3. Answer NONE if you cannot recognize any of the above classes in the image. \n"
-	#context+= "4. If the context doesn't contain relevant information, respond with: \"I don't have enough information to answer this question.\" \n"
-	#context+= "5. Do not add explanation or description texts to the response. \n"
-	#context+= "\n"
-	
-	description= ""
-	if add_task_description: 
-		description= context
-		
-	question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
-	if add_task_description:
-		if datalist_context is None:
-			question_subfix= "Answer the question using the provided context. "
-		else:
-			question_subfix= "Answer the question using the provided context and examples. "
-	else:
-		if datalist_context is None:
-			question_subfix= ""
-		else:
-			question_subfix= "Answer the question using the provided examples. "
-			
-	#question_subfix+= "Report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
-	#question_subfix+= "Answer the question reporting only the identified class label, without any additional explanation text."
-	question_subfix+= "Report only the identified class label, without any additional explanation text."
-	
-	# - Define message
-	#if add_task_description:
-	#	description= "Consider these morphological classes of radio astronomical sources, defined as follows: \n 1C-1P: single-island radio sources having only one flux intensity peak; \n 1C-2C: single-component radio sources having two flux intensity peaks; \n 1C-3P: single-island radio sources having three flux intensity peaks; \n 2C-2P: radio sources formed by two disjoint islands, each hosting a single flux intensity peak; \n 2C-3P: radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks; 3C-3P: radio sources formed by three disjoint islands, each hosting a single flux intensity peak. \n An island is a group or blob of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
-	#else:
-	#	description= ""
+	if prompt_version=="v1":
+		context= "### Context: Consider these morphological classes of radio astronomical sources: \n 1C-1P: single-island sources having only one flux intensity peak; \n 1C-2C: single-island sources having two flux intensity peaks; \n 1C-3P: single-island sources having three flux intensity peaks; \n 2C-2P: sources consisting of two separated islands, each hosting a single flux intensity peak; \n 2C-3P: sources consisting of two separated islands, one containing a single peak of flux intensity and the other exhibiting two distinct intensity peaks; \n 3C-3P: sources consisting of three separated islands, each hosting a single flux intensity peak. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level. "
+		context+= "\n"
 
-	#question_prefix= "Which of these morphological classes of radio sources do you see in the image? "
-	#question_subfix= "Please report only the identified class label, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
+		description= ""
+		if add_task_description: 
+			description= context
+		
+		question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix= "Answer the question using the provided context. "
+			else:
+				question_subfix= "Answer the question using the provided context and examples. "
+		else:
+			if datalist_context is None:
+				question_subfix= ""
+			else:
+				question_subfix= "Answer the question using the provided examples. "
 	
+		question_subfix+= "Report only the identified class label, without any additional explanation text."
+		
+	elif prompt_version=="v2":
+		description= "You are given a radio astronomical input image. Answer to the question below, strictly following the provided instructions. \n"
+	
+		if add_task_description:
+			context= "\n ## Context: \n"
+			context+= "- SOURCE ISLAND: A group of 4-connected pixels in a radio image under analysis with intensity above a detection threshold with respect to the sky background level. The terms 'island' and 'component' are sometimes used interchangeably, but an 'island' is defined purely by pixel connectivity above a noise threshold, and may contain one or multiple source components. Example: A radio galaxy with extended lobes may appear as one large source island, encompassing multiple structures (core, jets, lobes).\n"
+			context+= "- SOURCE COMPONENT: an individual emission structure within a radio astronomical image that is associated with a physically coherent entity or a substructure of a larger source. In source extraction, a single astronomical source may be represented by one or multiple components, depending on its morphology and how the extraction algorithm segments emission regions. These components may correspond to compact sources, such as individual galaxies or quasars, or extended sources, such as lobes of radio galaxies or supernova remnants. Example: A radio galaxy with a central core and two extended lobes may be decomposed into three source components—one for the core and one for each lobe. A single source island may contain multiple source components (e.g., a double-lobed radio galaxy).\n"
+			context+= "- SOURCE INTENSITY PEAK: the location of the maximum brightness (or flux density) within a detected source component in a radio astronomical image. It represents the highest observed intensity value in the 2D brightness distribution of the source, typically measured in Jy/beam (Jansky per beam). The peak intensity is crucial for identifying the position of the source, as well as for distinguishing between compact and extended emission structures. Example: For a compact radio source, such as a quasar, the intensity peak often coincides with the centroid of the source. In contrast, for an extended radio galaxy, the peak intensity may be located in the core or along the brightest part of the radio lobes. \n"
+			context+= "- 1C-1P SOURCE: morphological class of single-island radio sources having only one flux intensity peak. \n"
+			context+= "- 1C-2P SOURCE: morphological class of single-island radio sources having two flux intensity peaks. \n"
+			context+= "- 1C-3P SOURCE: morphological class of single-island radio sources having three flux intensity peaks. \n"
+			context+= "- 2C-2P SOURCE: morphological class of radio sources formed by two disjoint islands, each hosting a single flux intensity peak. \n"
+			context+= "- 2C-3P SOURCE: morphological class of radio sources formed by two disjoint islands, where one has a single flux intensity peak and the other one has two intensity peaks. \n"
+			context+= "- 3C-3P SOURCE: morphological class of radio sources formed by three disjoint islands, each hosting a single flux intensity peak."
+			description+= context
+		
+		question_prefix= "\n ## Question: Which of these morphological classes of radio sources do you see in the image? \n"
+	
+		question_subfix= "\n ## Instructions: \n"
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix+= "- Answer the question taking into account the provided context. \n"
+			else:
+				question_subfix+= "- Answer the question taking into account the provided context and examples. \n"
+		else:
+			if datalist_context is not None:
+				question_subfix+= "- Answer the question taking into account the provided examples. \n"
+			
+		question_subfix+= "- Answer concisely reporting only the identified source class label taken from these possible choices: 1C-1P, 1C-2P, 1C-3P, 2C-2P, 2C-3P, 3C-3P. DO NOT ADD ANY EXPLANATION TEXT. \n"
+		#question_subfix+= "- Answer just NONE if you cannot recognize any of the above classes in the image. \n"
+		#question_subfix+= "- Answer directly from the given context. \n"
+		#question_subfix+= "- Your response must be just the identified class label taken from these possible choices: 1C-1P, 1C-2P, 1C-3P, 2C-2P, 2C-3P, 3C-3P \n"
+		#question_subfix+= "- Answer NONE if you cannot recognize any of the above classes in the image. \n"
+		#question_subfix+= "- If the context doesn't contain relevant information, respond with: \"I don't have enough information to answer this question.\" \n"
+		#question_subfix+= "- Do not add explanation or description texts to the response. \n"
+		#question_subfix+= "\n"
+
+	else:
+		logger.error("Invalid prompt version (%s) specified!" % (prompt_version))
+		return	
+	
+	
+	# - Define class options
 	class_options= ["1C-1P", "1C-2P", "1C-3P", "2C-2P", "2C-3P", "3C-3P"]
 	
 	label2id= {
@@ -641,6 +667,7 @@ def run_llavaov_model_smorph_inference(
 	nmax_context=-1,
 	add_task_description=False,
 	conv_template="qwen_2",
+	prompt_version="v1",
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on radio image dataset """
@@ -649,54 +676,60 @@ def run_llavaov_model_smorph_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	#context= "### Context: Consider these morphological classes of radio astronomical sources, defined as follows: \n EXTENDED: This class comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. Typical examples are extended radio galaxies formed by a single elongated island or by multiple islands, hosting the galaxy core and lobe structures; \n DIFFUSE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology; \n DIFFUSE-LARGE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level."
+	if prompt_version=="v1":
+		context= "### Context: Consider these morphological classes of radio astronomical sources, defined as follows: \n EXTENDED: This class comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. Typical examples are extended radio galaxies formed by a single elongated island or by multiple islands, hosting the galaxy core and lobe structures; \n DIFFUSE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology; \n DIFFUSE-LARGE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape. \n An island is a group of 4-connected pixels in an image under analysis with intensity above a detection threshold with respect to the sky background level."
 	
-	#description= ""
-	#if add_task_description:
-	#	description= context
+		description= ""
+		if add_task_description:
+			description= context
 	
-	#question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
+		question_prefix= "### Question: Which of these morphological classes of radio sources do you see in the image? "
 	
-	#if add_task_description:
-	#	if datalist_context is None:
-	#		question_subfix= "Answer the question using the provided context. "
-	#	else:
-	#		question_subfix= "Answer the question using the provided context and examples. "
-	#else:
-	#	if datalist_context is None:
-	#		question_subfix= ""
-	#	else:
-	#		question_subfix= "Answer the question using the provided examples. "
-			
-	#question_subfix+= "Report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
-	
-	
-	description= "You are given a radio astronomical input image. Answer to the question below, strictly following the provided instructions. \n"
-	
-	if add_task_description:
-		context= "\n ## Context: \n"
-		context+= "- SOURCE ISLAND: A group of 4-connected pixels in a radio image under analysis with intensity above a detection threshold with respect to the sky background level. \n"
-		context+= "- COMPACT SOURCE: single-island isolated point- or slightly resolved compact radio sources, eventually hosting one or more blended components, each with morphology resembling the synthesized beam shape. \n"
-		context+= "- EXTENDED SOURCE: This morphological class of radio sources comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. \n"
-		context+= "- DIFFUSE SOURCE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology. \n"
-		context+= "- DIFFUSE-LARGE SOURCE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape."
-		description+= context
-		
-	question_prefix= "\n ## Question: Which of these morphological classes of radio sources do you see in the image? \n"
-	
-	question_subfix= "\n ## Instructions: \n"
-	if add_task_description:
-		if datalist_context is None:
-			question_subfix+= "- Answer the question taking into account the provided context. \n"
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix= "Answer the question using the provided context. "
+			else:
+				question_subfix= "Answer the question using the provided context and examples. "
 		else:
-			question_subfix+= "- Answer the question taking into account the provided context and examples. \n"
-	else:
-		if datalist_context is not None:
-			question_subfix+= "- Answer the question taking into account the provided examples. \n"
+			if datalist_context is None:
+				question_subfix= ""
+			else:
+				question_subfix= "Answer the question using the provided examples. "
 			
-	question_subfix+= "- Answer concisely reporting only the identified source class labels {'EXTENDED','DIFFUSE','DIFFUSE-LARGE'} separated by commas. DO NOT ADD ANY EXPLANATION TEXT. \n"
-	question_subfix+= "- Answer just NONE if you cannot recognize any of the above classes in the image. \n"
+		question_subfix+= "Report the identified class labels separated by commas, without any additional explanation text. Report just NONE if you cannot recognize any of the above classes in the image."
 	
+	elif prompt_version=="v2":
+		description= "You are given a radio astronomical input image. Answer to the question below, strictly following the provided instructions. \n"
+	
+		if add_task_description:
+			context= "\n ## Context: \n"
+			context+= "- SOURCE ISLAND: A group of 4-connected pixels in a radio image under analysis with intensity above a detection threshold with respect to the sky background level. \n"
+			context+= "- COMPACT SOURCE: single-island isolated point- or slightly resolved compact radio sources, eventually hosting one or more blended components, each with morphology resembling the synthesized beam shape. \n"
+			context+= "- EXTENDED SOURCE: This morphological class of radio sources comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. \n"
+			context+= "- DIFFUSE SOURCE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology. \n"
+			context+= "- DIFFUSE-LARGE SOURCE: large-scale (e.g. larger than few arcminutes and covering a large portion of the image) diffuse object with irregular shape."
+			description+= context
+		
+		question_prefix= "\n ## Question: Which of these morphological classes of radio sources do you see in the image? \n"
+	
+		question_subfix= "\n ## Instructions: \n"
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix+= "- Answer the question taking into account the provided context. \n"
+			else:
+				question_subfix+= "- Answer the question taking into account the provided context and examples. \n"
+		else:
+			if datalist_context is not None:
+				question_subfix+= "- Answer the question taking into account the provided examples. \n"
+			
+		question_subfix+= "- Answer concisely reporting only the identified source class labels {'EXTENDED','DIFFUSE','DIFFUSE-LARGE'} separated by commas. DO NOT ADD ANY EXPLANATION TEXT. \n"
+		question_subfix+= "- Answer just NONE if you cannot recognize any of the above classes in the image. \n"
+	
+	else:
+		logger.error("Invalid prompt version (%s) specified!" % (prompt_version))
+		return
+	
+	# - Define label options
 	label2id= {
 		"NONE": 0,
 		"EXTENDED": 1,
@@ -747,6 +780,7 @@ def run_llavaov_model_galaxy_inference(
 	nmax_context=-1,
 	add_task_description=False,
 	conv_template="qwen_2",
+	prompt_version="v1",
 	verbose=False
 ):
 	""" Run LLaVA inference on radio image dataset (galaxy detection) """
@@ -755,10 +789,38 @@ def run_llavaov_model_galaxy_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	description= ""
-	question_prefix= "Do you see any likely radio galaxy with an extended morphology in the image? "
-	question_subfix= "Answer concisely: Yes or No."
+	if prompt_version=="v1":
+		description= ""
+		question_prefix= "Do you see any likely radio galaxy with an extended morphology in the image? "
+		question_subfix= "Answer concisely: Yes or No."
 	
+	elif prompt_version=="v2":
+		description= "You are given a radio astronomical input image. Answer to the question below, strictly following the provided instructions. \n"
+	
+		if add_task_description:
+			context= "\n ## Context: \n"
+			context+= "- RADIO GALAXY: a type of active galaxy that emits an exceptionally large amount of radio waves, often extending beyond its visible structure. These galaxies host an active galactic nucleus (AGN), powered by a supermassive black hole (SMBH) at their center, which fuels the production of powerful radio jets and lobes. "
+			description+= context
+		
+		question_prefix= "\n ## Question: Do you see any likely radio galaxy with an extended morphology in the image? \n"
+	
+		question_subfix= "\n ## Instructions: \n"
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix+= "- Answer the question taking into account the provided context. \n"
+			else:
+				question_subfix+= "- Answer the question taking into account the provided context and examples. \n"
+		else:
+			if datalist_context is not None:
+				question_subfix+= "- Answer the question taking into account the provided examples. \n"
+			
+		question_subfix+= "- Answer concisely: Yes or No. \n"
+		
+	else:
+		logger.error("Invalid prompt version (%s) specified!" % (prompt_version))
+		return
+	
+	# - Define class options
 	label2id= {
 		"NO": 0,
 		"YES": 1,
@@ -806,6 +868,7 @@ def run_llavaov_model_artefact_inference(
 	nmax_context=-1,
 	add_task_description=False,
 	conv_template="qwen_2",
+	prompt_version="v1",
 	verbose=False
 ):
 	""" Run LLaVA inference on radio image dataset (artefact detection) """
@@ -814,10 +877,38 @@ def run_llavaov_model_artefact_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	description= ""
-	question_prefix= "Do you see any imaging artefact with a ring pattern around bright sources in the image? "
-	question_subfix= "Answer concisely: Yes or No."
+	if prompt_version=="v1":
+		description= ""
+		question_prefix= "Do you see any imaging artefact with a ring pattern around bright sources in the image? "
+		question_subfix= "Answer concisely: Yes or No."
 	
+	elif prompt_version=="v2":
+		description= "You are given a radio astronomical input image. Answer to the question below, strictly following the provided instructions. \n"
+	
+		if add_task_description:
+			context= "\n ## Context: \n"
+			context+= "- ARTEFACT: noise pattern with a ring-like or elongated morphology, typically found around bright compact sources in radio images. They are often mistaken for real radio sources but are actually spurious. These patterns arise from imperfections in the imaging processing stage of radio data."
+			description+= context
+		
+		question_prefix= "\n ## Question: Do you see any imaging artefact with a ring pattern around bright sources in the image? \n"
+	
+		question_subfix= "\n ## Instructions: \n"
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix+= "- Answer the question taking into account the provided context. \n"
+			else:
+				question_subfix+= "- Answer the question taking into account the provided context and examples. \n"
+		else:
+			if datalist_context is not None:
+				question_subfix+= "- Answer the question taking into account the provided examples. \n"
+			
+		question_subfix+= "- Answer concisely: Yes or No. \n"
+		
+	else:
+		logger.error("Invalid prompt version (%s) specified!" % (prompt_version))
+		return
+		
+	# - Define class options
 	label2id= {
 		"NO": 0,
 		"YES": 1,
@@ -865,6 +956,7 @@ def run_llavaov_model_anomaly_inference(
 	nmax_context=-1,
 	add_task_description=False,
 	conv_template="qwen_2",
+	prompt_version="v1",
 	verbose=False
 ):
 	""" Run LLaVA inference on radio image dataset (anomaly detection) """
@@ -873,27 +965,61 @@ def run_llavaov_model_anomaly_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	context= "### Context: Consider this radio image peculiarity classes, defined as follows: \n ORDINARY: image containing only point-like or slightly-resolved compact radio sources superimposed over the sky background or imaging artefact patterns; \n COMPLEX: image containing one or more radio sources with extended or diffuse morphology; \n PECULIAR: image containing one or more radio sources with anomalous or peculiar extended morphology, often having diffuse edges, complex irregular shapes, covering a large portion of the image.\n"
+	if prompt_version=="v1":
+		context= "### Context: Consider this radio image peculiarity classes, defined as follows: \n ORDINARY: image containing only point-like or slightly-resolved compact radio sources superimposed over the sky background or imaging artefact patterns; \n COMPLEX: image containing one or more radio sources with extended or diffuse morphology; \n PECULIAR: image containing one or more radio sources with anomalous or peculiar extended morphology, often having diffuse edges, complex irregular shapes, covering a large portion of the image.\n"
 	
-	description= ""
-	if add_task_description:
-		description= context
+		description= ""
+		if add_task_description:
+			description= context
 		
-	question_prefix= "### Question: Can you identify which peculiarity class the presented image belongs to? "
+		question_prefix= "### Question: Can you identify which peculiarity class the presented image belongs to? "
 	
-	if add_task_description:
-		if datalist_context is None:
-			question_subfix= "Answer the question using the provided context. "
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix= "Answer the question using the provided context. "
+			else:
+				question_subfix= "Answer the question using the provided context and examples. "
 		else:
-			question_subfix= "Answer the question using the provided context and examples. "
-	else:
-		if datalist_context is None:
-			question_subfix= ""
-		else:
-			question_subfix= "Answer the question using the provided examples. "
+			if datalist_context is None:
+				question_subfix= ""
+			else:
+				question_subfix= "Answer the question using the provided examples. "
 			
-	question_subfix+= "Report only the identified class label, without any additional explanation text."
+		question_subfix+= "Report only the identified class label, without any additional explanation text."
 	
+	elif prompt_version=="v2":
+		description= "You are given a radio astronomical input image. Answer to the question below, strictly following the provided instructions. \n"
+		
+		if add_task_description:
+			context= "\n ## Context: \n"
+			context+= "- SOURCE ISLAND: A group of 4-connected pixels in a radio image under analysis with intensity above a detection threshold with respect to the sky background level.\n"
+			context+= "- COMPACT SOURCE: single-island isolated point- or slightly resolved compact radio sources, eventually hosting one or more blended components, each with morphology resembling the synthesized beam shape. \n"
+			context+= "- EXTENDED SOURCE: This morphological class of radio sources comprises either single-island compact objects with sharp edges, having a morphology and size dissimilar to that of the image synthesised beam (e.g. 10 times larger than the beam size or with elongated shape), or disjoint multi-island objects, where each island can have either a compact or extended morphology and can host single or multiple emission components. \n"
+			context+= "- DIFFUSE SOURCE: a particular class of single-island extended objects with small angular size (e.g. smaller than few arcminutes), having diffuse edges and a roundish morphology \n"
+			context+= "- ORDINARY IMAGE: image containing only point-like or slightly-resolved compact radio sources superimposed over the sky background or imaging artefact patterns. \n"
+			context+= "- COMPLEX IMAGE: image containing one or more radio sources with extended or diffuse morphology. \n"
+			context+= "- PECULIAR IMAGE: image containing one or more radio sources with anomalous or peculiar extended morphology, often having diffuse edges, complex irregular shapes, covering a large portion of the image."
+			description+= context
+		
+		question_prefix= "\n ## Question: Can you identify which peculiarity class the presented image belongs to? \n"
+	
+		question_subfix= "\n ## Instructions: \n"
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix+= "- Answer the question taking into account the provided context. \n"
+			else:
+				question_subfix+= "- Answer the question taking into account the provided context and examples. \n"
+		else:
+			if datalist_context is not None:
+				question_subfix+= "- Answer the question taking into account the provided examples. \n"
+			
+		question_subfix+= "- Answer concisely reporting only the identified source class label taken from these possible choices: ORDINARY, COMPLEX, PECULIAR. DO NOT ADD ANY EXPLANATION TEXT. \n"
+		
+	else:
+		logger.error("Invalid prompt version (%s) specified!" % (prompt_version))
+		return
+	
+	# - Define class options
 	label2id= {
 		"ORDINARY": 0,
 		"COMPLEX": 1,
@@ -944,6 +1070,7 @@ def run_llavaov_model_mirabest_inference(
 	nmax_context=-1,
 	add_task_description=False,
 	conv_template="qwen_2",
+	prompt_version="v1",
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on Mirabest dataset """
@@ -952,28 +1079,57 @@ def run_llavaov_model_mirabest_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	context= "### Context: Consider these morphological classes of radio galaxies: \n FR-I: radio-loud galaxies characterized by a jet-dominated structure where the radio emissions are strongest close to the galaxy's center and diminish with distance from the core; \n FR-II: radio-loud galaxies characterized by a edge-brightened radio structure, where the radio emissions are more prominent in lobes located far from the galaxy's core, with hotspots at the ends of powerful, well-collimated jets. "
-	context+= "\n"
+	if prompt_version=="v1":
+		context= "### Context: Consider these morphological classes of radio galaxies: \n FR-I: radio-loud galaxies characterized by a jet-dominated structure where the radio emissions are strongest close to the galaxy's center and diminish with distance from the core; \n FR-II: radio-loud galaxies characterized by a edge-brightened radio structure, where the radio emissions are more prominent in lobes located far from the galaxy's core, with hotspots at the ends of powerful, well-collimated jets. "
+		context+= "\n"
 	
-	description= ""
-	if add_task_description: 
-		description= context
+		description= ""
+		if add_task_description: 
+			description= context
 		
-	question_prefix= "### Question: Which of these morphological classes of radio galaxy do you see in the image? "
-	if add_task_description:
-		if datalist_context is None:
-			question_subfix= "Answer the question using the provided context. "
+		question_prefix= "### Question: Which of these morphological classes of radio galaxy do you see in the image? "
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix= "Answer the question using the provided context. "
+			else:
+				question_subfix= "Answer the question using the provided context and examples. "
 		else:
-			question_subfix= "Answer the question using the provided context and examples. "
-	else:
-		if datalist_context is None:
-			question_subfix= ""
-		else:
-			question_subfix= "Answer the question using the provided examples. "
+			if datalist_context is None:
+				question_subfix= ""
+			else:
+				question_subfix= "Answer the question using the provided examples. "
 			
-	question_subfix+= "Report only the identified class label, without any additional explanation text."
+		question_subfix+= "Report only the identified class label, without any additional explanation text."
 	
+	elif prompt_version=="v2":
+		description= "You are given a radio astronomical input image. Answer to the question below, strictly following the provided instructions. \n"
+		
+		if add_task_description:
+			context= "\n ## Context: \n"
+			context+= "- RADIO GALAXY: a type of active galaxy that emits an exceptionally large amount of radio waves, often extending beyond its visible structure. These galaxies host an active galactic nucleus (AGN), powered by a supermassive black hole (SMBH) at their center, which fuels the production of powerful radio jets and lobes. \n"
+			context+= "- FR-I RADIO GALAXY: radio-loud galaxies characterized by a jet-dominated structure where the radio emissions are strongest close to the galaxy's center and diminish with distance from the core. \n"
+			context+= "- FR-II RADIO GALAXY: radio-loud galaxies characterized by a edge-brightened radio structure, where the radio emissions are more prominent in lobes located far from the galaxy's core, with hotspots at the ends of powerful, well-collimated jets."
+			description+= context
+		
+		question_prefix= "\n ## Question: Which of these morphological classes of radio galaxy do you see in the image? \n"
 	
+		question_subfix= "\n ## Instructions: \n"
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix+= "- Answer the question taking into account the provided context. \n"
+			else:
+				question_subfix+= "- Answer the question taking into account the provided context and examples. \n"
+		else:
+			if datalist_context is not None:
+				question_subfix+= "- Answer the question taking into account the provided examples. \n"
+			
+		question_subfix+= "- Answer concisely reporting only the identified source class label taken from these possible choices: FR-I, FR-II. DO NOT ADD ANY EXPLANATION TEXT. \n"
+		
+	else:
+		logger.error("Invalid prompt version (%s) specified!" % (prompt_version))
+		return
+	
+	# - Define class options
 	class_options= ["FR-I", "FR-II"]
 	
 	label2id= {
@@ -1024,6 +1180,7 @@ def run_llavaov_model_gmnist_inference(
 	nmax_context=-1,
 	add_task_description=False,
 	conv_template="qwen_2",
+	prompt_version="v1",
 	verbose=False
 ):
 	""" Run LLaVA One Vision inference on Galaxy MNIST dataset """
@@ -1032,28 +1189,59 @@ def run_llavaov_model_gmnist_inference(
 	#==   INIT TASK
 	#===========================
 	# - Define message
-	context= "### Context: Consider these morphological classes of optical galaxies: \n SMOOTH_ROUND: smooth and round galaxy. Should not have signs of spires; \n SMOOTH_CIGAR: smooth and cigar-shaped galaxy, looks like being seen edge on. This should not have signs of spires of a spiral galaxy; \n EDGE_ON_DISK: edge-on-disk/spiral galaxy. This disk galaxy should have signs of spires, as seen from an edge-on perspective; \n UNBARRED_SPIRAL: unbarred spiral galaxy. Has signs of a disk and/or spires. \n Note that categories SMOOTH_CIGAR and EDGE_ON_DISK classes tend to be very similar to each other. To categorize them, ask yourself the following question: Is this galaxy very smooth, maybe with a small bulge? Then it belongs to class SMOOTH_CIGAR. Does it have irregularities/signs of structure? Then it belongs to class EDGE_ON_DISK."
-	context+= "\n"
+	if prompt_version=="v1":
+		context= "### Context: Consider these morphological classes of optical galaxies: \n SMOOTH_ROUND: smooth and round galaxy. Should not have signs of spires; \n SMOOTH_CIGAR: smooth and cigar-shaped galaxy, looks like being seen edge on. This should not have signs of spires of a spiral galaxy; \n EDGE_ON_DISK: edge-on-disk/spiral galaxy. This disk galaxy should have signs of spires, as seen from an edge-on perspective; \n UNBARRED_SPIRAL: unbarred spiral galaxy. Has signs of a disk and/or spires. \n Note that categories SMOOTH_CIGAR and EDGE_ON_DISK classes tend to be very similar to each other. To categorize them, ask yourself the following question: Is this galaxy very smooth, maybe with a small bulge? Then it belongs to class SMOOTH_CIGAR. Does it have irregularities/signs of structure? Then it belongs to class EDGE_ON_DISK."
+		context+= "\n"
 	
-	description= ""
-	if add_task_description: 
-		description= context
+		description= ""
+		if add_task_description: 
+			description= context
 		
-	question_prefix= "### Question: Which of these morphological classes of optical galaxy do you see in the image? "
-	if add_task_description:
-		if datalist_context is None:
-			question_subfix= "Answer the question using the provided context. "
+		question_prefix= "### Question: Which of these morphological classes of optical galaxy do you see in the image? "
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix= "Answer the question using the provided context. "
+			else:
+				question_subfix= "Answer the question using the provided context and examples. "
 		else:
-			question_subfix= "Answer the question using the provided context and examples. "
-	else:
-		if datalist_context is None:
-			question_subfix= ""
-		else:
-			question_subfix= "Answer the question using the provided examples. "
+			if datalist_context is None:
+				question_subfix= ""
+			else:
+				question_subfix= "Answer the question using the provided examples. "
 			
-	question_subfix+= "Report only the identified class label, without any additional explanation text."
+		question_subfix+= "Report only the identified class label, without any additional explanation text."
 	
+	elif prompt_version=="v2":
+		description= "You are given an astronomical input image taken from an optical survey. Answer to the question below, strictly following the provided instructions. \n"
+		
+		if add_task_description:
+			context= "\n ## Context: \n"
+			context+= "- SMOOTH_ROUND GALAXY: smooth and round galaxy. Should not have signs of spires. \n"
+			context+= "- SMOOTH_CIGAR GALAXY: smooth and cigar-shaped galaxy, looks like being seen edge on. This should not have signs of spires of a spiral galaxy. \n"
+			context+= "- EDGE_ON_DISK GALAXY: edge-on-disk/spiral galaxy. This disk galaxy should have signs of spires, as seen from an edge-on perspective. \n"
+			context+= "- UNBARRED_SPIRAL: unbarred spiral galaxy. Has signs of a disk and/or spires \n"
+			context+= "Note that categories SMOOTH_CIGAR and EDGE_ON_DISK classes tend to be very similar to each other. To categorize them, ask yourself the following question: Is this galaxy very smooth, maybe with a small bulge? Then it belongs to class SMOOTH_CIGAR. Does it have irregularities/signs of structure? Then it belongs to class EDGE_ON_DISK."
+			description+= context
+		
+		question_prefix= "\n ## Question: Which of these morphological classes of optical galaxy do you see in the image? \n"
 	
+		question_subfix= "\n ## Instructions: \n"
+		if add_task_description:
+			if datalist_context is None:
+				question_subfix+= "- Answer the question taking into account the provided context. \n"
+			else:
+				question_subfix+= "- Answer the question taking into account the provided context and examples. \n"
+		else:
+			if datalist_context is not None:
+				question_subfix+= "- Answer the question taking into account the provided examples. \n"
+			
+		question_subfix+= "- Answer concisely reporting only the identified source class label taken from these possible choices: SMOOTH_ROUND, SMOOTH_CIGAR, EDGE_ON_DISK, UNBARRED_SPIRAL. DO NOT ADD ANY EXPLANATION TEXT. \n"
+		
+	else:
+		logger.error("Invalid prompt version (%s) specified!" % (prompt_version))
+		return
+		
+	# - Define class options
 	class_options= ["SMOOTH_ROUND", "SMOOTH_CIGAR","EDGE_ON_DISK","UNBARRED_SPIRAL"]
 	
 	label2id= {
