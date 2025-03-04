@@ -67,6 +67,10 @@ def multiclass_singlelabel_metrics(y_true, y_pred, target_names, labels=None):
 	#roc_auc_ovr = roc_auc_score(y_true, y_pred, average = 'micro', multi_class='ovr')
 	#roc_auc_ovo = roc_auc_score(y_true, y_pred, average = 'micro', multi_class='ovo')
 	
+	cm= confusion_matrix(y_true, y_pred)
+	cm_norm= confusion_matrix(y_true, y_pred, normalize="true")
+
+	
 	# - Return as dictionary
 	metrics = {
 		'class_names': target_names,
@@ -80,8 +84,14 @@ def multiclass_singlelabel_metrics(y_true, y_pred, target_names, labels=None):
 		'class_report': class_report,
 	}
 	
-	print("metrics")
+	print("--> metrics")
 	print(metrics)
+	
+	print("--> confusion matrix")
+	print(cm)
+
+	print("--> confusion matrix (norm)")
+	print(cm_norm)
 	  
 	return metrics
 	
@@ -100,7 +110,20 @@ def multiclass_multilabel_metrics(y_true, y_pred, target_names, labels=None):
 	h_loss= hamming_loss(y_true, y_pred)
 	h_score= hamming_score_v2(y_true, y_pred)
 	class_accuracy= [accuracy_score(y_true[:,i], y_pred[:,i]) for i in range(y_true.shape[1]) ]  ## LIKELY NOT CORRECT!!!
-	  
+	
+	# - Compute confusion matrix
+	cms= multilabel_confusion_matrix(y_true, y_pred)
+
+	# - Normalize confusion matrix by row sum
+	cms_nonorm= []
+	cms_norm= []
+	for cm in cms:
+		M= np.matrix(cm)
+		row_sum= M.sum(axis=1)
+		M_norm= np.where(row_sum<=0, M, M/row_sum)
+		cms_nonorm.append(cm)
+		cms_norm.append(np.array(M_norm))
+		    
 	# - Return as dictionary
 	metrics = {
 		'class_names': target_names,
@@ -116,9 +139,17 @@ def multiclass_multilabel_metrics(y_true, y_pred, target_names, labels=None):
 		'class_report': class_report,
 	}
 	
-	print("metrics")
+	print("--> metrics")
 	print(metrics)
 	  
+	print("--> confusion matrix")
+	for cm in cms_nonorm:
+		print(cm)
+		
+	print("--> confusion matrix (norm)")
+	for cm in cms_norm:
+		print(cm)
+  
 	return metrics
 	
 def print_metrics(metrics):
