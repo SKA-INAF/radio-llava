@@ -22,20 +22,32 @@ import torch
 # - Import radio-llava modules
 from radio_llava.utils import load_img_as_pil_rgb
 from radio_llava.inference_llava import load_llavaov_model, run_llavaov_model_query
+from radio_llava import logger
 
 #===========================
 #==   LOAD MODEL
 #===========================
 # - Load the pre-trained model
 @st.cache_resource
-def load_model(model_id, model_name="llava_qwen"):
+def load_model(model_id, is_lora=False, model_base=None):
 	""" Load model """
 	
+	# - Set pars if LORA
+	if is_lora:
+		model_name="llava_qwen_lora"
+	else:
+		model_name="llava_qwen"
+		model_base= None
+	
+	# - Set device
 	device= 'cuda' if torch.cuda.is_available() else 'cpu'
 	
+	# - Load model
+	logger.info("Loading model (id: %s, model_name: %s, model_base: %s) ..." % (model_id, model_name, model_base))
 	model, tokenizer, image_processor= load_llavaov_model(
 		model_id,
 		model_name=model_name,
+		model_base=model_base,
 		device_map=device 
 		#device_map="auto"
 	)
@@ -55,15 +67,17 @@ def main():
 	# - Model configuration
 	st.sidebar.title("Model Configuration")
 	model_id = st.sidebar.text_input("Enter model name or path", "lmms-lab/llava-onevision-qwen2-7b-ov")
+	is_lora_model= st.sidebar.checkbox("LORA model", value=False)
+	model_base= st.sidebar.text_input("For LORA model, enter model base", "lmms-lab/llava-onevision-qwen2-7b-ov")
 
-	# Button to load the model
+	# - Button to load the model
 	#if "model_loaded" not in st.session_state:
 	#	st.session_state.model_loaded = False
 
 	# - Load the model dynamically based on the input
 	if st.button("Load Model"):
 		try:
-			model, tokenizer, image_processor= load_model(model_id)
+			model, tokenizer, image_processor= load_model(model_id, is_lora_model, model_base)
 			st.session_state.model = model
 			st.session_state.tokenizer = tokenizer
 			st.session_state.image_processor = image_processor
@@ -82,7 +96,7 @@ def main():
 
 	# - Image processing parameter configuration
 	st.sidebar.title("Image Processing Parameters")
-	zscale= st.sidebar.checkbox("apply zscale transform?", value=True)
+	zscale= st.sidebar.checkbox("apply zscale transform?", value=False)
 	zscale_contrast= st.sidebar.slider("zscale contrast", min_value=0.1, max_value=1.0, value=0.25, step=0.1)
 	
 	# - Model parameter configuration
@@ -90,7 +104,7 @@ def main():
 	do_sample= st.sidebar.checkbox("do sample?", value=False)
 	temperature = st.sidebar.slider("temperature", min_value=0.0, max_value=1.0, value=0.2, step=0.1)
 
-	# Conversation history
+	# - Conversation history
 	if "conversation_history" not in st.session_state:
 		st.session_state.conversation_history = []
 		
@@ -103,6 +117,7 @@ def main():
 		##     LOAD IMAGE
 		##################################
 		# - Load the uploaded image as PIL
+		logger.info("Loading image %s as PIL ..." % (uploaded_file))
 		image= load_img_as_pil_rgb(
 			uploaded_file,
 			resize=False, resize_size=224, 
@@ -143,6 +158,7 @@ def main():
 			query = st.session_state.query_to_process
 			
 			# - Run query and get response
+			logger.info("Run query: %s" % (query))
 			response= run_llavaov_model_query(
 				st.session_state.model,
 				st.session_state.tokenizer,
@@ -154,6 +170,8 @@ def main():
 				conv_template="qwen_2", 
 				verbose=False
 			)
+			
+			logger.info("Model response: %s" % (response))
 
 			# - Display the model's response
 			#st.subheader("Model's Response:")
