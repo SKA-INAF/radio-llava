@@ -376,7 +376,7 @@ def main():
 		)
 		if response is not None:
 			print("Q: %s" % (prompt))
-			print("A: %s" % (response)
+			print("A: %s" % (response))
 		else:
 			logger.warning("Inference failed")
 
