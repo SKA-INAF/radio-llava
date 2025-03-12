@@ -19,6 +19,7 @@ import random
 import math
 import logging
 import io
+import re
 
 ## COMMAND-LINE ARG MODULES
 import getopt
@@ -72,7 +73,7 @@ def get_args():
 
 	# - Benchmark type
 	parser.add_argument('-benchmark','--benchmark', dest='benchmark', required=False, default="", type=str, help='Type of benchmark to run {smorph-rgz,smorph-radioimg,galaxydet-radioimg,artefactdet-radioimg,anomalydet-radioimg,galaxymorphclass-mirabest,galaxymorphclass-gmnist}') 
-	parser.add_argument('-prompt','--prompt', dest='prompt', required=False, default="", type=str, help='Prompt text to be given to model') 
+	parser.add_argument('-prompts','--prompts', dest='prompts', required=False, default="", type=str, help='Prompts text to be given to model, separated by <END> separator') 
 
 	# - Data options
 	parser.add_argument('--shuffle', dest='shuffle', action='store_true',help='Shuffle image data list (default=false)')	
@@ -156,10 +157,13 @@ def main():
 	inputfile= args.inputfile
 	inputfile_context= args.inputfile_context
 	image_path= args.image
-	#prompt= args.prompt
-	#prompt= args.prompt.strip('"')
-	prompt_escape = args.prompt.encode().decode('unicode_escape').strip("\"'")
-	prompt = args.prompt.strip("\"'")
+	
+	prompts= re.split("<END>", args.prompts)
+	prompts= [item.strip("\"'") for item in prompts]
+	prompts_escape= [item.encode().decode('unicode_escape').strip("\"'") for item in prompts]
+	
+	#prompt_escape = args.prompt.encode().decode('unicode_escape').strip("\"'")
+	#prompt = args.prompt.strip("\"'")
 	
 	if inputfile=="" and image_path=="":
 		logger.error("inputfile and image are empty, you must specify at least one!")
@@ -362,30 +366,32 @@ def main():
 		#logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))
 		#return 1
 
-		logger.info("Running inference on image %s ..." % (image_path))
-		response= run_llavaov_model_inference_on_image(
-			image_path,
-			model=model, 
-			tokenizer=tokenizer, 
-			image_processor=image_processor,
-			prompt=prompt,
-			resize=args.resize, resize_size=args.imgsize, 
-			zscale=args.zscale, contrast=args.contrast,
-			do_sample=args.do_sample,
-			temperature=args.temperature,
-			max_new_tokens=args.max_new_tokens,
-			conv_template=args.conv_template,
-			verbose=args.verbose
-		)
-		if response is not None:
-			print("== QUESTION (raw) ==")
-			print(prompt)
-			print("== QUESTION ==")
-			print(prompt_escape)
-			print("== ANSWER ==")
-			print(response)
-		else:
-			logger.warning("Inference failed")
+		for i, prompt in enumerate(prompts):
+			logger.info("Running inference on image %s ..." % (image_path))
+			response= run_llavaov_model_inference_on_image(
+				image_path,
+				model=model, 
+				tokenizer=tokenizer, 
+				image_processor=image_processor,
+				prompt=prompt,
+				resize=args.resize, resize_size=args.imgsize, 
+				zscale=args.zscale, contrast=args.contrast,
+				do_sample=args.do_sample,
+				temperature=args.temperature,
+				max_new_tokens=args.max_new_tokens,
+				conv_template=args.conv_template,
+				verbose=args.verbose
+			)
+			if response is not None:
+				print("== QUESTION (raw) ==")
+				print(prompt)
+				print("== QUESTION ==")
+				print(prompts_escape[i])
+				print("== ANSWER ==")
+				print(response)
+			else:
+				logger.warning("Inference failed")
+				continue
 
 	return 0
 	
