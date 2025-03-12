@@ -69,7 +69,7 @@ def get_args():
 	# - Input options
 	parser.add_argument('-inputfile','--inputfile', dest='inputfile', required=False, type=str, help='Path to file with image datalist (.json)') 
 	parser.add_argument('-inputfile_context','--inputfile_context', dest='inputfile_context', required=False, default="", type=str, help='Path to file with image datalist for context (.json)') 
-	parser.add_argument('-image','--image', dest='image', required=False, type=str, help='Path to image file') 
+	parser.add_argument('-image','--image', dest='image', required=False, default="", type=str, help='Path to image file') 
 
 	# - Benchmark type
 	parser.add_argument('-benchmark','--benchmark', dest='benchmark', required=False, default="", type=str, help='Type of benchmark to run {smorph-rgz,smorph-radioimg,galaxydet-radioimg,artefactdet-radioimg,anomalydet-radioimg,galaxymorphclass-mirabest,galaxymorphclass-gmnist}') 
