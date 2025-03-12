@@ -375,8 +375,8 @@ def main():
 			verbose=args.verbose
 		)
 		if response is not None:
-			print("Q: %s" % (prompt))
-			print("A: %s" % (response))
+			print("Q: ", prompt)
+			print("A: ", response)
 		else:
 			logger.warning("Inference failed")
 
