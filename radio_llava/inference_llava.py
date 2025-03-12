@@ -267,6 +267,48 @@ def run_llavaov_model_context_query(
 	return response
 	
 
+def run_llavaov_model_inference_on_image(
+	image_path,
+	model, tokenizer, image_processor,
+	prompt,
+	resize=False, resize_size=384, 
+	zscale=False, contrast=0.25,
+	do_sample=False,
+	temperature=0.2,
+	max_new_tokens=4096,
+	conv_template="qwen_2",
+	verbose=False
+):
+	""" Run LLaVA One Vision inference on radio image """
+
+	# - Load image as PIL
+	image= load_img_as_pil_rgb(
+		image_path,
+		resize=resize, resize_size=resize_size, 
+		apply_zscale=zscale, contrast=contrast,
+		verbose=verbose
+	)
+	if image is None:
+		logger.warn("Failed to read image from file %s!" % (image_path))
+		return None
+
+	# - Run inference without context
+	output= run_llavaov_model_query(
+		model, tokenizer, image_processor, 
+		image, 
+		prompt,
+		do_sample=do_sample,
+		temperature=temperature if do_sample else None,
+		max_new_tokens=max_new_tokens,
+		conv_template=conv_template,
+		verbose=verbose
+	)
+				
+	if output is None:
+		logger.warn("Failed inference for image %s!" % (image_path))
+
+	return output		
+
 
 def run_llavaov_model_inference(
 	datalist, 

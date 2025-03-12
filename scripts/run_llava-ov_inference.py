@@ -66,11 +66,13 @@ def get_args():
 	parser = argparse.ArgumentParser(description="Parse args.")
 
 	# - Input options
-	parser.add_argument('-inputfile','--inputfile', dest='inputfile', required=True, type=str, help='Path to file with image datalist (.json)') 
+	parser.add_argument('-inputfile','--inputfile', dest='inputfile', required=False, type=str, help='Path to file with image datalist (.json)') 
 	parser.add_argument('-inputfile_context','--inputfile_context', dest='inputfile_context', required=False, default="", type=str, help='Path to file with image datalist for context (.json)') 
+	parser.add_argument('-image','--image', dest='image', required=False, type=str, help='Path to image file') 
 
 	# - Benchmark type
-	parser.add_argument('-benchmark','--benchmark', dest='benchmark', required=False, default="smorph-rgz", type=str, help='Type of benchmark to run') 
+	parser.add_argument('-benchmark','--benchmark', dest='benchmark', required=False, default="", type=str, help='Type of benchmark to run {smorph-rgz,smorph-radioimg,galaxydet-radioimg,artefactdet-radioimg,anomalydet-radioimg,galaxymorphclass-mirabest,galaxymorphclass-gmnist}') 
+	parser.add_argument('-prompt','--prompt', dest='prompt', required=False, default="", type=str, help='Prompt text to be given to model') 
 
 	# - Data options
 	parser.add_argument('--shuffle', dest='shuffle', action='store_true',help='Shuffle image data list (default=false)')	
@@ -107,6 +109,8 @@ def get_args():
 	parser.set_defaults(do_sample=False)
 	parser.add_argument('-temperature','--temperature', dest='temperature', required=False, default=0.2, type=float, help='Temperature parameter') 
 	parser.add_argument('-top_p','--top_p', dest='top_p', required=False, default=None, type=float, help='top_p parameter') 
+	parser.add_argument('-max_new_tokens','--max_new_tokens', dest='max_new_tokens', required=False, type=int, default=4096, help='Max new token parameter') 
+	
 	
 	# - Data conversation options
 	parser.add_argument('--shuffle_options', dest='shuffle_options', action='store_true', help='Shuffle label options (default=false)')	
@@ -151,6 +155,17 @@ def main():
 	
 	inputfile= args.inputfile
 	inputfile_context= args.inputfile_context
+	image_path= args.image
+	prompt= args.prompt
+	
+	if inputfile=="" and image_path=="":
+		logger.error("inputfile and image are empty, you must specify at least one!")
+		return 1
+		
+	if image_path!="" and prompt=="":
+		logger.error("Prompt is empty, you must specify a prompt text for single-image input!")
+		return 1
+	
 	model_id= args.model
 	outfile= args.outfile
 	
@@ -165,24 +180,25 @@ def main():
 	#===========================
 	#==   READ DATALIST
 	#===========================
-	# - Read inference data filelist
-	logger.info("Read image dataset filelist %s ..." % (inputfile))
-	datalist= read_datalist(inputfile)
-	if args.shuffle:
-		random.shuffle(datalist)
+	# - Read inference data filelist if image option not given
+	if image_path=="":	
+		logger.info("Read image dataset filelist %s ..." % (inputfile))
+		datalist= read_datalist(inputfile)
+		if args.shuffle:
+			random.shuffle(datalist)
 		
-	nfiles= len(datalist)
-	logger.info("#%d images present in file %s " % (nfiles, inputfile))
+		nfiles= len(datalist)
+		logger.info("#%d images present in file %s " % (nfiles, inputfile))
 	
-	# - Read context data filelist?
-	datalist_context= None 
-	if inputfile_context!="":
-		logger.info("Read image context dataset filelist %s ..." % (inputfile_context))
-		datalist_context= read_datalist(inputfile_context)
-		if args.shuffle_context:
-			random.shuffle(datalist_context)
-		nfiles_context= len(datalist_context)
-		logger.info("#%d images present in context file %s " % (nfiles_context, inputfile_context))
+		# - Read context data filelist?
+		datalist_context= None 
+		if inputfile_context!="":
+			logger.info("Read image context dataset filelist %s ..." % (inputfile_context))
+			datalist_context= read_datalist(inputfile_context)
+			if args.shuffle_context:
+				random.shuffle(datalist_context)
+			nfiles_context= len(datalist_context)
+			logger.info("#%d images present in context file %s " % (nfiles_context, inputfile_context))
 		
 	#===========================
 	#==   LOAD MODEL
@@ -340,8 +356,29 @@ def main():
 		)
 		
 	else:
-		logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))
-		return 1
+		#logger.error("Unknown/invalid benchmark (%s) given!" % (args.benchmark))
+		#return 1
+
+		logger.info("Running inference on image %s ..." % (image_path))
+		response= run_llavaov_model_inference_on_image(
+			image_path,
+			model=model, 
+			tokenizer=tokenizer, 
+			image_processor=image_processor,
+			prompt=prompt,
+			resize=args.resize, resize_size=args.imgsize, 
+			zscale=args.zscale, contrast=args.contrast,
+			do_sample=args.do_sample,
+			temperature=args.temperature,
+			max_new_tokens=args.max_new_tokens,
+			conv_template=args.conv_template,
+			verbose=args.verbose
+		)
+		if response is not None:
+			print("Q: %s" % (prompt))
+			print("A: %s" % (response)
+		else:
+			logger.warning("Inference failed")
 
 	return 0
 	
