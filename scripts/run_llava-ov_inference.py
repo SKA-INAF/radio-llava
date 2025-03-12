@@ -158,7 +158,8 @@ def main():
 	image_path= args.image
 	#prompt= args.prompt
 	#prompt= args.prompt.strip('"')
-	prompt = args.prompt.encode().decode('unicode_escape').strip("\"'")
+	prompt_escape = args.prompt.encode().decode('unicode_escape').strip("\"'")
+	prompt = args.prompt.strip("\"'")
 	
 	if inputfile=="" and image_path=="":
 		logger.error("inputfile and image are empty, you must specify at least one!")
@@ -379,6 +380,7 @@ def main():
 		if response is not None:
 			print("Q")
 			print(prompt)
+			print(prompt_escape)
 			print("A")
 			print(response)
 		else:
