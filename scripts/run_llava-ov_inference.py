@@ -378,10 +378,13 @@ def main():
 			verbose=args.verbose
 		)
 		if response is not None:
-			print("Q")
+			print("== QUESTION (raw) ==")
 			print(prompt)
+			print("\n")
+			print("== QUESTION ==")
 			print(prompt_escape)
-			print("A")
+			print("\n")
+			print("== ANSWER ==")
 			print(response)
 		else:
 			logger.warning("Inference failed")
