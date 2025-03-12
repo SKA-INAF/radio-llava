@@ -169,8 +169,8 @@ def main():
 		logger.error("inputfile and image are empty, you must specify at least one!")
 		return 1
 		
-	if image_path!="" and prompt=="":
-		logger.error("Prompt is empty, you must specify a prompt text for single-image input!")
+	if image_path!="" and prompts=="":
+		logger.error("Prompts is empty, you must specify a prompt text for single-image input!")
 		return 1
 	
 	model_id= args.model
