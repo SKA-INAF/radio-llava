@@ -157,7 +157,8 @@ def main():
 	inputfile_context= args.inputfile_context
 	image_path= args.image
 	#prompt= args.prompt
-	prompt= args.prompt.strip('"')
+	#prompt= args.prompt.strip('"')
+	prompt = args.prompt.encode().decode('unicode_escape').strip("\"'")
 	
 	if inputfile=="" and image_path=="":
 		logger.error("inputfile and image are empty, you must specify at least one!")
